@@ -61,6 +61,7 @@ bigger(large, medium).
 bigger(medium, small).
 bigger(z,x) :- bigger (z,y).bigger (y,x).
 
+
 %Disc into box. Don't know if I can use the bigger rule here so I defined all the possibilities
 
 canbeon(o,[h|t]) :- form(o,small,ball).form(h,small,box).
@@ -87,6 +88,16 @@ canbeon(o,[h|t]) :- form(o,large,square).form(h,large,square).
 
 canbeon(o,[h|t]) :- form(o,small,triangle).form(h,medium,box).
 canbeon(o,[h|t]) :- form(o,small,triangle).form(h,large,box).
+canbeon(o,[h|t]) :- form(o,medium,triangle).form(h,large,box).
+canbeon(o,[h|t]) :- form(o,small,triangle).form(h,small,square).
+canbeon(o,[h|t]) :- form(o,small,triangle).form(h,medium,square).
+canbeon(o,[h|t]) :- form(o,small,triangle).form(h,large,square).
+canbeon(o,[h|t]) :- form(o,medium,triangle).form(h,medium,square).
+canbeon(o,[h|t]) :- form(o,medium,triangle).form(h,large,square).
+canbeon(o,[h|t]) :- form(o,large,triangle).form(h,large,square).
+
+%All objects can stand on the floor whatever their size or form
+canbeon(o,[]).
 
 %DAN'S CODE HERE
 
