@@ -61,10 +61,19 @@ bigger(large, medium).
 bigger(medium, small).
 bigger(z,x) :- bigger (z,y).bigger (y,x).
 
+%Disc into box. Don't know if I can use the bigger rule here so I defined all the possibilities
+
+canbeon(o,[h|t]) :- form(o,small,ball).form(h,small,box).
+canbeon(o,[h|t]) :- form(o,small,ball).form(h,medium,box).
+canbeon(o,[h|t]) :- form(o,small,ball).form(h,large,box).
+canbeon(o,[h|t]) :- form(o,medium,ball).form(h,medium,box).
+canbeon(o,[h|t]) :- form(o,medium,ball).form(h,large,box).
+canbeon(o,[h|t]) :- form(o,large,ball).form(h,large,box).
 
 
 
-%%DAN'S CODE HERE
+
+%DAN'S CODE HERE
 
 append([],X,X).
 append([X|Y],Z,[X|W]) :- append(Y,Z,W).

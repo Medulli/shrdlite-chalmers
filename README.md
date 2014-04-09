@@ -5,5 +5,20 @@
 
     java -cp gnuprologjava-0.2.6.jar:json-simple-1.1.1.jar *.java
 
+##Physical laws
+
+The world is ruled by physical laws that constrain the placement and movement of the objects:
+
+The floor can support any number of objects.
+All objects must be supported by something.
+The arm can only hold one object at the time.
+The arm can only pick up free objects.
+Objects are “in” boxes, but “on” other objects.
+Balls must be in boxes or on the floor, otherwise they roll away.
+Balls cannot support anything.
+Small objects cannot support large objects.
+Boxes cannot contain pyramids or planks of the same size.
+Boxes can only be supported by tables or planks of the same size, but large boxes can also be supported by large bricks.
+There is an example world in the project template called impossible.json, which gives examples of bricks that break the physical laws in some way.
 
 http://www.cse.chalmers.se/edu/course/TIN172/project.html
