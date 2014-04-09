@@ -70,8 +70,23 @@ canbeon(o,[h|t]) :- form(o,medium,ball).form(h,medium,box).
 canbeon(o,[h|t]) :- form(o,medium,ball).form(h,large,box).
 canbeon(o,[h|t]) :- form(o,large,ball).form(h,large,box).
 
+%Square
+
+canbeon(o,[h|t]) :- form(o,small,square).form(h,medium,box).
+canbeon(o,[h|t]) :- form(o,small,square).form(h,large,box).
+canbeon(o,[h|t]) :- form(o,medium,square).form(h,large,box).
+canbeon(o,[h|t]) :- form(o,small,square).form(h,small,square).
+canbeon(o,[h|t]) :- form(o,small,square).form(h,medium,square).
+canbeon(o,[h|t]) :- form(o,small,square).form(h,large,square).
+canbeon(o,[h|t]) :- form(o,medium,square).form(h,medium,square).
+canbeon(o,[h|t]) :- form(o,medium,square).form(h,large,square).
+canbeon(o,[h|t]) :- form(o,large,square).form(h,large,square).
 
 
+%Triangle
+
+canbeon(o,[h|t]) :- form(o,small,triangle).form(h,medium,box).
+canbeon(o,[h|t]) :- form(o,small,triangle).form(h,large,box).
 
 %DAN'S CODE HERE
 
