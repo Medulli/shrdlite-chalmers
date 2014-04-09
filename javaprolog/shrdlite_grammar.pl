@@ -48,13 +48,163 @@ main :-
 
 solve(_Goal, World, _Holding, _Objects, Plan) :-
     nth0(Col, World, [_|_]),
-    Plan = ['I pick it up . . .', [pick, Col], '. . . and I drop it down', [drop, Col]].
-
+    %Plan = [[pick, Col],[drop, Col]].
+    (
+    Holding == @(null)->
+        Plan = [[pick, Col]];
+        Plan = [[drop, Col]]
+    ).
 
 interpret(_Tree, _World, _Holding, _Objects, @(true)).
 
 bigger(large, medium).
 bigger(medium, small).
-bigger(z,x) :- bigger (z,y). bigger (y,x).
+bigger(z,x) :- bigger (z,y).bigger (y,x).
 
 
+
+
+%%DAN'S CODE HERE
+
+append([],X,X).
+append([X|Y],Z,[X|W]) :- append(Y,Z,W).
+     
+takeout(X,[X|R],R).
+takeout(X,[F|R],[F|S]) :- takeout(X,R,S).
+ 
+t2(X,[[X|Rx]|R] ,[Rx|R]).
+t2(X,[[Fx|Rx]|R],[[Fx|Sx]|R]) :- t2(X,[Rx|R],[Sx|R]).
+t2(X,[F|Rx] ,[F|Sx])  :- t2(X,Rx,Sx).
+ 
+interpret(Tree, World, Holding, Objects, Goal) :-
+foo(Tree, World, Holding, Objects, Goal).
+ 
+ 
+foo(object(Type,Size,Color), SelectedObject, World, Holding, Objects, _Goal):-
+Holding == @(null) ->
+(
+json(AllPossibleObjects) = Objects, 
+findall(X=json([A,B,C]), (member(Col,World),member(X=json([A,B,C]),AllPossibleObjects),member(X,Col)), PossibleObjects),
+getobj([Type,Size,Color], PossibleObjects, SelectedObject)
+)
+;
+(
+json(AllPossibleObjects) = Objects, 
+findall(X=json([A,B,C]), (member(Col,World),member(X=json([A,B,C]),AllPossibleObjects),member(X,Col)), PossibleWorldObjects),
+member(Holding = json([A1,A2,A3]),AllPossibleObjects),
+append(PossibleWorldObjects,Holding = json([A1,A2,A3]),PossibleObjects),
+getobj([Type,Size,Color], PossibleObjects, SelectedObject)
+).
+ 
+ 
+foo(basic_entity(any,X), SelectedObject, World, Holding, Objects, Goal):-
+%findall(SelectedObject, foo(X, SelectedObject, World, Objects, Goal), [SelectedObject|_]).
+foo(X, SelectedObject, World, Holding, Objects, Goal).
+ 
+foo(basic_entity(the,X), SelectedObject, World, Holding, Objects, Goal):-
+%findall(SelectedObject, foo(X, SelectedObject, World, Objects, Goal), [SelectedObject]).
+foo(X, SelectedObject, World, Holding, Objects, Goal).
+ 
+foo(basic_entity(all,X), SelectedObject, World, Holding, Objects, Goal):-
+foo(X, SelectedObject, World, Holding, Objects, Goal).
+ 
+foo(relative_entity(any,X, Relation), SelectedObject, World, Holding, Objects, Goal):-
+    foo(Relation, SelectedObject, World, Holding, Objects, Goal),
+    foo(X, SelectedObject, World, Holding, Objects, Goal).
+ 
+foo(relative_entity(the,X, Relation), SelectedObject, World, Holding, Objects, Goal):-
+    findall(SelectedObject,( foo(Relation, SelectedObject, World, Holding, Objects, Goal),
+                             foo(X, SelectedObject, World, Holding, Objects, Goal)),
+                             [SelectedObject]).
+     
+foo(relative(beside,X), SelectedObject, World, Holding, Objects, Goal):-
+    foo(X, RelativeObject, World, Holding, Objects, Goal),
+    member(ColS,World),member(SelectedObject,ColS), nth0(IdxS,World,ColS),
+    member(ColR,World),member(RelativeObject,ColR), nth0(IdxR,World,ColR),
+    (IdxS is IdxR-1;IdxS is IdxR+1).
+     
+foo(relative(leftof,X), SelectedObject, World, Holding, Objects, Goal):-
+    foo(X, RelativeObject, World, Holding, Objects, Goal),
+    member(ColS,World),member(SelectedObject,ColS), nth0(IdxS,World,ColS),
+    member(ColR,World),member(RelativeObject,ColR), nth0(IdxR,World,ColR),  
+    (IdxS < IdxR).
+     
+foo(relative(rightof,X), SelectedObject, World, Holding, Objects, Goal):-
+    foo(X, RelativeObject, World, Holding, Objects, Goal),
+    member(ColS,World),member(SelectedObject,ColS), nth0(IdxS,World,ColS),
+    member(ColR,World),member(RelativeObject,ColR), nth0(IdxR,World,ColR),  
+    (IdxS > IdxR).
+     
+foo(relative(above,X), SelectedObject, World, Holding, Objects, Goal):-
+    foo(X, RelativeObject, World, Holding, Objects, Goal),
+    member(Col,World),member(SelectedObject,Col), member(RelativeObject, Col),
+    nth0(IdxS, Col, SelectedObject),
+    nth0(IdxR, Col, RelativeObject),
+    (IdxS > IdxR).
+     
+foo(relative(ontop,X), SelectedObject, World, Holding, Objects, Goal):-
+    foo(X, RelativeObject, World, Holding, Objects, Goal),
+    member(Col,World),member(SelectedObject,Col), member(RelativeObject, Col),
+    nth0(IdxS, Col, SelectedObject),
+    nth0(IdxR, Col, RelativeObject),
+    (IdxS is IdxR+1).
+ 
+foo(relative(ontop,floor), SelectedObject, World, _Holding, _Objects, _Goal):-
+    member(Col,World),member(SelectedObject,Col),
+    nth0(IdxS, Col, SelectedObject),
+    (IdxS is 0).
+     
+foo(relative(under,X), SelectedObject, World, Holding, Objects, Goal):-
+    foo(X, RelativeObject, World, Holding, Objects, Goal),
+    member(Col,World),member(SelectedObject,Col), member(RelativeObject, Col),
+    nth0(IdxS, Col, SelectedObject),
+    nth0(IdxR, Col, RelativeObject),
+    (IdxS < IdxR).
+     
+foo(relative(inside,X), SelectedObject, World, Holding, Objects, Goal):-
+    foo(X, RelativeObject, World, Holding, Objects, Goal),
+    member(Col,World),member(SelectedObject,Col), member(RelativeObject, Col),
+    nth0(IdxS, Col, SelectedObject),
+    nth0(IdxR, Col, RelativeObject),
+    (IdxS is IdxR+1).
+ 
+foo(take(X), World, Holding, Objects, Goal):-
+foo(X, SelectedObject, World, Holding, Objects, Goal),
+t2(SelectedObject,World,Goal).
+ 
+foo(move(X,Y), World, Holding, Objects, Goal):-
+foo(X, SelectedObject, World, Holding, Objects, Goal),
+t2(SelectedObject,World,SubGoal),
+t2(SelectedObject,Goal,SubGoal),
+foo(Y, SelectedObject, Goal, Holding, Objects, _).
+%write([SelectedObject,RelativeObject]).
+%write(Goal).
+ 
+ 
+%------------------------------------------------------------------------------------------------------------------------%
+getobj([Type,Size,Color],PossibleObjects,SelectedObject) :-
+member(SelectedObject=json([form=Type,size=Size,color=Color]), PossibleObjects).
+ 
+getobj([Type,Size,-],PossibleObjects,SelectedObject) :-
+member(SelectedObject=json([form=Type,size=Size,color=_]), PossibleObjects).
+ 
+getobj([Type,-,Color],PossibleObjects,SelectedObject) :-
+member(SelectedObject=json([form=Type,size=_,color=Color]), PossibleObjects).
+ 
+getobj([Type,-,-],PossibleObjects,SelectedObject) :-
+member(SelectedObject=json([form=Type,size=_,color=_]), PossibleObjects).
+ 
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+ 
+getobj([anyform,Size,Color],PossibleObjects,SelectedObject) :-
+member(SelectedObject=json([form=_,size=Size,color=Color]), PossibleObjects).
+ 
+getobj([anyform,Size,-],PossibleObjects,SelectedObject) :-
+member(SelectedObject=json([form=_,size=Size,color=_]), PossibleObjects).
+ 
+getobj([anyform,-,Color],PossibleObjects,SelectedObject) :-
+member(SelectedObject=json([form=_,size=_,color=Color]), PossibleObjects).
+ 
+getobj([anyform,-,-],PossibleObjects,SelectedObject) :-
+member(SelectedObject=json([form=_,size=_,color=_]), PossibleObjects).
+%------------------------------------------------------------------------------------------------------------------------%
