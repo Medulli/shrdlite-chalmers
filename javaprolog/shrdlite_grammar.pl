@@ -148,6 +148,78 @@ canbeon(o,[h|t]) :- form(o,medium,box).form(h,medium,planck).
 canbeon(o,[h|t]) :- form(o,medium,box).form(h,large,planck).
 canbeon(o,[h|t]) :- form(o,large,box).form(h,large,planck).
 
+%Plank
+
+canbeon(o,[h|t]) :- form(o,small,plank).form(h,medium,box).
+canbeon(o,[h|t]) :- form(o,small,plank).form(h,large,box).
+canbeon(o,[h|t]) :- form(o,medium,plank).form(h,large,box).
+
+canbeon(o,[h|t]) :- form(o,small,plank).form(h,small,square).
+canbeon(o,[h|t]) :- form(o,small,plank).form(h,medium,square).
+canbeon(o,[h|t]) :- form(o,small,plank).form(h,large,square).
+canbeon(o,[h|t]) :- form(o,medium,plank).form(h,medium,square).
+canbeon(o,[h|t]) :- form(o,medium,plank).form(h,large,square).
+canbeon(o,[h|t]) :- form(o,large,plank).form(h,large,square).
+
+canbeon(o,[h|t]) :- form(o,small,plank).form(h,small,brick).
+canbeon(o,[h|t]) :- form(o,small,plank).form(h,medium,brick).
+canbeon(o,[h|t]) :- form(o,small,plank).form(h,large,brick).
+canbeon(o,[h|t]) :- form(o,medium,plank).form(h,medium,brick).
+canbeon(o,[h|t]) :- form(o,medium,plank).form(h,large,brick).
+canbeon(o,[h|t]) :- form(o,large,plank).form(h,large,brick).
+
+canbeon(o,[h|t]) :- form(o,small,plank).form(h,small,table).
+canbeon(o,[h|t]) :- form(o,small,plank).form(h,medium,table).
+canbeon(o,[h|t]) :- form(o,small,plank).form(h,large,table).
+canbeon(o,[h|t]) :- form(o,medium,plank).form(h,medium,table).
+canbeon(o,[h|t]) :- form(o,medium,plank).form(h,large,table).
+canbeon(o,[h|t]) :- form(o,large,plank).form(h,large,table).
+
+canbeon(o,[h|t]) :- form(o,small,plank).form(h,small,plank).
+canbeon(o,[h|t]) :- form(o,small,plank).form(h,medium,plank).
+canbeon(o,[h|t]) :- form(o,small,plank).form(h,large,plank).
+canbeon(o,[h|t]) :- form(o,medium,plank).form(h,medium,plank).
+canbeon(o,[h|t]) :- form(o,medium,plank).form(h,large,plank).
+canbeon(o,[h|t]) :- form(o,large,plank).form(h,large,plank).
+
+
+%Table
+
+canbeon(o,[h|t]) :- form(o,small,table).form(h,small,box).
+canbeon(o,[h|t]) :- form(o,small,table).form(h,medium,box).
+canbeon(o,[h|t]) :- form(o,small,table).form(h,large,box).
+canbeon(o,[h|t]) :- form(o,medium,table).form(h,medium,box).
+canbeon(o,[h|t]) :- form(o,medium,table).form(h,large,box).
+canbeon(o,[h|t]) :- form(o,large,table).form(h,large,box).
+
+canbeon(o,[h|t]) :- form(o,small,table).form(h,small,square).
+canbeon(o,[h|t]) :- form(o,small,table).form(h,medium,square).
+canbeon(o,[h|t]) :- form(o,small,table).form(h,large,square).
+canbeon(o,[h|t]) :- form(o,medium,table).form(h,medium,square).
+canbeon(o,[h|t]) :- form(o,medium,table).form(h,large,square).
+canbeon(o,[h|t]) :- form(o,large,table).form(h,large,square).
+
+canbeon(o,[h|t]) :- form(o,small,table).form(h,small,brick).
+canbeon(o,[h|t]) :- form(o,small,table).form(h,medium,brick).
+canbeon(o,[h|t]) :- form(o,small,table).form(h,large,brick).
+canbeon(o,[h|t]) :- form(o,medium,table).form(h,medium,brick).
+canbeon(o,[h|t]) :- form(o,medium,table).form(h,large,brick).
+canbeon(o,[h|t]) :- form(o,large,table).form(h,large,brick).
+
+canbeon(o,[h|t]) :- form(o,small,table).form(h,small,table).
+canbeon(o,[h|t]) :- form(o,small,table).form(h,medium,table).
+canbeon(o,[h|t]) :- form(o,small,table).form(h,large,table).
+canbeon(o,[h|t]) :- form(o,medium,table).form(h,medium,table).
+canbeon(o,[h|t]) :- form(o,medium,table).form(h,large,table).
+canbeon(o,[h|t]) :- form(o,large,table).form(h,large,table).
+
+canbeon(o,[h|t]) :- form(o,small,table).form(h,small,plank).
+canbeon(o,[h|t]) :- form(o,small,table).form(h,medium,plank).
+canbeon(o,[h|t]) :- form(o,small,table).form(h,large,plank).
+canbeon(o,[h|t]) :- form(o,medium,table).form(h,medium,plank).
+canbeon(o,[h|t]) :- form(o,medium,table).form(h,large,plank).
+canbeon(o,[h|t]) :- form(o,large,table).form(h,large,plank).
+
 
 %All objects can stand on the floor whatever their size or form
 canbeon(o,[]).
