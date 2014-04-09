@@ -128,6 +128,27 @@ canbeon(o,[h|t]) :- form(o,medium,pyramid).form(h,medium,table).
 canbeon(o,[h|t]) :- form(o,medium,pyramid).form(h,large,table).
 canbeon(o,[h|t]) :- form(o,large,pyramid).form(h,large,table).
 
+%BOXES
+
+canbeon(o,[h|t]) :- form(o,small,box).form(h,medium,box).
+canbeon(o,[h|t]) :- form(o,small,box).form(h,large,box).
+canbeon(o,[h|t]) :- form(o,medium,box).form(h,large,box).
+
+canbeon(o,[h|t]) :- form(o,small,box).form(h,small,table).
+canbeon(o,[h|t]) :- form(o,small,box).form(h,medium,table).
+canbeon(o,[h|t]) :- form(o,small,box).form(h,large,table).
+canbeon(o,[h|t]) :- form(o,medium,box).form(h,medium,table).
+canbeon(o,[h|t]) :- form(o,medium,box).form(h,large,table).
+canbeon(o,[h|t]) :- form(o,large,box).form(h,large,table).
+
+canbeon(o,[h|t]) :- form(o,small,box).form(h,small,planck).
+canbeon(o,[h|t]) :- form(o,small,box).form(h,medium,planck).
+canbeon(o,[h|t]) :- form(o,small,box).form(h,large,planck).
+canbeon(o,[h|t]) :- form(o,medium,box).form(h,medium,planck).
+canbeon(o,[h|t]) :- form(o,medium,box).form(h,large,planck).
+canbeon(o,[h|t]) :- form(o,large,box).form(h,large,planck).
+
+
 %All objects can stand on the floor whatever their size or form
 canbeon(o,[]).
 
