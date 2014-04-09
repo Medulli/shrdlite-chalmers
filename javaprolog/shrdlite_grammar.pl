@@ -53,4 +53,8 @@ solve(_Goal, World, _Holding, _Objects, Plan) :-
 
 interpret(_Tree, _World, _Holding, _Objects, @(true)).
 
+bigger(large, medium).
+bigger(medium, small).
+bigger(z,x) :- bigger (z,y). bigger (y,x).
+
 
