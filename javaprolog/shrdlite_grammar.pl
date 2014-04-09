@@ -62,7 +62,7 @@ bigger(medium, small).
 bigger(z,x) :- bigger (z,y).bigger (y,x).
 
 
-%Disc into box. Don't know if I can use the bigger rule here so I defined all the possibilities
+%Disc into box. Dont know if I can use the bigger rule here so I defined all the possibilities
 
 canbeon(o,[h|t]) :- form(o,small,ball).form(h,small,box).
 canbeon(o,[h|t]) :- form(o,small,ball).form(h,medium,box).
