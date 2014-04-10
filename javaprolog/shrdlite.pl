@@ -224,10 +224,6 @@ canbeon(o,[h|t]) :- form(o,large,table).form(h,large,plank).
 %All objects can stand on the floor whatever their size or form
 canbeon(o,[]).
 
-%The robot can hold every kind of objects as long as it is on at a time
-
-holding(_).
-
 %If the robot wants to put an object on a stack he needs to hold it AND to be able to put in on the stack with the canbeon predicates
 
 put(o,[h|t]) :- holding(o).canbeon(o,[h|t]).
@@ -236,7 +232,15 @@ put(o,[h|t]) :- holding(o).canbeon(o,[h|t]).
 
 put(o,[]).
 
-%DAN'S CODE HERE
+%The robot can hold every kind of objects as long as it is on at a time
+
+holding(o).
+
+%condition predicate isontop : Verifies that the object isontop. If it s not the robot takes the object and puts it on the floor
+
+holding(o) :- isontop(o,[h|t]).
+
+
 
 append([],X,X).
 append([X|Y],Z,[X|W]) :- append(Y,Z,W).
