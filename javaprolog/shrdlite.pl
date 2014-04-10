@@ -141,12 +141,12 @@ canbeon(o,[h|t]) :- form(o,medium,box).form(h,medium,table).
 canbeon(o,[h|t]) :- form(o,medium,box).form(h,large,table).
 canbeon(o,[h|t]) :- form(o,large,box).form(h,large,table).
 
-canbeon(o,[h|t]) :- form(o,small,box).form(h,small,planck).
-canbeon(o,[h|t]) :- form(o,small,box).form(h,medium,planck).
-canbeon(o,[h|t]) :- form(o,small,box).form(h,large,planck).
-canbeon(o,[h|t]) :- form(o,medium,box).form(h,medium,planck).
-canbeon(o,[h|t]) :- form(o,medium,box).form(h,large,planck).
-canbeon(o,[h|t]) :- form(o,large,box).form(h,large,planck).
+canbeon(o,[h|t]) :- form(o,small,box).form(h,small,plank).
+canbeon(o,[h|t]) :- form(o,small,box).form(h,medium,plank).
+canbeon(o,[h|t]) :- form(o,small,box).form(h,large,plank).
+canbeon(o,[h|t]) :- form(o,medium,box).form(h,medium,plank).
+canbeon(o,[h|t]) :- form(o,medium,box).form(h,large,plank).
+canbeon(o,[h|t]) :- form(o,large,box).form(h,large,plank).
 
 %Plank
 
@@ -223,6 +223,18 @@ canbeon(o,[h|t]) :- form(o,large,table).form(h,large,plank).
 
 %All objects can stand on the floor whatever their size or form
 canbeon(o,[]).
+
+%The robot can hold every kind of objects as long as it is on at a time
+
+holding(_).
+
+%If the robot wants to put an object on a stack he needs to hold it AND to be able to put in on the stack with the canbeon predicates
+
+put(o,[h|t]) :- holding(o).canbeon(o,[h|t]).
+
+%You can put whatever you want on the floor
+
+put(o,[]).
 
 %DAN'S CODE HERE
 
