@@ -207,9 +207,17 @@ put(O,[],[O|T]).
 
 append([],X,X).
 append([X|Y],Z,[X|W]) :- append(Y,Z,W).
-     
+
 takeout(X,[X|R],R).
-takeout(X,[F|R],[F|S]) :- takeout(X,R,S).
+
+element(X,[X|_]).
+element(X,[_|L]) :- element_at(X,L).
+
+element_at(X,[X|_],1).
+element_at(X,[_|L],K) :- K > 1, K1 is K - 1, element_at(X,L,K1).
+
+length([],0).
+length([H|T],K) :- K > 1, K1 is K - 1, length(T,K1).
  
 t2(X,[[X|Rx]|R] ,[Rx|R]).
 t2(X,[[Fx|Rx]|R],[[Fx|Sx]|R]) :- t2(X,[Rx|R],[Sx|R]).
