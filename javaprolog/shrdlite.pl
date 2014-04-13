@@ -349,16 +349,22 @@ canbeon(O,[H|-]) :- getobj([Table,Large,-],PossibleObjects,O). getobj([Plank,Lar
 %All objects can stand on the floor whatever their size or form
 canbeon(O,[]).
 
-%Put
-
-%If the robot wants to put an object on a stack he needs to hold it AND to be able to put in on the stack with the canbeon predicates
+%Put the element holded by the arm on the head of the Kth list
 
 put(LL,K,[O|L],NLL,L) :- canbeon(O,L). consLL_at(O,LL,K,NLL).
 
-%Take
+%Take the head of the Kth list
 
 take(LL,K,[],NLL,[O]) :- hdtlLL_at(LL,K,NLL,O).
 
 %Move the head of the K1th list to the K2th list
 
-move(LL,K1,K2,L,NLL,NL) :- take(LL,K1,L,LLaux,Laux). put(LLaux,K2,Laux,NLL,L).
+move(LL,K1,K2,L,NLL,NL) :- take(LL,K1,L,LLaux,Laux). put(LLaux,K2,Laux,NLL,NL).
+
+%If the arm holds something and we want to take an object different from the one it holds we put it somewhere
+
+take(LL,K,[H|L],NLL,NL) :- put(LL,Kaux,[H|Laux],LLaux,Laux). take(LLaux,K,Laux,NLL,NL).
+
+%If the arm does not hold something but the head of the list in which there is the element we want to take is not this element we move the head somewhere else
+
+take(LL,K,[],NLL,L) :- move(LL,K,Kaux,[],LLaux,Laux). take(LLaux,K,Laux,NLL,L).
