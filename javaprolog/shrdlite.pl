@@ -350,6 +350,7 @@ canbeon(O,[H|-]) :- getobj([Table,Large,-],PossibleObjects,O). getobj([Plank,Lar
 canbeon(O,[]).
 
 %Put the element holded by the arm on the head of the Kth list
+%Warning we probably want to put an element on a specified element and not on a specified list
 
 put(LL,K,[O|L],NLL,L) :- canbeon(O,L). consLL_at(O,LL,K,NLL).
 
