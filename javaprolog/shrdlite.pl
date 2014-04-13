@@ -69,8 +69,13 @@ elementL(X,[_|L]) :- elementL(X,L).
 
 %return the element X which is at place K in L
 
-elementLL_at(X,[X|_],1).
-elementLL_at(X,[_|L],K+1) :- elementLL_at(X,L,K).
+elementL_at(X,[X|_],1).
+elementL_at(X,[_|L],K+1) :- elementL_at(X,L,K).
+
+%return the number K if X is in the Kth list of lists LL
+
+whichL(X,[L|_],1) :- elementL(X,L).
+whichL(X,[_|LL],K+1) :- whichL(X,LL,K).
 
 %the last argument is the list given in second place where X was remove at place K
 
@@ -82,11 +87,11 @@ insertLL_at(X,L,K,R) :- removeLL_at(X,R,K,L).
 
 %R is the list of lists LL in which X is added at the head of the Kth list of LL
 
-consLL_at(X,LL,K,R) :- elementLL_at(L,LL,K).removeLL_at(L,LL,K,Raux).insertLL_at([X|L],Raux,R).
+consLL_at(X,LL,K,R) :- elementL_at(L,LL,K).removeLL_at(L,LL,K,Raux).insertLL_at([X|L],Raux,R).
 
 %R is the list of lists LL in which the head X of the Kth list of LL was removed
 
-hdtlLL_at(LL,K,R,X) :- elementLL_at(L,LL,K).removeLL_at(L,LL,K,Raux).hdtlL(L,X,T).insertLL_at(T,Raux,K,R).
+hdtlLL_at(LL,K,R,X) :- elementL_at(L,LL,K).removeLL_at(L,LL,K,Raux).hdtlL(L,X,T).insertLL_at(T,Raux,K,R).
 
 %We need to check if taking an object which is not the head of a list should be allowed
 t2(X,[[X|Rx]|R] ,[Rx|R]).
@@ -350,7 +355,7 @@ canbeon(O,[H|-]) :- getobj([Table,Large,-],PossibleObjects,O). getobj([Plank,Lar
 canbeon(O,[]).
 
 %Put the element holded by the arm on the head of the Kth list
-%Warning we probably want to put an element on a specified element and not on a specified list
+%Warning we probably want to put an element on a specified element and not on a specified 
 
 put(LL,K,[O|L],NLL,L) :- canbeon(O,L). consLL_at(O,LL,K,NLL).
 
