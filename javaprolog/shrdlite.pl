@@ -111,7 +111,7 @@ hdtlLL_at(LL,K,R,X) :- elementLL_at(L,LL,K).removeLL_at(L,LL,K,Raux).hdtlL(L,X,T
 %We need to check if taking an object which is not the head of a list should be allowed
 t2(X,[[X|Rx]|R] ,[Rx|R]).
 t2(X,[[Fx|Rx]|R],[[Fx|Sx]|R]) :- t2(X,[Rx|R],[Sx|R]).
-t2(X,[F|Rx] ,[F|Sx])  :- t2(X,Rx,Sx).
+t2(X,[F|Rx] ,[F|Sx]) :- t2(X,Rx,Sx).
 
 interpret(object(Type,Size,Color), SelectedObject, World, Holding, Objects, _Goal):-
 Holding == @(null) ->
@@ -220,16 +220,16 @@ getobj([Type,-,Color],PossibleObjects,SelectedObject) :-
 getobj([Type,-,-],PossibleObjects,SelectedObject) :-
     member(SelectedObject=json([form=Type,size=_,color=_]), PossibleObjects).
 %------------------------------------------------------------------------------------------------------------------------%
-getobj([anyform,Size,Color],PossibleObjects,SelectedObject) :-
+getobj([-,Size,Color],PossibleObjects,SelectedObject) :-
     member(SelectedObject=json([form=_,size=Size,color=Color]), PossibleObjects).
 
-getobj([anyform,Size,-],PossibleObjects,SelectedObject) :-
+getobj([-,Size,-],PossibleObjects,SelectedObject) :-
     member(SelectedObject=json([form=_,size=Size,color=_]), PossibleObjects).
 
-getobj([anyform,-,Color],PossibleObjects,SelectedObject) :-
+getobj([-,-,Color],PossibleObjects,SelectedObject) :-
     member(SelectedObject=json([form=_,size=_,color=Color]), PossibleObjects).
 
-getobj([anyform,-,-],PossibleObjects,SelectedObject) :-
+getobj([-,-,-],PossibleObjects,SelectedObject) :-
     member(SelectedObject=json([form=_,size=_,color=_]), PossibleObjects).
 %------------------------------------------------------------------------------------------------------------------------%
 
