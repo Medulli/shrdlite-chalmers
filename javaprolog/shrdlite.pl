@@ -57,22 +57,6 @@ solve(_Goal, World, _Holding, _Objects, Plan) :-
 
 interpret(_Tree, _World, _Holding, _Objects, @(true)).
 
-%Put
-
-%All objects can stand on the floor whatever their size or form
-canbeon(O,[]).
-
-%If the robot wants to put an object on a stack he needs to hold it AND to be able to put in on the stack with the canbeon predicates
-
-put(O,L,[O|L]) :- canbeon(O,L).
-
-%You can put whatever you want on the floor
-
-put(O,[],[O|T]).
-
-%Take
-
-
 appendL([],X,X).
 appendL([X|Y],Z,[X|W]) :- appendL(Y,Z,W).
 
@@ -113,96 +97,96 @@ t2(X,[[X|Rx]|R] ,[Rx|R]).
 t2(X,[[Fx|Rx]|R],[[Fx|Sx]|R]) :- t2(X,[Rx|R],[Sx|R]).
 t2(X,[F|Rx] ,[F|Sx]) :- t2(X,Rx,Sx).
 
-interpret(object(Type,Size,Color), SelectedObject, World, Holding, Objects, _Goal):-
+interpret(object(Type,Size,Color), SelectedObject, World, Holding, Objects, _Goal) :-
 Holding == @(null) ->
 (
-json(AllPossibleObjects) = Objects, 
+json(AllPossibleObjects) = Objects,
 findall(X=json([A,B,C]), (member(Col,World),member(X=json([A,B,C]),AllPossibleObjects),member(X,Col)), PossibleObjects),
 getobj([Type,Size,Color], PossibleObjects, SelectedObject)
 )
 ;
 (
-json(AllPossibleObjects) = Objects, 
+json(AllPossibleObjects) = Objects,
 findall(X=json([A,B,C]), (member(Col,World),member(X=json([A,B,C]),AllPossibleObjects),member(X,Col)), PossibleWorldObjects),
 member(Holding = json([A1,A2,A3]),AllPossibleObjects),
 appendL(PossibleWorldObjects,Holding = json([A1,A2,A3]),PossibleObjects),
 getobj([Type,Size,Color], PossibleObjects, SelectedObject)
 ).
 
-interpret(basic_entity(any,X), SelectedObject, World, Holding, Objects, Goal):-
+interpret(basic_entity(any,X), SelectedObject, World, Holding, Objects, Goal) :-
     interpret(X, SelectedObject, World, Holding, Objects, Goal).
 
-interpret(basic_entity(the,X), SelectedObject, World, Holding, Objects, Goal):-
+interpret(basic_entity(the,X), SelectedObject, World, Holding, Objects, Goal) :-
     interpret(X, SelectedObject, World, Holding, Objects, Goal).
 
-interpret(basic_entity(all,X), SelectedObject, World, Holding, Objects, Goal):-
+interpret(basic_entity(all,X), SelectedObject, World, Holding, Objects, Goal) :-
     interpret(X, SelectedObject, World, Holding, Objects, Goal).
 
-interpret(relative_entity(any,X, Relation), SelectedObject, World, Holding, Objects, Goal):-
+interpret(relative_entity(any,X, Relation), SelectedObject, World, Holding, Objects, Goal) :-
     interpret(Relation, SelectedObject, World, Holding, Objects, Goal),
     interpret(X, SelectedObject, World, Holding, Objects, Goal).
 
-interpret(relative_entity(the,X, Relation), SelectedObject, World, Holding, Objects, Goal):-
+interpret(relative_entity(the,X, Relation), SelectedObject, World, Holding, Objects, Goal) :-
     findall(SelectedObject,( interpret(Relation, SelectedObject, World, Holding, Objects, Goal),
                              interpret(X, SelectedObject, World, Holding, Objects, Goal)),
                              [SelectedObject]).
 
-interpret(relative(beside,X), SelectedObject, World, Holding, Objects, Goal):-
+interpret(relative(beside,X), SelectedObject, World, Holding, Objects, Goal) :-
     interpret(X, RelativeObject, World, Holding, Objects, Goal),
     member(ColS,World),member(SelectedObject,ColS), nth0(IdxS,World,ColS),
     member(ColR,World),member(RelativeObject,ColR), nth0(IdxR,World,ColR),
     (IdxS is IdxR-1;IdxS is IdxR+1).
 
-interpret(relative(leftof,X), SelectedObject, World, Holding, Objects, Goal):-
+interpret(relative(leftof,X), SelectedObject, World, Holding, Objects, Goal) :-
     interpret(X, RelativeObject, World, Holding, Objects, Goal),
     member(ColS,World),member(SelectedObject,ColS), nth0(IdxS,World,ColS),
-    member(ColR,World),member(RelativeObject,ColR), nth0(IdxR,World,ColR),  
+    member(ColR,World),member(RelativeObject,ColR), nth0(IdxR,World,ColR),
     (IdxS < IdxR).
 
-interpret(relative(rightof,X), SelectedObject, World, Holding, Objects, Goal):-
+interpret(relative(rightof,X), SelectedObject, World, Holding, Objects, Goal) :-
     interpret(X, RelativeObject, World, Holding, Objects, Goal),
     member(ColS,World),member(SelectedObject,ColS), nth0(IdxS,World,ColS),
-    member(ColR,World),member(RelativeObject,ColR), nth0(IdxR,World,ColR),  
+    member(ColR,World),member(RelativeObject,ColR), nth0(IdxR,World,ColR),
     (IdxS > IdxR).
 
-interpret(relative(above,X), SelectedObject, World, Holding, Objects, Goal):-
+interpret(relative(above,X), SelectedObject, World, Holding, Objects, Goal) :-
     interpret(X, RelativeObject, World, Holding, Objects, Goal),
     member(Col,World),member(SelectedObject,Col), member(RelativeObject, Col),
     nth0(IdxS, Col, SelectedObject),
     nth0(IdxR, Col, RelativeObject),
     (IdxS > IdxR).
 
-interpret(relative(ontop,X), SelectedObject, World, Holding, Objects, Goal):-
+interpret(relative(ontop,X), SelectedObject, World, Holding, Objects, Goal) :-
     interpret(X, RelativeObject, World, Holding, Objects, Goal),
     member(Col,World),member(SelectedObject,Col), member(RelativeObject, Col),
     nth0(IdxS, Col, SelectedObject),
     nth0(IdxR, Col, RelativeObject),
     (IdxS is IdxR+1).
 
-interpret(relative(ontop,floor), SelectedObject, World, _Holding, _Objects, _Goal):-
+interpret(relative(ontop,floor), SelectedObject, World, _Holding, _Objects, _Goal) :-
     member(Col,World),member(SelectedObject,Col),
     nth0(IdxS, Col, SelectedObject),
     (IdxS is 0).
 
-interpret(relative(under,X), SelectedObject, World, Holding, Objects, Goal):-
+interpret(relative(under,X), SelectedObject, World, Holding, Objects, Goal) :-
     interpret(X, RelativeObject, World, Holding, Objects, Goal),
     member(Col,World),member(SelectedObject,Col), member(RelativeObject, Col),
     nth0(IdxS, Col, SelectedObject),
     nth0(IdxR, Col, RelativeObject),
     (IdxS < IdxR).
 
-interpret(relative(inside,X), SelectedObject, World, Holding, Objects, Goal):-
+interpret(relative(inside,X), SelectedObject, World, Holding, Objects, Goal) :-
     interpret(X, RelativeObject, World, Holding, Objects, Goal),
     member(Col,World),member(SelectedObject,Col), member(RelativeObject, Col),
     nth0(IdxS, Col, SelectedObject),
     nth0(IdxR, Col, RelativeObject),
     (IdxS is IdxR+1).
 
-interpret(take(X), World, Holding, Objects, Goal):-
+interpret(take(X), World, Holding, Objects, Goal) :-
     interpret(X, SelectedObject, World, Holding, Objects, Goal),
     t2(SelectedObject,World,Goal).
 
-interpret(move(X,Y), World, Holding, Objects, Goal):-
+interpret(move(X,Y), World, Holding, Objects, Goal) :-
     interpret(X, SelectedObject, World, Holding, Objects, Goal),
     t2(SelectedObject,World,SubGoal),
     t2(SelectedObject,Goal,SubGoal),
@@ -365,3 +349,16 @@ canbeon(O,[H|T]) :- getobj([Table,Small,-],PossibleObjects,O). getobj([Plank,Lar
 canbeon(O,[H|T]) :- getobj([Table,Medium,-],PossibleObjects,O). getobj([Plank,Medium,-],PossibleObjects,H).
 canbeon(O,[H|T]) :- getobj([Table,Medium,-],PossibleObjects,O). getobj([Plank,Large,-],PossibleObjects,H).
 canbeon(O,[H|T]) :- getobj([Table,Large,-],PossibleObjects,O). getobj([Plank,Large,-],PossibleObjects,H).
+
+%All objects can stand on the floor whatever their size or form
+canbeon(O,[]).
+
+%Put
+
+%If the robot wants to put an object on a stack he needs to hold it AND to be able to put in on the stack with the canbeon predicates
+
+put(O,LL,K,[O|L],NLL,L) :- canbeon(O,L). consLL_at(O,LL,K,NLL).
+
+%Take
+
+take(LL,K,[],NLL,[O]) :- hdtlLL_at(LL,K,NLL,O).
