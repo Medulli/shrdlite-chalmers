@@ -70,16 +70,17 @@ elementL(X,[_|L]) :- elementL(X,L).
 %return the element X which is at place K in L
 
 elementL_at(X,[X|_],1).
-elementL_at(X,[_|L],K+1) :- elementL_at(X,L,K).
+elementL_at(X,[_|L],N) :- elementL_at(X,L,M),N is M + 1.
 
 %return the number K if X is in the Kth list of lists LL
+%findall(X,whichL(a,[[d,e,f],[a,b,c]],X),R).
 
 whichL(X,[L|_],1) :- elementL(X,L).
-whichL(X,[_|LL],K+1) :- whichL(X,LL,K).
+whichL(X,[_|LL],N) :- whichL(X,LL,M),N is M + 1.
 
 %the last argument is the list given in second place where X was remove at place K
 
-removeLL_at(X,[Y|Xs],K+1,[Y|Ys]) :- remove_at(X,Xs,K,Ys).
+removeLL_at(X,[Y|Xs],N,[Y|Ys]) :- remove_at(X,Xs,M,Ys),N is M + 1.
 
 %R is the list L in which X was added at place K
 
@@ -87,7 +88,7 @@ insertLL_at(X,L,K,R) :- removeLL_at(X,R,K,L).
 
 %R is the list of lists LL in which X is added at the head of the Kth list of LL
 
-consLL_at(X,LL,K,R) :- elementL_at(L,LL,K).removeLL_at(L,LL,K,Raux).insertLL_at([X|L],Raux,R).
+consLL_at(X,LL,K,R) :- elementL_at(L,LL,K).removeLL_at(L,LL,K,Raux).insertLL_at([X|L],Raux,K,R).
 
 %R is the list of lists LL in which the head X of the Kth list of LL was removed
 
