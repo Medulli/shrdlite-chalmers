@@ -87,15 +87,21 @@ t2(X,[[X|Rx]|R] ,[Rx|R]).
 t2(X,[[Fx|Rx]|R],[[Fx|Sx]|R]) :- t2(X,[Rx|R],[Sx|R]).
 t2(X,[F|Rx] ,[F|Sx]) :- t2(X,Rx,Sx).
 
+%Finds object satisfying type size color by checking against a list of possible objects
 interpret(object(Type,Size,Color), SelectedObject, World, Holding, Objects, _Goal) :-
+%if Holding is empty we only have possible objects in world
 Holding == @(null) ->
 (
+%get a list of (all) objects
 json(AllPossibleObjects) = Objects,
+%find all objects and that are in world, Col is a list of objects (letters) in world, X is "the letter" of the objects in AllPossibleObjects, which must be a member of the list we're currently checking...
 findall(X=json([A,B,C]), (member(Col,World),member(X=json([A,B,C]),AllPossibleObjects),member(X,Col)), PossibleObjects),
+%get the actual letter of the object we desired from the pool PossibleObjects
 getobj([Type,Size,Color], PossibleObjects, SelectedObject)
 )
 ;
 (
+%If we're holding something, add that to the possible objects
 json(AllPossibleObjects) = Objects,
 findall(X=json([A,B,C]), (member(Col,World),member(X=json([A,B,C]),AllPossibleObjects),member(X,Col)), PossibleWorldObjects),
 member(Holding = json([A1,A2,A3]),AllPossibleObjects),
@@ -103,6 +109,7 @@ append(PossibleWorldObjects,Holding = json([A1,A2,A3]),PossibleObjects),
 getobj([Type,Size,Color], PossibleObjects, SelectedObject)
 ).
 
+%All these are basically "any" or "all" object, I guess we could do something along findall(...,...,[Obj]) for the and findall(...,...,[Obj|_]) for any
 interpret(basic_entity(any,X), SelectedObject, World, Holding, Objects, Goal) :-
     interpret(X, SelectedObject, World, Holding, Objects, Goal).
 
@@ -112,8 +119,11 @@ interpret(basic_entity(the,X), SelectedObject, World, Holding, Objects, Goal) :-
 interpret(basic_entity(all,X), SelectedObject, World, Holding, Objects, Goal) :-
     interpret(X, SelectedObject, World, Holding, Objects, Goal).
 
+%find relative objects	
 interpret(relative_entity(any,X, Relation), SelectedObject, World, Holding, Objects, Goal) :-
+%find objects that supports the relation, e.g. besides X is all Objects beside X.
     interpret(Relation, SelectedObject, World, Holding, Objects, Goal),
+%the selected object shall satisfy the relation and the type/size/col
     interpret(X, SelectedObject, World, Holding, Objects, Goal).
 
 interpret(relative_entity(the,X, Relation), SelectedObject, World, Holding, Objects, Goal) :-
@@ -121,10 +131,15 @@ interpret(relative_entity(the,X, Relation), SelectedObject, World, Holding, Obje
                              interpret(X, SelectedObject, World, Holding, Objects, Goal)),
                              [SelectedObject]).
 
+%find all objects satisfying relations
 interpret(relative(beside,X), SelectedObject, World, Holding, Objects, Goal) :-
+%find the relative object satisfying type/size/col
     interpret(X, RelativeObject, World, Holding, Objects, Goal),
+%find list id for relative object
     member(ColS,World),member(SelectedObject,ColS), nth0(IdxS,World,ColS),
+%and all other objects
     member(ColR,World),member(RelativeObject,ColR), nth0(IdxR,World,ColR),
+%however they must satisfy this (to the left;or;to the right)
     (IdxS is IdxR-1;IdxS is IdxR+1).
 
 interpret(relative(leftof,X), SelectedObject, World, Holding, Objects, Goal) :-
@@ -141,9 +156,12 @@ interpret(relative(rightof,X), SelectedObject, World, Holding, Objects, Goal) :-
 
 interpret(relative(above,X), SelectedObject, World, Holding, Objects, Goal) :-
     interpret(X, RelativeObject, World, Holding, Objects, Goal),
+%basically same as above, however the must belong to the same sub list
     member(Col,World),member(SelectedObject,Col), member(RelativeObject, Col),
+%get idx of objects
     nth0(IdxS, Col, SelectedObject),
     nth0(IdxR, Col, RelativeObject),
+%must satisfy this
     (IdxS > IdxR).
 
 interpret(relative(ontop,X), SelectedObject, World, Holding, Objects, Goal) :-
@@ -173,14 +191,21 @@ interpret(relative(inside,X), SelectedObject, World, Holding, Objects, Goal) :-
     (IdxS is IdxR+1).
 
 interpret(take(X), World, Holding, Objects, Goal) :-
+%take is a remove object from world. This will probably change.
     interpret(X, SelectedObject, World, Holding, Objects, Goal),
     t2(SelectedObject,World,Goal).
 
 interpret(move(X,Y), World, Holding, Objects, Goal) :-
+%for move we find desired object
     interpret(X, SelectedObject, World, Holding, Objects, Goal),
+%remove it from world
     t2(SelectedObject,World,SubGoal),
+%add it back to all possible places
     t2(SelectedObject,Goal,SubGoal),
+%but it must satisfy the realtion
     interpret(Y, SelectedObject, Goal, Holding, Objects, _).
+	
+%Will return the letter of the type/size/col which satisfies the object in PossibleObjects.
 %------------------------------------------------------------------------------------------------------------------------%
 getobj([Type,Size,Color],PossibleObjects,SelectedObject) :-
     member(SelectedObject=json([form=Type,size=Size,color=Color]), PossibleObjects).
@@ -346,19 +371,19 @@ canbeon(O,[]).
 %Put the element holded by the arm on the head of the Kth list
 %Warning we probably want to put an element on a specified element and not on a specified 
 
-put(LL,K,[O|L],NLL,L) :- canbeon(O,L). consLL_at(O,LL,K,NLL).
+put(O,LL,[O|L],NLL,L) :- whichL(O,LL,K). canbeon(O,L). consLL_at(O,LL,K,NLL).
 
 %Take the head of the Kth list
 
-take(LL,K,[],NLL,[O]) :- hdtlLL_at(LL,K,NLL,O).
+take(O,LL,[],NLL,[O]) :- whichL(O,LL,K). hdtlLL_at(LL,K,NLL,O).
 
 %Move the head of the K1th list to the K2th list
 
-move(LL,K1,K2,L,NLL,NL) :- take(LL,K1,L,LLaux,Laux). put(LLaux,K2,Laux,NLL,NL).
+move(O,LL,K1,K2,L,NLL,NL) :- whichL(O,LL,K1). nth1(K1,LL,L1). hdtlL(L1,O,-). take(O,LL,K1,L,LLaux,Laux). put(O,LLaux,K2,Laux,NLL,NL).
 
 %If the arm holds something and we want to take an object different from the one it holds we put it somewhere
 
-take(LL,K,[H|L],NLL,NL) :- put(LL,Kaux,[H|Laux],LLaux,Laux). take(LLaux,K,Laux,NLL,NL).
+take(O,LL,K,[H|L],NLL,NL) :- put(LL,Kaux,[H|Laux],LLaux,Laux). take(LLaux,K,Laux,NLL,NL).
 
 %If the arm does not hold something but the head of the list in which there is the element we want to take is not this element we move the head somewhere else
 
