@@ -413,6 +413,8 @@ canbeon(O,[H|-]) :- getobj([Table,Large,-],PossibleObjects,O), getobj([Plank,Lar
 
 canbeon(O,[]).
 
+%Following LL will be the list of lists representing the world at the moment we want to execute an action, L the list representing the arm (it will be either [] or [o|[]] as we cannot take an object if we already hold one) at the moment we want to execute an action, NLL the list of lists representing the world after the execution of hte action, L the list representing the arm after the execution of the action
+
 %Put the element holded at any place
 
 putanyplace(O1,LL,[O1|L],NLL,L) :- nth1(K,LL,LK), canbeon(O1,LK), consLL_at(O1,LL,K,NLL).
