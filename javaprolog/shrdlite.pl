@@ -104,37 +104,23 @@ interpret(relative_entity(the,X, Relation), World, Holding, Objects, SelectedObj
 %find all objects satisfying relations
 interpret(relative(beside,X), World, Holding, Objects, SelectedObject) :-
     interpret(X, World, Holding, Objects, RelativeObject),					%find the relative object satisfying type/size/col
-    member(ColS,World),member(SelectedObject,ColS), nth0(IdxS,World,ColS),	%find list id for relative object
-    member(ColR,World),member(RelativeObject,ColR), nth0(IdxR,World,ColR),	%and all other objects
-    (IdxS is IdxR-1;IdxS is IdxR+1).										%however they must satisfy this (to the left;or;to the right)
+	isbeside(SelectedObject,RelativeObject,World).
 
 interpret(relative(leftof,X), World, Holding, Objects, SelectedObject) :-
     interpret(X, World, Holding, Objects, RelativeObject),
-    member(ColS,World),member(SelectedObject,ColS), nth0(IdxS,World,ColS),
-    member(ColR,World),member(RelativeObject,ColR), nth0(IdxR,World,ColR),
-    (IdxS < IdxR).
+	isleftof(SelectedObject,RelativeObject,World).
 
 interpret(relative(rightof,X), World, Holding, Objects, SelectedObject) :-
     interpret(X, World, Holding, Objects, RelativeObject),
-    member(ColS,World),member(SelectedObject,ColS), nth0(IdxS,World,ColS),
-    member(ColR,World),member(RelativeObject,ColR), nth0(IdxR,World,ColR),
-    (IdxS > IdxR).
+	isrightof(SelectedObject,RelativeObject,World).
 
 interpret(relative(above,X), World, Holding, Objects, SelectedObject) :-
     interpret(X, World, Holding, Objects, RelativeObject),
-    member(Col,World),member(SelectedObject,Col), member(RelativeObject, Col),	%basically same as above, however the must belong to the same sub list
-    nth0(IdxS, Col, SelectedObject),											%get idx of objects
-    nth0(IdxR, Col, RelativeObject),
-    (IdxS > IdxR).																%must satisfy this
+	isabove(SelectedObject,RelativeObject,World).
 
-
-	
 interpret(relative(ontop,X), World, Holding, Objects, SelectedObject) :-
     interpret(X, World, Holding, Objects, RelativeObject),
-    member(Col,World),member(SelectedObject,Col), member(RelativeObject, Col),
-    nth0(IdxS, Col, SelectedObject),
-    nth0(IdxR, Col, RelativeObject),
-    (IdxS is IdxR+1).
+    isontop(SelectedObject,RelativeObject,World).
 
 interpret(relative(ontop,floor), World, _Holding, _Objects, SelectedObject) :-
     member(Col,World),member(SelectedObject,Col),
@@ -143,17 +129,11 @@ interpret(relative(ontop,floor), World, _Holding, _Objects, SelectedObject) :-
 
 interpret(relative(under,X), World, Holding, Objects, SelectedObject) :-
     interpret(X, World, Holding, Objects, RelativeObject),
-    member(Col,World),member(SelectedObject,Col), member(RelativeObject, Col),
-    nth0(IdxS, Col, SelectedObject),
-    nth0(IdxR, Col, RelativeObject),
-    (IdxS < IdxR).
+    isunder(SelectedObject,RelativeObject,World).
 
 interpret(relative(inside,X), World, Holding, Objects, SelectedObject) :-
     interpret(X, World, Holding, Objects, RelativeObject),
-    member(Col,World),member(SelectedObject,Col), member(RelativeObject, Col),
-    nth0(IdxS, Col, SelectedObject),
-    nth0(IdxR, Col, RelativeObject),
-    (IdxS is IdxR+1).
+    isinside(SelectedObject,RelativeObject,World).
 
 
 %Find object, and set goal accordingly.
@@ -220,3 +200,38 @@ getobj([anyform,-,Color],PossibleObjects,SelectedObject) :-
 getobj([anyform,-,-],PossibleObjects,SelectedObject) :-
     member(SelectedObject=json([form=_,size=_,color=_]), PossibleObjects).
 %------------------------------------------------------------------------------------------------------------------------%
+
+isbeside(X,Y,World) :-
+    member(ColS,World),member(X,ColS), nth0(IdxS,World,ColS),	%find list id for relative object
+    member(ColR,World),member(Y,ColR), nth0(IdxR,World,ColR),	%and all other objects
+    (IdxS is IdxR-1;IdxS is IdxR+1).							%however they must satisfy this (to the left;or;to the right)
+isleftof(X,Y,World) :-
+    member(ColS,World),member(X,ColS), nth0(IdxS,World,ColS),
+    member(ColR,World),member(Y,ColR), nth0(IdxR,World,ColR),
+    (IdxS < IdxR).
+isrightof(X,Y,World) :-
+    member(ColS,World),member(X,ColS), nth0(IdxS,World,ColS),
+    member(ColR,World),member(Y,ColR), nth0(IdxR,World,ColR),
+    (IdxS > IdxR).
+isabove(X,Y,World) :-
+    member(Col,World),member(X,Col), member(Y, Col),	%basically same as beside/lef/right, however the must belong to the same sub list
+    nth0(IdxS, Col, X),									%get idx of objects
+    nth0(IdxR, Col, Y),
+    (IdxS > IdxR).			
+isontop(X,Y,World) :-
+	member(Col,World),member(X,Col), member(Y, Col),
+    nth0(IdxS, Col, X),
+    nth0(IdxR, Col, Y),
+    (IdxS is IdxR+1).
+isunder(X,Y,World) :-
+	member(Col,World),member(X,Col), member(Y, Col),
+    nth0(IdxS, Col, X),
+    nth0(IdxR, Col, Y),
+    (IdxS < IdxR).
+isinside(X,Y,World) :- 
+	member(Col,World),member(X,Col), member(Y, Col),
+    nth0(IdxS, Col, X),
+    nth0(IdxR, Col, Y),
+    (IdxS is IdxR+1).
+
+
