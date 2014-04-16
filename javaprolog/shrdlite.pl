@@ -59,47 +59,44 @@ t2(X,[[Fx|Rx]|R],[[Fx|Sx]|R]) :- t2(X,[Rx|R],[Sx|R]).
 t2(X,[F|Rx] ,[F|Sx]) :- t2(X,Rx,Sx).
 
 %Finds object satisfying type size color by checking against a list of possible objects
-interpret(object(Type,Size,Color), World, @(null), Objects, SelectedObject) :-
 %if Holding is empty we only have possible objects in world
-%get a list of (all) objects
-json(AllPossibleObjects) = Objects,
-%find all objects and that are in world, Col is a list of objects (letters) in world, X is "the letter" of the objects in AllPossibleObjects, which must be a member of the list we're currently checking...
-findall(X=json([A,B,C]), (member(Col,World),member(X=json([A,B,C]),AllPossibleObjects),member(X,Col)), PossibleObjects),
-%get the actual letter of the object we desired from the pool PossibleObjects
-getobj([Type,Size,Color], PossibleObjects, SelectedObject).
+interpret(object(Type,Size,Color), World, @(null), Objects, SelectedObject) :-
+	json(AllPossibleObjects) = Objects,																							%get a list of (all) objects
+	findall(X=json([A,B,C]), (member(Col,World),member(X=json([A,B,C]),AllPossibleObjects),member(X,Col)), PossibleObjects),	%find all objects and that are in world, Col is a list of objects (letters) in world, X is "the letter" of the objects in AllPossibleObjects, which must be a member of the list we're currently checking...
+	getobj([Type,Size,Color], PossibleObjects, SelectedObject).																	%get the actual letter of the object we desired from the pool PossibleObjects
 
-interpret(object(Type,Size,Color), World, Holding \== @(null), Objects, SelectedObject) :-
 %If we're holding something, add that to the possible objects
-json(AllPossibleObjects) = Objects,
-findall(X=json([A,B,C]), (member(Col,World),member(X=json([A,B,C]),AllPossibleObjects),member(X,Col)), PossibleWorldObjects),
-member(Holding = json([A1,A2,A3]),AllPossibleObjects),
-append(PossibleWorldObjects,Holding = json([A1,A2,A3]),PossibleObjects),
-getobj([Type,Size,Color], PossibleObjects, SelectedObject).
+interpret(object(Type,Size,Color), World, Holding \== @(null), Objects, SelectedObject) :-
+	json(AllPossibleObjects) = Objects,
+	findall(X=json([A,B,C]), (member(Col,World),member(X=json([A,B,C]),AllPossibleObjects),member(X,Col)), PossibleWorldObjects),
+	member(Holding = json([A1,A2,A3]),AllPossibleObjects),
+	append(PossibleWorldObjects,Holding = json([A1,A2,A3]),PossibleObjects),
+	getobj([Type,Size,Color], PossibleObjects, SelectedObject).
 
 %All these are basically "any" or "all" object, I guess we could do something along findall(...,...,[Obj]) for the and findall(...,...,[Obj|_]) for any
-interpret(basic_entity(any,X), World, Holding, Objects, SelectedObject) :-
+interpret(basic_entity(any,X), World, Holding, Objects, [SelectedObject]) :-
     interpret(X, World, Holding, Objects, SelectedObject).
 
 interpret(basic_entity(the,X), World, Holding, Objects, SelectedObject) :-
-    interpret(X, World, Holding, Objects, SelectedObject).
+    findall(SelectedObjectAux, interpret(X, World, Holding, Objects, SelectedObjectAux), [SelectedObject]).
 
 interpret(basic_entity(all,X), World, Holding, Objects, SelectedObject) :-
-    interpret(X, World, Holding, Objects, SelectedObject).
+    findall(SelectedObjectAux, interpret(X, World, Holding, Objects, SelectedObjectAux), SelectedObject).
 
 %find relative objects	
-interpret(relative_entity(all,X, Relation), World, Holding, Objects, SelectedObject) :-
-	interpret(Relation, World, Holding, Objects, SelectedObject),
-	interpret(X, World, Holding, Objects, SelectedObject).
-
-interpret(relative_entity(any,X, Relation), World, Holding, Objects, SelectedObject) :-
+interpret(relative_entity(any,X, Relation), World, Holding, Objects, [SelectedObject]) :-
 	interpret(Relation, World, Holding, Objects, SelectedObject),	%find objects that supports the relation, e.g. besides X is all Objects beside X.
-	interpret(X, World, Holding, Objects, SelectedObject).		%the selected object shall satisfy the relation and the type/size/col
+	interpret(X, World, Holding, Objects, SelectedObject).			%the selected object shall satisfy the relation and the type/size/col
+	
+interpret(relative_entity(all,X, Relation), World, Holding, Objects, SelectedObject) :-
+    findall(SelectedObjectAux,( interpret(Relation, World, Holding, Objects, SelectedObjectAux),
+								interpret(X,        World, Holding, Objects, SelectedObjectAux)),
+								SelectedObject).
     
-
 interpret(relative_entity(the,X, Relation), World, Holding, Objects, SelectedObject) :-
-    findall(SelectedObject,( interpret(Relation, World, Holding, Objects, SelectedObject),
-                             interpret(X,        World, Holding, Objects, SelectedObject)),
-                             [SelectedObject]).
+    findall(SelectedObjectAux,( interpret(Relation, World, Holding, Objects, SelectedObjectAux),
+								interpret(X,        World, Holding, Objects, SelectedObjectAux)),
+								[SelectedObject]).
 
 %find all objects satisfying relations
 interpret(relative(beside,X), World, Holding, Objects, SelectedObject) :-
@@ -143,7 +140,7 @@ interpret(take(X), World, @(null), Objects, take(SelectedObject/*,World,[],_,_*/
 interpret(take(X), World, Holding \== @(null), Objects,  take(SelectedObject/*,World,Holding,_,_*/)) :-
     interpret(X, World, Holding, Objects, SelectedObject).
 
-interpret(floor, _World, _Holding, _Objects, floor).
+interpret(floor, _World, _Holding, _Objects, floor). %floor is floor... move this somewhere.. meh.
 	
 interpret(move(X,relative(beside, Y)), World, Holding, Objects, movebeside(SelectedObject,RelativeObject)) :-
 	interpret(X, World, Holding, Objects, SelectedObject),
