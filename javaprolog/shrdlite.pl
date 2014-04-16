@@ -77,7 +77,7 @@ interpret(object(Type,Size,Color), World, Holding \== @(null), Objects, Selected
 interpret(basic_entity(any,X), World, Holding, Objects, [SelectedObject]) :-
     interpret(X, World, Holding, Objects, SelectedObject).
 
-interpret(basic_entity(the,X), World, Holding, Objects, SelectedObject) :-
+interpret(basic_entity(the,X), World, Holding, Objects, [SelectedObject]) :-
     findall(SelectedObjectAux, interpret(X, World, Holding, Objects, SelectedObjectAux), [SelectedObject]).
 
 interpret(basic_entity(all,X), World, Holding, Objects, SelectedObject) :-
@@ -89,35 +89,50 @@ interpret(relative_entity(any,X, Relation), World, Holding, Objects, [SelectedOb
 	interpret(X, World, Holding, Objects, SelectedObject).			%the selected object shall satisfy the relation and the type/size/col
 	
 interpret(relative_entity(all,X, Relation), World, Holding, Objects, SelectedObject) :-
-    findall(SelectedObjectAux,( interpret(Relation, World, Holding, Objects, SelectedObjectAux),
+	findall(RelativeObjectAux, ( interpret(Relation, World, Holding, Objects, RelativeObjectListAuxAux), %find all relative objects
+								 member(RelativeObjectAux, RelativeObjectListAuxAux)),
+								RelativeObjectListAux),
+	sort(RelativeObjectListAux,RelativeObjectList),														 %remove duplicates from list
+    findall(SelectedObjectAux,( member(SelectedObjectAux, RelativeObjectList),							 %find all objects which supports the relation
 								interpret(X,        World, Holding, Objects, SelectedObjectAux)),
 								SelectedObject).
     
-interpret(relative_entity(the,X, Relation), World, Holding, Objects, SelectedObject) :-
-    findall(SelectedObjectAux,( interpret(Relation, World, Holding, Objects, SelectedObjectAux),
+interpret(relative_entity(the,X, Relation), World, Holding, Objects, [SelectedObject]) :- % Do something sililar as above
+	interpret(Relation, World, Holding, Objects, RelativeObjectList),
+    findall(SelectedObjectAux,( member(SelectedObjectAux, RelativeObjectList),
 								interpret(X,        World, Holding, Objects, SelectedObjectAux)),
 								[SelectedObject]).
 
 %find all objects satisfying relations
 interpret(relative(beside,X), World, Holding, Objects, SelectedObject) :-
     interpret(X, World, Holding, Objects, RelativeObject),					%find the relative object satisfying type/size/col
-	isbeside(SelectedObject,RelativeObject,World).
+	findall(SelectedObjectAux, 												%find all objects satisfying the relation
+	(member(RelativeObjectAux, RelativeObject), isbeside(SelectedObjectAux,RelativeObjectAux,World)),
+	SelectedObject),SelectedObject \== [].
 
 interpret(relative(leftof,X), World, Holding, Objects, SelectedObject) :-
-    interpret(X, World, Holding, Objects, RelativeObject),
-	isleftof(SelectedObject,RelativeObject,World).
+    interpret(X, World, Holding, Objects, RelativeObject), 
+	findall(SelectedObjectAux, 
+	(member(RelativeObjectAux, RelativeObject), isleftof(SelectedObjectAux,RelativeObjectAux,World)),
+	SelectedObject),SelectedObject \== [].
 
 interpret(relative(rightof,X), World, Holding, Objects, SelectedObject) :-
     interpret(X, World, Holding, Objects, RelativeObject),
-	isrightof(SelectedObject,RelativeObject,World).
+	findall(SelectedObjectAux, 
+	(member(RelativeObjectAux, RelativeObject), isrightof(SelectedObjectAux,RelativeObjectAux,World)),
+	SelectedObject),SelectedObject \== [].
 
 interpret(relative(above,X), World, Holding, Objects, SelectedObject) :-
-    interpret(X, World, Holding, Objects, RelativeObject),
-	isabove(SelectedObject,RelativeObject,World).
+    interpret(X, World, Holding, Objects, RelativeObject),%write(RelativeObject),
+	findall(SelectedObjectAux, 
+	(member(RelativeObjectAux, RelativeObject), isabove(SelectedObjectAux,RelativeObjectAux,World)),
+	SelectedObject),SelectedObject \== [].% write('A'+SelectedObject).
 
 interpret(relative(ontop,X), World, Holding, Objects, SelectedObject) :-
     interpret(X, World, Holding, Objects, RelativeObject),
-    isontop(SelectedObject,RelativeObject,World).
+	findall(SelectedObjectAux, 
+	(member(RelativeObjectAux, RelativeObject), isontop(SelectedObjectAux,RelativeObjectAux,World)),
+	SelectedObject),SelectedObject \== [].
 
 interpret(relative(ontop,floor), World, _Holding, _Objects, SelectedObject) :-
     member(Col,World),member(SelectedObject,Col),
@@ -126,11 +141,15 @@ interpret(relative(ontop,floor), World, _Holding, _Objects, SelectedObject) :-
 
 interpret(relative(under,X), World, Holding, Objects, SelectedObject) :-
     interpret(X, World, Holding, Objects, RelativeObject),
-    isunder(SelectedObject,RelativeObject,World).
+	findall(SelectedObjectAux, 
+	(member(RelativeObjectAux, RelativeObject), isunder(SelectedObjectAux,RelativeObjectAux,World)),
+	SelectedObject),SelectedObject \== [].
 
 interpret(relative(inside,X), World, Holding, Objects, SelectedObject) :-
     interpret(X, World, Holding, Objects, RelativeObject),
-    isinside(SelectedObject,RelativeObject,World).
+	findall(SelectedObjectAux, 
+	(member(RelativeObjectAux, RelativeObject), isinside(SelectedObjectAux,RelativeObjectAux,World)),
+	SelectedObject),SelectedObject \== [].%, write('A'+SelectedObject).
 
 
 %Find object, and set goal accordingly.
@@ -230,5 +249,5 @@ isinside(X,Y,World) :-
     nth0(IdxS, Col, X),
     nth0(IdxR, Col, Y),
     (IdxS is IdxR+1).
-
+%isinside(X,Y,_World) :- write('A'+[X,Y]).
 
