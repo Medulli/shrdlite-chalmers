@@ -85,30 +85,38 @@ interpret(basic_entity(all,X), World, Holding, Objects, SelectedObject) :-
 
 %find relative objects	
 interpret(relative_entity(any,X, Relation), World, Holding, Objects, [SelectedObject]) :-
-	interpret(Relation, World, Holding, Objects, SelectedObject),	%find objects that supports the relation, e.g. besides X is all Objects beside X.
-	interpret(X, World, Holding, Objects, SelectedObject).			%the selected object shall satisfy the relation and the type/size/col
+	findall(RelativeObjectAux, ( interpret(Relation, World, Holding, Objects, RelativeObjectListAuxAux), %Find all relative objects
+								 member(RelativeObjectAux, RelativeObjectListAuxAux)),
+								 RelativeObjectListAux),
+	sort(RelativeObjectListAux,RelativeObjectList),														 %Remove duplicates from list
+	member(SelectedObject, RelativeObjectList),															 %Make one "instance" for every element 											
+	interpret(X, World, Holding, Objects, SelectedObject).												 %Selected objects must also satisfy description
+								
 	
 interpret(relative_entity(all,X, Relation), World, Holding, Objects, SelectedObject) :-
-	findall(RelativeObjectAux, ( interpret(Relation, World, Holding, Objects, RelativeObjectListAuxAux), %find all relative objects
+	findall(RelativeObjectAux, ( interpret(Relation, World, Holding, Objects, RelativeObjectListAuxAux), 
 								 member(RelativeObjectAux, RelativeObjectListAuxAux)),
 								RelativeObjectListAux),
-	sort(RelativeObjectListAux,RelativeObjectList),														 %remove duplicates from list
-    findall(SelectedObjectAux,( member(SelectedObjectAux, RelativeObjectList),							 %find all objects which supports the relation
+	sort(RelativeObjectListAux,RelativeObjectList),														 
+    findall(SelectedObjectAux,( member(SelectedObjectAux, RelativeObjectList),							 %Find all objects which supports the relation
 								interpret(X,        World, Holding, Objects, SelectedObjectAux)),
 								SelectedObject).
     
-interpret(relative_entity(the,X, Relation), World, Holding, Objects, [SelectedObject]) :- % Do something sililar as above
-	interpret(Relation, World, Holding, Objects, RelativeObjectList),
-    findall(SelectedObjectAux,( member(SelectedObjectAux, RelativeObjectList),
+interpret(relative_entity(the,X, Relation), World, Holding, Objects, [SelectedObject]) :-
+	findall(RelativeObjectAux, ( interpret(Relation, World, Holding, Objects, RelativeObjectListAuxAux), 
+								 member(RelativeObjectAux, RelativeObjectListAuxAux)),
+								RelativeObjectListAux),
+	sort(RelativeObjectListAux,RelativeObjectList),														 
+    findall(SelectedObjectAux,( member(SelectedObjectAux, RelativeObjectList),							 %There should be only one object fitting the description and relation
 								interpret(X,        World, Holding, Objects, SelectedObjectAux)),
 								[SelectedObject]).
 
 %find all objects satisfying relations
 interpret(relative(beside,X), World, Holding, Objects, SelectedObject) :-
-    interpret(X, World, Holding, Objects, RelativeObject),					%find the relative object satisfying type/size/col
-	findall(SelectedObjectAux, 												%find all objects satisfying the relation
+    interpret(X, World, Holding, Objects, RelativeObject),												%find the relative object satisfying type/size/col
+	findall(SelectedObjectAux, 																			%find all objects satisfying the relation
 	(member(RelativeObjectAux, RelativeObject), isbeside(SelectedObjectAux,RelativeObjectAux,World)),
-	SelectedObject),SelectedObject \== [].
+	SelectedObject),SelectedObject \== [].																%Can result in an empty list, so add a condition to avoid that
 
 interpret(relative(leftof,X), World, Holding, Objects, SelectedObject) :-
     interpret(X, World, Holding, Objects, RelativeObject), 
@@ -123,10 +131,10 @@ interpret(relative(rightof,X), World, Holding, Objects, SelectedObject) :-
 	SelectedObject),SelectedObject \== [].
 
 interpret(relative(above,X), World, Holding, Objects, SelectedObject) :-
-    interpret(X, World, Holding, Objects, RelativeObject),%write(RelativeObject),
+    interpret(X, World, Holding, Objects, RelativeObject),
 	findall(SelectedObjectAux, 
 	(member(RelativeObjectAux, RelativeObject), isabove(SelectedObjectAux,RelativeObjectAux,World)),
-	SelectedObject),SelectedObject \== [].% write('A'+SelectedObject).
+	SelectedObject),SelectedObject \== [].
 
 interpret(relative(ontop,X), World, Holding, Objects, SelectedObject) :-
     interpret(X, World, Holding, Objects, RelativeObject),
@@ -149,7 +157,7 @@ interpret(relative(inside,X), World, Holding, Objects, SelectedObject) :-
     interpret(X, World, Holding, Objects, RelativeObject),
 	findall(SelectedObjectAux, 
 	(member(RelativeObjectAux, RelativeObject), isinside(SelectedObjectAux,RelativeObjectAux,World)),
-	SelectedObject),SelectedObject \== [].%, write('A'+SelectedObject).
+	SelectedObject),SelectedObject \== [].
 
 
 %Find object, and set goal accordingly.
@@ -230,7 +238,7 @@ isrightof(X,Y,World) :-
     member(ColR,World),member(Y,ColR), nth0(IdxR,World,ColR),
     (IdxS > IdxR).
 isabove(X,Y,World) :-
-    member(Col,World),member(X,Col), member(Y, Col),	%basically same as beside/lef/right, however the must belong to the same sub list
+    member(Col,World),member(X,Col), member(Y, Col),	%basically same as beside/left/right, however the must belong to the same sub list
     nth0(IdxS, Col, X),									%get idx of objects
     nth0(IdxR, Col, Y),
     (IdxS > IdxR).			
@@ -249,5 +257,4 @@ isinside(X,Y,World) :-
     nth0(IdxS, Col, X),
     nth0(IdxR, Col, Y),
     (IdxS is IdxR+1).
-%isinside(X,Y,_World) :- write('A'+[X,Y]).
 
