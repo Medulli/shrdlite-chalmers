@@ -184,7 +184,6 @@ interpret(relative(inside,X), World, Holding, Objects, SelectedObject) :-
 	(member(RelativeObjectAux, RelativeObject), isinside(SelectedObjectAux,RelativeObjectAux,World)),
 	SelectedObject),SelectedObject \== [].
 
-<<<<<<< HEAD
 
 %Find object, and set goal accordingly.
 interpret(take(X), World, @(null), Objects, take(SelectedObject/*,World,[],_,_*/)) :-
