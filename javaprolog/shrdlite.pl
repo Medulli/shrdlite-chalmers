@@ -228,7 +228,7 @@ getobj([anyform,-,-],PossibleObjects,SelectedObject) :-
 	
 %---------------------------------------------------------------------------------------------------- Constraints management ----------------------------------------------------------------------------------------------------	
 
-%Get the form and the size of an object knowing it's name (one letter) and the possible objects. Output : ObjectFormSize=[form,size]	
+%Get the form and the size of an object knowing its name (one letter) and the possible objects. Output : ObjectFormSize=[form,size]	
 getFormAndSize(ObjectLetter,PossibleObjects,ObjectFormSize) :- 
 	member(ObjectLetter = ObjectJson,PossibleObjects),ObjectJson=json([form=FormObj,size=SizeObj,color=_]),ObjectFormSize=[FormObj,SizeObj].
 	
