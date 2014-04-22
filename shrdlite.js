@@ -170,9 +170,10 @@ function resetSVG() {
         'stroke-width': ArmSize * stackWidth(),
     }).appendTo(svg);
 
+//////////////////////////////////////////////changed
     var timeout = 0;
     for (var stacknr=0; stacknr < currentWorld.world.length; stacknr++) {
-        for (var objectnr=0; objectnr < currentWorld.world[stacknr].length; objectnr++) {
+        for (var objectnr=currentWorld.world[stacknr].length -1; objectnr >= 0; objectnr--) {
             var objectid = currentWorld.world[stacknr][objectnr];
             makeObject(svg, objectid, stacknr, timeout);
             timeout += AnimationPause;
@@ -267,8 +268,9 @@ function getObjectDimensions(objectid) {
 }
 
 function getAltitude(stack, objectid) {
+//////////////////////////////////////////////changed
     var altitude = 0;
-    for (var i=0; i<stack.length; i++) {
+    for (var i=stack.length-1; i>=0; i--) {
         if (objectid == stack[i])
             break;
         altitude += getObjectDimensions(stack[i]).heightadd + boxSpacing();
