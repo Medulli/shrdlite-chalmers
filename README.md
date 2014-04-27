@@ -3,7 +3,22 @@
 
 ##Command to compile
 
-    java -cp gnuprologjava-0.2.6.jar:json-simple-1.1.1.jar *.java
+In ./javaprolog
+
+    javac -cp gnuprologjava-0.2.6.jar:json-simple-1.1.1.jar:. Shrdlite.java 
+
+Then in ./
+
+    python -m CGIHTTPServer 8000
+
+Go to http://localhost:8000/shrdlite.html
+
+
+##Bugs
+
+When we try to send a command from the web interface
+
+    Internal Error : Timeout
 
 ##Physical laws
 
