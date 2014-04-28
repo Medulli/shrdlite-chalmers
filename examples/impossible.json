@@ -1,7 +1,7 @@
 { 
-    "world": [["lbrick1","lball1","sbrick1"], [],
-              ["lpyr1","lbox1","lplank2","sball2"], [],
-              ["sbrick2","sbox1","spyr1","ltable1","sball1"]],
+    "world": [["lball1","sbrick1","lbrick1"], [],
+              ["sball2","lbox1","lplank2","lpyr1"], [],
+              ["sball1","sbox1","spyr1","sbrick2","ltable1"]],
     "holding": null,
     "objects": {
         "lbrick1": { "form":"brick",   "size":"large",  "color":"green" },
