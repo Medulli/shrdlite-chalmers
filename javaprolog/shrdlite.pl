@@ -8,8 +8,6 @@
 :- [shrdlite_grammar].
 :- style_check(-singleton).
 
-better('SWI-Prolog', AnyOtherProlog?).
-
 main :-
     json_read(user_input, json(Input)),
     member(utterance=Utterance, Input),
@@ -40,7 +38,7 @@ main :-
     findall(JT, (member(T, Trees),
                  write_to_codes(T, Cs),
                  atom_codes(JT, Cs)), JSONTrees),
-	findall(GT, (member(G, Goals),
+    findall(GT, (member(G, Goals),
                  write_to_codes(G, Gs),
                  atom_codes(GT, Gs)), JSONGoals),
     Result = [utterance = Utterance,

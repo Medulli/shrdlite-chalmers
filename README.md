@@ -26,11 +26,13 @@ Go to http://localhost:8000/shrdlite.html
 
 When we try to compile the shrdlite.pl file :
 
-    ERROR: /Users/maximeheckel/Documents/Projects/ensiie-shrdlite/javaprolog/shrdlite.pl:12:34: Syntax error: Operator expected
-    ERROR: /Users/maximeheckel/Documents/Projects/ensiie-shrdlite/javaprolog/shrdlite.pl:77:
-	    Full stop in clause-body?  Cannot redefine ,/2
-    ERROR: /Users/maximeheckel/Documents/Projects/ensiie-shrdlite/javaprolog/shrdlite.pl:542:0: Syntax error: Operator expected
-    ERROR: /Users/maximeheckel/Documents/Projects/ensiie-shrdlite/javaprolog/shrdlite.pl:547:124: Syntax error: Operator expected
+    "/Users/maximeheckel/Documents/Projects/ensiie-shrdlite/cgi-bin/ajaxwrapper.py", line 39, in <module> raise Exception(err) 
+    Exception:
+    ERROR: /Users/maximeheckel/Documents/Projects/ensiie-shrdlite/javaprolog/shrdlite.pl:75: Full stop in clause-body? Cannot redefine ,/2 
+    ERROR: /Users/maximeheckel/Documents/Projects/ensiie-shrdlite/javaprolog/shrdlite.pl:540:0: Syntax error: Operator expected 
+    ERROR: /Users/maximeheckel/Documents/Projects/ensiie-shrdlite/javaprolog/shrdlite.pl:545:124: Syntax error: Operator expected 
+    Warning: /Users/maximeheckel/Documents/Projects/ensiie-shrdlite/javaprolog/shrdlite.pl:561: Clauses of take/5 are not together in the source-file
+
 ##Physical laws
 
 The world is ruled by physical laws that constrain the placement and movement of the objects:
