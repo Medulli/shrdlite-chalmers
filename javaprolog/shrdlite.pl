@@ -113,7 +113,7 @@ interpret(relative_entity(any,X, Relation), World, Holding, Objects, [SelectedOb
 	findall(RelativeObjectAux, ( interpret(Relation, World, Holding, Objects, RelativeObjectListAuxAux), %Find all relative objects
 	member(RelativeObjectAux, RelativeObjectListAuxAux)),
 	RelativeObjectListAux),
-sort(RelativeObjectListAux,RelativeObjectList),														 %Remove duplicates from list
+  sort(RelativeObjectListAux,RelativeObjectList),														 %Remove duplicates from list
 	member(SelectedObject, RelativeObjectList),															 %Make one "instance" for every element 											
 	interpret(X, World, Holding, Objects, SelectedObject).												 %Selected objects must also satisfy description
 								
@@ -541,7 +541,7 @@ putleft(O1,O2,LL,[O1|L],NLL,L) :- whichL(O2,LL,K2), nth1(K2L,LL,LK2), K2L is K2 
 
 %Put the element holded by the arm to the right the element O2
 
-putright(O1,O2,LL,[O1|L],NLL,L) :- whichL(O2,LL,K2), nth1(K2R,LL,LK2), K2R is K2 + 1, canbeon(O1,LK2, consLL_at(O1,LL,K2,NLL).
+putright(O1,O2,LL,[O1|L],NLL,L) :- whichL(O2,LL,K2), nth1(K2R,LL,LK2), K2R is K2 + 1, canbeon(O1,LK2), consLL_at(O1,LL,K2,NLL).
 
 %Put the element holded by the arm beside the element O2
 
