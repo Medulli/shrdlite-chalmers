@@ -6,7 +6,9 @@
 :- use_module(library(http/json)).
 :- [dcg_parser].
 :- [shrdlite_grammar].
+:- style_check(-singleton).
 
+better('SWI-Prolog', AnyOtherProlog?).
 
 main :-
     json_read(user_input, json(Input)),
@@ -111,9 +113,9 @@ interpret(basic_entity(all,X), World, Holding, Objects, SelectedObject) :-
 	
 interpret(relative_entity(any,X, Relation), World, Holding, Objects, [SelectedObject]) :-
 	findall(RelativeObjectAux, ( interpret(Relation, World, Holding, Objects, RelativeObjectListAuxAux), %Find all relative objects
-								 member(RelativeObjectAux, RelativeObjectListAuxAux)),
-								 RelativeObjectListAux),
-	sort(RelativeObjectListAux,RelativeObjectList),														 %Remove duplicates from list
+	member(RelativeObjectAux, RelativeObjectListAuxAux)),
+	RelativeObjectListAux),
+sort(RelativeObjectListAux,RelativeObjectList),														 %Remove duplicates from list
 	member(SelectedObject, RelativeObjectList),															 %Make one "instance" for every element 											
 	interpret(X, World, Holding, Objects, SelectedObject).												 %Selected objects must also satisfy description
 								
