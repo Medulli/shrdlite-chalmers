@@ -5,7 +5,11 @@
 
 In ./javaprolog
 
-    javac -cp gnuprologjava-0.2.6.jar:json-simple-1.1.1.jar:. Shrdlite.java 
+You can compile the pl file with 
+
+    swipl shrdlite.pl    //for OSX
+
+    ./shrdlite.pl       // for LINUX
 
 Then in ./
 
@@ -16,10 +20,17 @@ Go to http://localhost:8000/shrdlite.html
 
 ##Bugs
 
-When we try to send a command from the web interface
+[SOLVED] When we try to send a command from the web interface
 
     Internal Error : Timeout
 
+When we try to compile the shrdlite.pl file :
+
+    ERROR: /Users/maximeheckel/Documents/Projects/ensiie-shrdlite/javaprolog/shrdlite.pl:12:34: Syntax error: Operator expected
+    ERROR: /Users/maximeheckel/Documents/Projects/ensiie-shrdlite/javaprolog/shrdlite.pl:77:
+	    Full stop in clause-body?  Cannot redefine ,/2
+    ERROR: /Users/maximeheckel/Documents/Projects/ensiie-shrdlite/javaprolog/shrdlite.pl:542:0: Syntax error: Operator expected
+    ERROR: /Users/maximeheckel/Documents/Projects/ensiie-shrdlite/javaprolog/shrdlite.pl:547:124: Syntax error: Operator expected
 ##Physical laws
 
 The world is ruled by physical laws that constrain the placement and movement of the objects:

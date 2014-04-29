@@ -16,7 +16,7 @@ var WallSeparation = 4;     // pixels
 var ArmSize = 0.2;         // of stack width
 var AnimationPause = 0.1; // seconds
 var PromptPause = 0.5;   // seconds
-var AjaxTimeout = 5;    // seconds
+var AjaxTimeout = 10;    // seconds
 var ArmSpeed = 1000;   // pixels per second
 
 // This only has effect in the latest versions of Chrome and Safari,
@@ -140,7 +140,7 @@ function resetCurrentExample(name) {
 function resetSVG() {
     disableInput();
     $("#response").empty();
-    sayUtterance("system", "Please wait while I populate the world.");
+    sayUtterance("system", "Hi Everyone ! Please wait while I populate the world with all the shapes available.");
     $('#svgdiv').empty();
 
     var viewBox = [0, 0, CanvasWidth + 2 * WallSeparation, CanvasHeight + FloorThickness];
