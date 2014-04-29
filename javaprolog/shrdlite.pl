@@ -72,7 +72,7 @@ insertLL_at(X,L,K,R) :- removeLL_at(X,R,K,L).
 
 %R is the list of lists LL in which X is added at the head of the Kth list of LL
 
-consLL_at(X,LL,K,R) :- nth1(K,LL,L). removeLL_at(L,LL,K,Raux), insertLL_at([X|L],Raux,K,R).
+consLL_at(X,LL,K,R) :- nth1(K,LL,L), removeLL_at(L,LL,K,Raux), insertLL_at([X|L],Raux,K,R).
 
 %R is the list of lists LL in which the head X of the Kth list of LL was removed
 
