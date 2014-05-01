@@ -605,7 +605,7 @@ take(O,LL,[],NLL,[O]) :- whichL(O,LL,K), nth1(K,LL,LK), hdtlL(LK,O,-), hdtlLL_at
 
 %If the arm holds something and we want to take an object different from the one it holds we put it somewhere
 
-take(O,LL,K,[H|T],NLL,NL) :- putabove(H,Oaux,LL,Kaux,[H|T],LLaux,T), take(O,LLaux,T,NLL,NL).
+take(O,LL,[H|T],NLL,NL) :- putabove(H,Oaux,LL,Kaux,[H|T],LLaux,T), take(O,LLaux,T,NLL,NL).
 
 %If the arm does not hold something but the head of the list in which there is the element we want to take is not this element we move the head somewhere else
 
