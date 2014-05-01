@@ -20,15 +20,13 @@ Go to http://localhost:8000/shrdlite.html
 
 ##Bugs
 
-[SOLVED] When we try to send a command from the web interface
-
-    Internal Error : Timeout
-
 When we try to compile the shrdlite.pl file :
 
     "/Users/maximeheckel/Documents/Projects/ensiie-shrdlite/cgi-bin/ajaxwrapper.py", line 39, in <module> raise Exception(err) 
     Exception:
-    Warning: /Users/maximeheckel/Documents/Projects/ensiie-shrdlite/javaprolog/shrdlite.pl:561: Clauses of take/5 are not together in the source-file
+    Warning: /home/boutry/Dropbox/Studies/Chalmers/Artificial Intelligence/ensiie-shrdlite/javaprolog/shrdlite.pl:612:
+	Clauses of take/5 are not together in the source-file
+
 
 ##Physical laws
 
