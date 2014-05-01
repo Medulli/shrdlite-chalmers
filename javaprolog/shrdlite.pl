@@ -102,36 +102,36 @@ interpret(object(Type,Size,Color), World, Holding \== @(null), Objects, Selected
 %All these are basically "any" or "all" object, I guess we could do something along findall(...,...,[Obj]) for the and findall(...,...,[Obj|_]) for any
 interpret(basic_entity(any,X), World, Holding, Objects, [SelectedObject]) :-
     interpret(X, World, Holding, Objects, SelectedObject).
-	
+
 interpret(basic_entity(the,X), World, Holding, Objects, [SelectedObject]) :-
     findall(SelectedObjectAux, interpret(X, World, Holding, Objects, SelectedObjectAux), [SelectedObject]).
 
 interpret(basic_entity(all,X), World, Holding, Objects, SelectedObject) :-
     findall(SelectedObjectAux, interpret(X, World, Holding, Objects, SelectedObjectAux), SelectedObject).
-	
+
 interpret(relative_entity(any,X, Relation), World, Holding, Objects, [SelectedObject]) :-
 	findall(RelativeObjectAux, ( interpret(Relation, World, Holding, Objects, RelativeObjectListAuxAux), %Find all relative objects
 	member(RelativeObjectAux, RelativeObjectListAuxAux)),
 	RelativeObjectListAux),
   sort(RelativeObjectListAux,RelativeObjectList),														 %Remove duplicates from list
-	member(SelectedObject, RelativeObjectList),															 %Make one "instance" for every element 											
+	member(SelectedObject, RelativeObjectList),															 %Make one "instance" for every element
 	interpret(X, World, Holding, Objects, SelectedObject).												 %Selected objects must also satisfy description
-								
-	
+
+
 interpret(relative_entity(all,X, Relation), World, Holding, Objects, SelectedObject) :-
-	findall(RelativeObjectAux, ( interpret(Relation, World, Holding, Objects, RelativeObjectListAuxAux), 
+	findall(RelativeObjectAux, ( interpret(Relation, World, Holding, Objects, RelativeObjectListAuxAux),
 								 member(RelativeObjectAux, RelativeObjectListAuxAux)),
 								RelativeObjectListAux),
-	sort(RelativeObjectListAux,RelativeObjectList),														 
+	sort(RelativeObjectListAux,RelativeObjectList),
     findall(SelectedObjectAux,( member(SelectedObjectAux, RelativeObjectList),							 %Find all objects which supports the relation
 								interpret(X,        World, Holding, Objects, SelectedObjectAux)),
 								SelectedObject).
-    
+
 interpret(relative_entity(the,X, Relation), World, Holding, Objects, [SelectedObject]) :-
-	findall(RelativeObjectAux, ( interpret(Relation, World, Holding, Objects, RelativeObjectListAuxAux), 
+	findall(RelativeObjectAux, ( interpret(Relation, World, Holding, Objects, RelativeObjectListAuxAux),
 								 member(RelativeObjectAux, RelativeObjectListAuxAux)),
 								RelativeObjectListAux),
-	sort(RelativeObjectListAux,RelativeObjectList),														 
+	sort(RelativeObjectListAux,RelativeObjectList),
     findall(SelectedObjectAux,( member(SelectedObjectAux, RelativeObjectList),							 %There should be only one object fitting the description and relation
 								interpret(X,        World, Holding, Objects, SelectedObjectAux)),
 								[SelectedObject]).
@@ -144,26 +144,26 @@ interpret(relative(beside,X), World, Holding, Objects, SelectedObject) :-
 	SelectedObject),SelectedObject \== [].																%Can result in an empty list, so add a condition to avoid that
 
 interpret(relative(leftof,X), World, Holding, Objects, SelectedObject) :-
-    interpret(X, World, Holding, Objects, RelativeObject), 
-	findall(SelectedObjectAux, 
+    interpret(X, World, Holding, Objects, RelativeObject),
+	findall(SelectedObjectAux,
 	(member(RelativeObjectAux, RelativeObject), isleftof(SelectedObjectAux,RelativeObjectAux,World)),
 	SelectedObject),SelectedObject \== [].
 
 interpret(relative(rightof,X), World, Holding, Objects, SelectedObject) :-
     interpret(X, World, Holding, Objects, RelativeObject),
-	findall(SelectedObjectAux, 
+	findall(SelectedObjectAux,
 	(member(RelativeObjectAux, RelativeObject), isrightof(SelectedObjectAux,RelativeObjectAux,World)),
 	SelectedObject),SelectedObject \== [].
 
 interpret(relative(above,X), World, Holding, Objects, SelectedObject) :-
     interpret(X, World, Holding, Objects, RelativeObject),
-	findall(SelectedObjectAux, 
+	findall(SelectedObjectAux,
 	(member(RelativeObjectAux, RelativeObject), isabove(SelectedObjectAux,RelativeObjectAux,World)),
 	SelectedObject),SelectedObject \== [].
 
 interpret(relative(ontop,X), World, Holding, Objects, SelectedObject) :-
     interpret(X, World, Holding, Objects, RelativeObject),
-	findall(SelectedObjectAux, 
+	findall(SelectedObjectAux,
 	(member(RelativeObjectAux, RelativeObject), isontop(SelectedObjectAux,RelativeObjectAux,World)),
 	SelectedObject),SelectedObject \== [].
 
@@ -174,13 +174,13 @@ interpret(relative(ontop,floor), World, _Holding, _Objects, SelectedObject) :-
 
 interpret(relative(under,X), World, Holding, Objects, SelectedObject) :-
     interpret(X, World, Holding, Objects, RelativeObject),
-	findall(SelectedObjectAux, 
+	findall(SelectedObjectAux,
 	(member(RelativeObjectAux, RelativeObject), isunder(SelectedObjectAux,RelativeObjectAux,World)),
 	SelectedObject),SelectedObject \== [].
 
 interpret(relative(inside,X), World, Holding, Objects, SelectedObject) :-
     interpret(X, World, Holding, Objects, RelativeObject),
-	findall(SelectedObjectAux, 
+	findall(SelectedObjectAux,
 	(member(RelativeObjectAux, RelativeObject), isinside(SelectedObjectAux,RelativeObjectAux,World)),
 	SelectedObject),SelectedObject \== [].
 
@@ -188,33 +188,33 @@ interpret(relative(inside,X), World, Holding, Objects, SelectedObject) :-
 %Find object, and set goal accordingly.
 interpret(take(X), World, @(null), Objects, take(SelectedObject/*,World,[],_,_*/)) :-
     interpret(X, World, @(null), Objects, SelectedObject).
-	
+
 interpret(take(X), World, Holding \== @(null), Objects,  take(SelectedObject/*,World,Holding,_,_*/)) :-
     interpret(X, World, Holding, Objects, SelectedObject).
 
 interpret(floor, _World, _Holding, _Objects, floor). %floor is floor... move this somewhere.. meh.
-	
+
 interpret(move(X,relative(beside, Y)), World, Holding, Objects, movebeside(SelectedObject,RelativeObject)) :-
 	interpret(X, World, Holding, Objects, SelectedObject),
-	interpret(Y, World, Holding, Objects, RelativeObject).	
+	interpret(Y, World, Holding, Objects, RelativeObject).
 interpret(move(X,relative(leftof, Y)), World, Holding, Objects, moveleft(SelectedObject,RelativeObject)) :-
 	interpret(X, World, Holding, Objects, SelectedObject),
-	interpret(Y, World, Holding, Objects, RelativeObject).	
+	interpret(Y, World, Holding, Objects, RelativeObject).
 interpret(move(X,relative(rightof,Y)), World, Holding, Objects, moveright(SelectedObject,RelativeObject)) :-
 	interpret(X, World, Holding, Objects, SelectedObject),
-	interpret(Y, World, Holding, Objects, RelativeObject).	
+	interpret(Y, World, Holding, Objects, RelativeObject).
 interpret(move(X,relative(above,  Y)), World, Holding, Objects, moveabove(SelectedObject,RelativeObject)) :-
 	interpret(X, World, Holding, Objects, SelectedObject),
-	interpret(Y, World, Holding, Objects, RelativeObject).	
+	interpret(Y, World, Holding, Objects, RelativeObject).
 interpret(move(X,relative(ontop,  Y)), World, Holding, Objects, moveontop(SelectedObject,RelativeObject)) :-
 	interpret(X, World, Holding, Objects, SelectedObject),
-	interpret(Y, World, Holding, Objects, RelativeObject).	
+	interpret(Y, World, Holding, Objects, RelativeObject).
 interpret(move(X,relative(under,  Y)), World, Holding, Objects, moveunder(SelectedObject,RelativeObject)) :-
 	interpret(X, World, Holding, Objects, SelectedObject),
-	interpret(Y, World, Holding, Objects, RelativeObject).	
+	interpret(Y, World, Holding, Objects, RelativeObject).
 interpret(move(X,relative(inside, Y)), World, Holding, Objects, moveinside(SelectedObject,RelativeObject)) :-
 	interpret(X, World, Holding, Objects, SelectedObject),
-	interpret(Y, World, Holding, Objects, RelativeObject).	
+	interpret(Y, World, Holding, Objects, RelativeObject).
 
 %interpret(move(_X,Y), World, Holding, Objects, move(SelectedObject)) :-
 %    interpret(Y, World, Holding, Objects, SelectedObject).	%for move we find desired object
@@ -250,13 +250,13 @@ getobj([anyform,-,-],PossibleObjects,SelectedObject) :-
     member(SelectedObject=json([form=_,size=_,color=_]), PossibleObjects).
 %------------------------------------------------------------------------------------------------------------------------%
 
-	
-%---------------------------------------------------------------------------------------------------- Constraints management ----------------------------------------------------------------------------------------------------	
 
-%Get the form and the size of an object knowing its name (one letter) and the possible objects. Output : ObjectFormSize=[form,size]	
-getFormAndSize(ObjectLetter,PossibleObjects,ObjectFormSize) :- 
+%---------------------------------------------------------------------------------------------------- Constraints management ----------------------------------------------------------------------------------------------------
+
+%Get the form and the size of an object knowing its name (one letter) and the possible objects. Output : ObjectFormSize=[form,size]
+getFormAndSize(ObjectLetter,PossibleObjects,ObjectFormSize) :-
 	member(ObjectLetter = ObjectJson,PossibleObjects),ObjectJson=json([form=FormObj,size=SizeObj,color=_]),ObjectFormSize=[FormObj,SizeObj].
-	
+
 /*********************** getFormAndSize ***********************
 testFormSize :-
 PossibleObjects = [a=json([form=ball,size=small,color=white]), b=json([form=box,size=large,color=black])],
@@ -273,7 +273,7 @@ canbeonFormAndSize([Form1,Size1,Form2,Size2]) :-
 	);
 Form1 = box,(
 		(Size1 = small,((Form2 = table,Size2 = small);(Form2 = table,Size2 = large);(Form2 = plank,Size2 = small)));
-		(Size1 = medium,((Form2 = table,Size2 = medium);(Form2 = plank,Size2 = medium))); 
+		(Size1 = medium,((Form2 = table,Size2 = medium);(Form2 = plank,Size2 = medium)));
 		(Size1 = large,((Form2 = table,Size2 = large);(Form2 = plank,Size2 = large);(Form2 = brick,Size2 = large)))
 	);
 Form1 = brick,(
@@ -363,7 +363,7 @@ isabove(X,Y,World) :-
     member(Col,World),member(X,Col), member(Y, Col),	%basically same as beside/left/right, however the must belong to the same sub list
     nth0(IdxS, Col, X),									%get idx of objects
     nth0(IdxR, Col, Y),
-    (IdxS > IdxR).			
+    (IdxS > IdxR).
 isontop(X,Y,World) :-
 	member(Col,World),member(X,Col), member(Y, Col),
     nth0(IdxS, Col, X),
@@ -374,7 +374,7 @@ isunder(X,Y,World) :-
     nth0(IdxS, Col, X),
     nth0(IdxR, Col, Y),
     (IdxS < IdxR).
-isinside(X,Y,World) :- 
+isinside(X,Y,World) :-
 	member(Col,World),member(X,Col), member(Y, Col),
     nth0(IdxS, Col, X),
     nth0(IdxR, Col, Y),
@@ -392,7 +392,6 @@ canbeon(O,[H|-]) :- getobj([Ball,Large,-],PossibleObjects,O), getobj([Box,Large,
 %Boxes
 
 canbeon(O,[H|-]) :- getobj([Box,Small,-],PossibleObjects,O), getobj([Table,Small,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Box,Small,-],PossibleObjects,O), getobj([Table,Large,-],PossibleObjects,H).
 canbeon(O,[H|-]) :- getobj([Box,Medium,-],PossibleObjects,O), getobj([Table,Medium,-],PossibleObjects,H).
 canbeon(O,[H|-]) :- getobj([Box,Large,-],PossibleObjects,O), getobj([Table,Large,-],PossibleObjects,H).
 
@@ -404,9 +403,12 @@ canbeon(O,[H|-]) :- getobj([Box,Large,-],PossibleObjects,O), getobj([Brick,Large
 
 %Bricks
 
+canbeon(O,[H|-]) :- getobj([Brick,Small,-],PossibleObjects,O), getobj([Box,Small,-],PossibleObjects,H).
 canbeon(O,[H|-]) :- getobj([Brick,Small,-],PossibleObjects,O), getobj([Box,Medium,-],PossibleObjects,H).
 canbeon(O,[H|-]) :- getobj([Brick,Small,-],PossibleObjects,O), getobj([Box,Large,-],PossibleObjects,H).
+canbeon(O,[H|-]) :- getobj([Brick,Medium,-],PossibleObjects,O), getobj([Box,Medium,-],PossibleObjects,H).
 canbeon(O,[H|-]) :- getobj([Brick,Medium,-],PossibleObjects,O), getobj([Box,Large,-],PossibleObjects,H).
+canbeon(O,[H|-]) :- getobj([Brick,Large,-],PossibleObjects,O), getobj([Box,Large,-],PossibleObjects,H).
 
 canbeon(O,[H|-]) :- getobj([Brick,Small,-],PossibleObjects,O), getobj([Brick,Small,-],PossibleObjects,H).
 canbeon(O,[H|-]) :- getobj([Brick,Small,-],PossibleObjects,O), getobj([Brick,Medium,-],PossibleObjects,H).
@@ -428,6 +430,13 @@ canbeon(O,[H|-]) :- getobj([Brick,Small,-],PossibleObjects,O), getobj([Table,Lar
 canbeon(O,[H|-]) :- getobj([Brick,Medium,-],PossibleObjects,O), getobj([Table,Medium,-],PossibleObjects,H).
 canbeon(O,[H|-]) :- getobj([Brick,Medium,-],PossibleObjects,O), getobj([Table,Large,-],PossibleObjects,H).
 canbeon(O,[H|-]) :- getobj([Brick,Large,-],PossibleObjects,O), getobj([Table,Large,-],PossibleObjects,H).
+
+canbeon(O,[H|-]) :- getobj([Brick,Small,-],PossibleObjects,O), getobj([Pyramid,Small,-],PossibleObjects,H).
+canbeon(O,[H|-]) :- getobj([Brick,Small,-],PossibleObjects,O), getobj([Pyramid,Medium,-],PossibleObjects,H).
+canbeon(O,[H|-]) :- getobj([Brick,Small,-],PossibleObjects,O), getobj([Pyramid,Large,-],PossibleObjects,H).
+canbeon(O,[H|-]) :- getobj([Brick,Medium,-],PossibleObjects,O), getobj([Pyramid,Medium,-],PossibleObjects,H).
+canbeon(O,[H|-]) :- getobj([Brick,Medium,-],PossibleObjects,O), getobj([Pyramid,Large,-],PossibleObjects,H).
+canbeon(O,[H|-]) :- getobj([Brick,Large,-],PossibleObjects,O), getobj([Pyramid,Large,-],PossibleObjects,H).
 
 %Planks
 
@@ -456,6 +465,13 @@ canbeon(O,[H|-]) :- getobj([Plank,Medium,-],PossibleObjects,O), getobj([Plank,Me
 canbeon(O,[H|-]) :- getobj([Plank,Medium,-],PossibleObjects,O), getobj([Plank,Large,-],PossibleObjects,H).
 canbeon(O,[H|-]) :- getobj([Plank,Large,-],PossibleObjects,O), getobj([Plank,Large,-],PossibleObjects,H).
 
+canbeon(O,[H|-]) :- getobj([Plank,Small,-],PossibleObjects,O), getobj([Pyramid,Small,-],PossibleObjects,H).
+canbeon(O,[H|-]) :- getobj([Plank,Small,-],PossibleObjects,O), getobj([Pyramid,Medium,-],PossibleObjects,H).
+canbeon(O,[H|-]) :- getobj([Plank,Small,-],PossibleObjects,O), getobj([Pyramid,Large,-],PossibleObjects,H).
+canbeon(O,[H|-]) :- getobj([Plank,Medium,-],PossibleObjects,O), getobj([Pyramid,Medium,-],PossibleObjects,H).
+canbeon(O,[H|-]) :- getobj([Plank,Medium,-],PossibleObjects,O), getobj([Pyramid,Large,-],PossibleObjects,H).
+canbeon(O,[H|-]) :- getobj([Plank,Large,-],PossibleObjects,O), getobj([Pyramid,Large,-],PossibleObjects,H).
+
 %Pyramids
 
 canbeon(O,[H|-]) :- getobj([Pyramid,Small,-],PossibleObjects,O), getobj([Box,Medium,-],PossibleObjects,H).
@@ -482,6 +498,13 @@ canbeon(O,[H|-]) :- getobj([Pyramid,Small,-],PossibleObjects,O), getobj([Table,L
 canbeon(O,[H|-]) :- getobj([Pyramid,Medium,-],PossibleObjects,O), getobj([Table,Medium,-],PossibleObjects,H).
 canbeon(O,[H|-]) :- getobj([Pyramid,Medium,-],PossibleObjects,O), getobj([Table,Large,-],PossibleObjects,H).
 canbeon(O,[H|-]) :- getobj([Pyramid,Large,-],PossibleObjects,O), getobj([Table,Large,-],PossibleObjects,H).
+
+canbeon(O,[H|-]) :- getobj([Pyramid,Small,-],PossibleObjects,O), getobj([Pyramid,Small,-],PossibleObjects,H).
+canbeon(O,[H|-]) :- getobj([Pyramid,Small,-],PossibleObjects,O), getobj([Pyramid,Medium,-],PossibleObjects,H).
+canbeon(O,[H|-]) :- getobj([Pyramid,Small,-],PossibleObjects,O), getobj([Pyramid,Large,-],PossibleObjects,H).
+canbeon(O,[H|-]) :- getobj([Pyramid,Medium,-],PossibleObjects,O), getobj([Pyramid,Medium,-],PossibleObjects,H).
+canbeon(O,[H|-]) :- getobj([Pyramid,Medium,-],PossibleObjects,O), getobj([Pyramid,Large,-],PossibleObjects,H).
+canbeon(O,[H|-]) :- getobj([Pyramid,Large,-],PossibleObjects,O), getobj([Pyramid,Large,-],PossibleObjects,H).
 
 %Tables
 
@@ -512,6 +535,13 @@ canbeon(O,[H|-]) :- getobj([Table,Small,-],PossibleObjects,O), getobj([Plank,Lar
 canbeon(O,[H|-]) :- getobj([Table,Medium,-],PossibleObjects,O), getobj([Plank,Medium,-],PossibleObjects,H).
 canbeon(O,[H|-]) :- getobj([Table,Medium,-],PossibleObjects,O), getobj([Plank,Large,-],PossibleObjects,H).
 canbeon(O,[H|-]) :- getobj([Table,Large,-],PossibleObjects,O), getobj([Plank,Large,-],PossibleObjects,H).
+
+canbeon(O,[H|-]) :- getobj([Table,Small,-],PossibleObjects,O), getobj([Pyramid,Small,-],PossibleObjects,H).
+canbeon(O,[H|-]) :- getobj([Table,Small,-],PossibleObjects,O), getobj([Pyramid,Medium,-],PossibleObjects,H).
+canbeon(O,[H|-]) :- getobj([Table,Small,-],PossibleObjects,O), getobj([Pyramid,Large,-],PossibleObjects,H).
+canbeon(O,[H|-]) :- getobj([Table,Medium,-],PossibleObjects,O), getobj([Pyramid,Medium,-],PossibleObjects,H).
+canbeon(O,[H|-]) :- getobj([Table,Medium,-],PossibleObjects,O), getobj([Pyramid,Large,-],PossibleObjects,H).
+canbeon(O,[H|-]) :- getobj([Table,Large,-],PossibleObjects,O), getobj([Pyramid,Large,-],PossibleObjects,H).
 
 %All objects can stand on the floor whatever their size or form
 
