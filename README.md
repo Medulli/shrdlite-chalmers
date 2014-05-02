@@ -18,16 +18,6 @@ Then in ./
 Go to http://localhost:8000/shrdlite.html
 
 
-##Bugs
-
-When we try to compile the shrdlite.pl file :
-
-    "/Users/maximeheckel/Documents/Projects/ensiie-shrdlite/cgi-bin/ajaxwrapper.py", line 39, in <module> raise Exception(err) 
-    Exception:
-    Warning: /home/boutry/Dropbox/Studies/Chalmers/Artificial Intelligence/ensiie-shrdlite/javaprolog/shrdlite.pl:612:
-	Clauses of take/5 are not together in the source-file
-
-
 ##Physical laws
 
 The world is ruled by physical laws that constrain the placement and movement of the objects:
