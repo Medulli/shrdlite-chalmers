@@ -16,7 +16,7 @@ var WallSeparation = 4;     // pixels
 var ArmSize = 0.2;         // of stack width
 var AnimationPause = 0.1; // seconds
 var PromptPause = 0.5;   // seconds
-var AjaxTimeout = 5;    // seconds
+var AjaxTimeout = 10;    // seconds
 var ArmSpeed = 1000;   // pixels per second
 
 // This only has effect in the latest versions of Chrome and Safari,
@@ -140,7 +140,7 @@ function resetCurrentExample(name) {
 function resetSVG() {
     disableInput();
     $("#response").empty();
-    sayUtterance("system", "Please wait while I populate the world.");
+    sayUtterance("system", "Hi Everyone ! Please wait while I populate the world with all the shapes available.");
     $('#svgdiv').empty();
 
     var viewBox = [0, 0, CanvasWidth + 2 * WallSeparation, CanvasHeight + FloorThickness];
@@ -170,9 +170,10 @@ function resetSVG() {
         'stroke-width': ArmSize * stackWidth(),
     }).appendTo(svg);
 
+//////////////////////////////////////////////changed
     var timeout = 0;
     for (var stacknr=0; stacknr < currentWorld.world.length; stacknr++) {
-        for (var objectnr=0; objectnr < currentWorld.world[stacknr].length; objectnr++) {
+        for (var objectnr=currentWorld.world[stacknr].length -1; objectnr >= 0; objectnr--) {
             var objectid = currentWorld.world[stacknr][objectnr];
             makeObject(svg, objectid, stacknr, timeout);
             timeout += AnimationPause;
@@ -267,8 +268,9 @@ function getObjectDimensions(objectid) {
 }
 
 function getAltitude(stack, objectid) {
+//////////////////////////////////////////////changed
     var altitude = 0;
-    for (var i=0; i<stack.length; i++) {
+    for (var i=stack.length-1; i>=0; i--) {
         if (objectid == stack[i])
             break;
         altitude += getObjectDimensions(stack[i]).heightadd + boxSpacing();

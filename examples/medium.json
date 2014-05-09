@@ -1,4 +1,4 @@
-{ 
+{
     "world": [["e"],["a","l"],[],[],["i","h","j"],[],[],["k","g","c","b"],[],["d","m","f"]],
     "holding": null,
     "objects": {
@@ -16,7 +16,7 @@
         "l": { "form":"box",     "size":"large",  "color":"red"   },
         "m": { "form":"box",     "size":"small",  "color":"blue"  }
     },
-    "utterance": 
+    "utterance":
         ["put","the","brick","that","is","to","the","left","of","a","pyramid","in","a","box"],
     "examples": [
         ["put","the","brick","that","is","to","the","left","of","a","pyramid","in","a","box"],
