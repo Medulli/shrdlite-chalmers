@@ -21,7 +21,8 @@ import org.json.simple.JSONArray;
 
 public class Shrdlite {
 
-	public static void main(String[] args) throws PrologException, ParseException, IOException {
+
+  public static void main(String[] args) throws PrologException, ParseException, IOException {
         JSONObject jsinput   = (JSONObject) JSONValue.parse(readFromStdin());
         JSONArray  utterance = (JSONArray)  jsinput.get("utterance");
         JSONArray  world     = (JSONArray)  jsinput.get("world");
