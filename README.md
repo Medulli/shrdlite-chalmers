@@ -29,7 +29,7 @@ In order to test the project from the command line :
 
 Basically the main problem is that there the shridlite.pl does not provide any plan in order to solve a user utterance.
 Here's the output from the command above : 
-``
+<pre>
 |: {
   "utterance": ["put", "the", "black", "ball", "in", "the", "red", "box" ],
   "trees": [
@@ -44,7 +44,7 @@ Here's the output from the command above :
   ],
   "output":"Success!"
 }
-``
+</pre>
 
 As you can see the goal is ok but there is no plan to solve a current problem.
 
