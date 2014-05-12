@@ -1,5 +1,5 @@
 {
-    "world": [["e"],["l","a"],[],[],["j","h","i"],[],[],["b","c","g","k"],[],["f","m","d"]],
+    "world": [["e"],["a","l"],[],[],["i","h","j"],[],[],["k","g","c","b"],[],["d","m","f"]],
     "holding": null,
     "objects": {
         "a": { "form":"brick",   "size":"large",  "color":"green" },

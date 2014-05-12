@@ -270,7 +270,7 @@ function getObjectDimensions(objectid) {
 function getAltitude(stack, objectid) {
 //////////////////////////////////////////////changed
     var altitude = 0;
-    for (var i=stack.length-1; i>=0; i--) {
+    for (var i=0; i<stack.length; i++) {
         if (objectid == stack[i])
             break;
         altitude += getObjectDimensions(stack[i]).heightadd + boxSpacing();

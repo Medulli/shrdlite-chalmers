@@ -48,6 +48,15 @@ main :-
               output = Output],
     json_write(user_output, json(Result)).
 
+%Take the head of the Kth list if the arm does not hold something
+%solve(_Goal, World, _Holding, _Objects, Plan) :-
+%      _Goal == take([Element]),
+%      _Holding == @(null),
+%      whichL(Element,World,K),
+%      nth1(K,World,LK),
+%      hdtlL(LK,Element,-),
+%      hdtlLL_at(World,K,NLL,Element),
+%      Plan = ['I pick it up . . .', [pick, K]].
 
 solve(_Goal, World, _Holding, _Objects, Plan) :-
     nth0(Col, World, [_|_]),
@@ -598,10 +607,6 @@ putright(O1,O2,LL,[O1|L],NLL,L) :- whichL(O2,LL,K2), nth1(K2R,LL,LK2), K2R is K2
 
 putbeside(O1,O2,LL,[O1|L],NLL,L) :- putleft(O1,O2,LL,[O1|L],NLL,L).
 putbeside(O1,O2,LL,[O1|L],NLL,L) :- putright(O1,O2,LL,[O1|L],NLL,L).
-
-%Take the head of the Kth list if the arm does not hold something
-
-take(O,LL,[],NLL,[O]) :- whichL(O,LL,K), nth1(K,LL,LK), hdtlL(LK,O,-), hdtlLL_at(LL,K,NLL,O).
 
 %If the arm holds something and we want to take an object different from the one it holds we put it somewhere
 
