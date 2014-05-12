@@ -1,3 +1,8 @@
+
+:- op(1200, xfx, '--->').
+
+%% Non-lexical grammar rules
+
 command : Cmd --->
     opt_will_you, opt_please,
     basic_command : Cmd,
