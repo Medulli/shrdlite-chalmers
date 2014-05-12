@@ -50,12 +50,12 @@ main :-
 
 %Take the head of the Kth list if the arm does not hold something
 solve(_Goal, World, _Holding, _Objects, Plan) :-
-      _Goal == take([Element]),
+%      _Goal == take([Element]),
       _Holding == @(null),
       whichL(Element,World,K),
-      nth1(K,World,LK),
-      hdtlL(LK,Element,-),
-      hdtlLL_at(World,K,NLL,Element),
+%      nth1(K,World,LK),
+%      hdtlL(LK,Element,_),
+%      hdtlLL_at(World,K,NWorld,Element),
       Plan = ['I pick it up . . .', [pick, K]].
 
 %solve(_Goal, World, _Holding, _Objects, Plan) :-
@@ -68,7 +68,7 @@ hdtlL([H|T],H,T).
 %return the number K if X is in the Kth list of lists LL
 %findall(X,whichL(a,[[d,e,f],[a,b,c]],X),R).
 
-whichL(X,[L|_],1) :- member(X,L).
+whichL(X,[L|_],0) :- member(X,L).
 whichL(X,[_|LL],N) :- whichL(X,LL,M), N is M + 1.
 
 %the last argument is the list given in second place where X was remove at place K
@@ -209,12 +209,11 @@ interpret(relative(inside,X), World, Holding, Objects, SelectedObject) :-
 	(member(RelativeObjectAux, RelativeObject), isinside(SelectedObjectAux,RelativeObjectAux,World)),
 	SelectedObject),SelectedObject \== [].
 
-
 %Find object, and set goal accordingly.
-interpret(take(X), World, @(null), Objects, take(SelectedObject/*,World,[],_,_*/)) :-
+interpret(take(X), World, @(null), Objects, take(SelectedObject)) :-
     interpret(X, World, @(null), Objects, SelectedObject).
 
-interpret(take(X), World, Holding \== @(null), Objects,  take(SelectedObject/*,World,Holding,_,_*/)) :-
+interpret(take(X), World, Holding \== @(null), Objects,  take(SelectedObject)) :-
     interpret(X, World, Holding, Objects, SelectedObject).
 
 interpret(floor, _World, _Holding, _Objects, floor). %floor is floor... move this somewhere.. meh.
@@ -274,7 +273,6 @@ getobj([anyform,-,Color],PossibleObjects,SelectedObject) :-
 getobj([anyform,-,-],PossibleObjects,SelectedObject) :-
     member(SelectedObject=json([form=_,size=_,color=_]), PossibleObjects).
 %------------------------------------------------------------------------------------------------------------------------%
-
 
 %---------------------------------------------------------------------------------------------------- Constraints management ----------------------------------------------------------------------------------------------------
 
