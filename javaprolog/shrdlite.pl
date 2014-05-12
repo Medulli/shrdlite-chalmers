@@ -62,6 +62,44 @@ solve(_Goal, World, _Holding, _Objects, Plan) :-
 %    nth1(Col, World, [_|_]),
 %    Plan = ['I pick it up . . .', [pick, Col], '. . . and I drop it down', [drop, Col]].
 
+%%-------------------------- Retrieve Goal info
+
+retrieveGoalElements(Goal, Action, Parameter) :-
+	Goal = take(Parameter),Action = take.
+	
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = movebeside(Parameter1,Parameter2),Action = movebeside.
+	
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = moveleft(Parameter1,Parameter2),Action = moveleft.
+	
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = moveright(Parameter1,Parameter2),Action = moveright.
+	
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = moveabove(Parameter1,Parameter2),Action = moveabove.
+	
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = moveontop(Parameter1,Parameter2),Action = moveontop.
+	
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = moveunder(Parameter1,Parameter2),Action = moveunder.
+	
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = moveinside(Parameter1,Parameter2),Action = moveinside.
+
+/*	
+test :-
+Goal = movebeside([e],[g]),
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2),write(Action),write(Parameter1),write(Parameter2).
+
+test2 :-
+Goal = take([e]),
+retrieveGoalElements(Goal, Action, Parameter),write(Action),write(Parameter).
+*/
+
+%%--------------------------------------------------------------
+
 %split a list into its head and its tail
 hdtlL([H|T],H,T).
 
@@ -246,7 +284,7 @@ interpret(move(X,relative(inside, Y)), World, Holding, Objects, moveinside(Selec
 %	interpret(X, World, Holding, Objects, SelectedObject).
 %    t2(SelectedObject,World,SubGoal),						%remove it from world
 %    t2(SelectedObject,Goal,SubGoal),						%add it back to all possible places
-%    interpret(Y, Goal, Holding, Objects, SelectedObject).	%but it must satisfy the realtion
+%    interpret(Y, Goal, Holding, Objects, SelectedObject).	%but it must satisfy the relation
 
 %Will return the letter of the type/size/col which satisfies the object in PossibleObjects.
 %------------------------------------------------------------------------------------------------------------------------%
