@@ -3,11 +3,18 @@
 
 %% Non-lexical grammar rules
 
+%%ask for something to do
 command : Cmd --->
     opt_will_you, opt_please,
     basic_command : Cmd,
     opt_please.
 
+%%ask for precision in case of ambiguity
+precision : Entity --->
+    opt_please,
+    entity:Entity,
+    opt_please.
+	
 basic_command : take(Entity) ---> take, entity:Entity.
 basic_command : put(Location) ---> move, it, location:Location.
 basic_command : move(Entity, Location) ---> move, entity:Entity, location:Location.
@@ -67,8 +74,8 @@ color : green ---> [green].
 color : yellow ---> [yellow].
 color : red ---> [red].
 
-form(sg) : anyform ---> [object] ; [thing] ; [form].
-form(pl) : anyform ---> [objects] ; [things] ; [forms].
+form(sg) : anyform ---> [object] ; [thing] ; [form] ; [one].
+form(pl) : anyform ---> [objects] ; [things] ; [forms] ; [ones].
 form(sg) : brick ---> [brick].
 form(pl) : brick ---> [bricks].
 form(sg) : plank ---> [plank].

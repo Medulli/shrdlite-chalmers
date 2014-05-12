@@ -3,11 +3,18 @@
 
 %% Non-lexical grammar rules
 
+%%ask for something to do
 command : Cmd --->
     opt_will_you, opt_please,
     basic_command : Cmd,
     opt_please.
 
+%%ask for precision in case of ambiguity
+precision : Entity --->
+    opt_please,
+    entity:Entity,
+    opt_please.
+	
 basic_command : take(Entity) ---> take, entity:Entity.
 basic_command : put(Location) ---> move, it, location:Location.
 basic_command : move(Entity, Location) ---> move, entity:Entity, location:Location.
@@ -57,6 +64,7 @@ relation : under ---> [under] ; [below].
 relation : inside ---> [inside] ; [in] ; [into].
 
 size : small ---> [small] ; [tiny].
+size : medium ---> [medium] ; [middle, sized].
 size : large ---> [large] ; [big].
 
 color : black ---> [black].
@@ -66,8 +74,8 @@ color : green ---> [green].
 color : yellow ---> [yellow].
 color : red ---> [red].
 
-form(sg) : anyform ---> [object] ; [thing] ; [form].
-form(pl) : anyform ---> [objects] ; [things] ; [forms].
+form(sg) : anyform ---> [object] ; [thing] ; [form] ; [one].
+form(pl) : anyform ---> [objects] ; [things] ; [forms] ; [ones].
 form(sg) : brick ---> [brick].
 form(pl) : brick ---> [bricks].
 form(sg) : plank ---> [plank].
@@ -184,3 +192,8 @@ parse_all(command, Utterance, Trees),write(Trees).
 test8 :-
 Utterance = [what, are, the, objects, that, are, right, of, the, white, ball, on, the, floor, ?],
 parse_all(command, Utterance, Trees),write(Trees).
+
+%%ask for precision in case of ambiguity
+test9 :-
+Utterance = [the, small, blue, one],
+parse_all(precision, Utterance, Trees),write(Trees).
