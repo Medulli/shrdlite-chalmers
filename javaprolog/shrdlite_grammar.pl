@@ -57,6 +57,7 @@ relation : under ---> [under] ; [below].
 relation : inside ---> [inside] ; [in] ; [into].
 
 size : small ---> [small] ; [tiny].
+size : medium ---> [medium] ; [middle, sized].
 size : large ---> [large] ; [big].
 
 color : black ---> [black].
