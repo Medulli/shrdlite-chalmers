@@ -1,3 +1,8 @@
+
+:- op(1200, xfx, '--->').
+
+%% Non-lexical grammar rules
+
 command : Cmd --->
     opt_will_you, opt_please,
     basic_command : Cmd,
@@ -99,3 +104,83 @@ what ---> [what,is] ; [what,are,the,objects].
 opt_will_you ---> [] ; [will,you] ; [can,you] ; [could,you].
 opt_please ---> [] ; [please].
 opt_interrogation ---> [] ; [?].
+
+
+/*
+  This file is a recursive descent parser of DCG grammars
+  stored using the predicate '--->'/2.
+
+  Call like this:
+  ?- parse(command, [take, the, white, ball], Tree).
+  Tree = take(basic_entity(the, object(ball, -, white))) ;
+  no (more) solutions
+
+  ...or like this:
+  ?- parse_all(command, [take, the, white, ball], Trees).
+  Trees = [take(basic_entity(the, object(ball, -, white)))]
+*/
+
+%% parse_all(+Startcat : atom, +Sentence : list(atom), -ParseTrees : list(term))
+parse_all(Cat, Tokens, Trees) :-
+    findall(T, parse(Cat, Tokens, T), Trees).
+
+%% parse_all(+Startcat : atom, +Sentence : list(atom), ?ParseTree : term)
+parse(Cat, Tokens, Tree) :-
+    parse_term(Cat:Tree, Tokens, []).
+
+%% parse_term(?ParsingGoal : term, +Sentence : list(atom), ?Remainder : list(atom))
+parse_term(LHS, Xs0, Xs) :-
+    '--->'(LHS, RHS),
+    parse_term(RHS, Xs0, Xs).
+parse_term([], Xs, Xs).
+parse_term([T|Ts], [T|Xs0], Xs) :-
+    parse_term(Ts, Xs0, Xs).
+parse_term((A, B), Xs0, Xs) :-
+    parse_term(A, Xs0, Xs1),
+    parse_term(B, Xs1, Xs).
+parse_term((A ; B), Xs0, Xs) :-
+    ( parse_term(A, Xs0, Xs)
+    ; parse_term(B, Xs0, Xs)
+    ).
+parse_term({Goal}, Xs, Xs) :-
+    call(Goal).
+
+%% Command test
+testBase :-
+Utterance = [put,the,white,ball,in,a,box,on,the,floor],
+parse_all(command, Utterance, Trees),write(Trees).
+
+%test where
+test :-
+Utterance = [find, the, white, ball],
+parse_all(command, Utterance, Trees),write(Trees).
+
+test2 :-
+Utterance = [where, is, the, white, ball, ?],
+parse_all(command, Utterance, Trees),write(Trees).
+
+test3 :-
+Utterance = [where, are, all, white, balls],
+parse_all(command, Utterance, Trees),write(Trees).
+
+%test count
+test4 :-
+Utterance = [count, all, white, balls, in, the, world],
+parse_all(command, Utterance, Trees),write(Trees).
+
+test5 :-
+Utterance = [count, all, white, balls, on, stack, 1],
+parse_all(command, Utterance, Trees),write(Trees).
+
+test6 :-
+Utterance = [count, all, white, balls, that, are, left, of, the, blue, box],
+parse_all(command, Utterance, Trees),write(Trees).
+
+%test what
+test7 :-
+Utterance = [what, is, on, stack ,12],
+parse_all(command, Utterance, Trees),write(Trees).
+
+test8 :-
+Utterance = [what, are, the, objects, that, are, right, of, the, white, ball, on, the, floor, ?],
+parse_all(command, Utterance, Trees),write(Trees).
