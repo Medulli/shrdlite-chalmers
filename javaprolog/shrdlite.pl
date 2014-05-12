@@ -49,18 +49,18 @@ main :-
     json_write(user_output, json(Result)).
 
 %Take the head of the Kth list if the arm does not hold something
-%solve(_Goal, World, _Holding, _Objects, Plan) :-
-%      _Goal == take([Element]),
-%      _Holding == @(null),
-%      whichL(Element,World,K),
-%      nth1(K,World,LK),
-%      hdtlL(LK,Element,-),
-%      hdtlLL_at(World,K,NLL,Element),
-%      Plan = ['I pick it up . . .', [pick, K]].
-
 solve(_Goal, World, _Holding, _Objects, Plan) :-
-    nth0(Col, World, [_|_]),
-    Plan = ['I pick it up . . .', [pick, Col], '. . . and I drop it down', [drop, Col]].
+      _Goal == take([Element]),
+      _Holding == @(null),
+      whichL(Element,World,K),
+      nth1(K,World,LK),
+      hdtlL(LK,Element,-),
+      hdtlLL_at(World,K,NLL,Element),
+      Plan = ['I pick it up . . .', [pick, K]].
+
+%solve(_Goal, World, _Holding, _Objects, Plan) :-
+%    nth1(Col, World, [_|_]),
+%    Plan = ['I pick it up . . .', [pick, Col], '. . . and I drop it down', [drop, Col]].
 
 %split a list into its head and its tail
 hdtlL([H|T],H,T).
@@ -409,173 +409,6 @@ isinside(X,Y,World) :-
     nth0(IdxS, Col, X),
     nth0(IdxR, Col, Y),
     (IdxS is IdxR+1).
-
-%Balls
-
-canbeon(O,[H|-]) :- getobj([Ball,Small,-],PossibleObjects,O), getobj([Box,Small,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Ball,Small,-],PossibleObjects,O), getobj([Box,Medium,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Ball,Small,-],PossibleObjects,O), getobj([Box,Large,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Ball,Medium,-],PossibleObjects,O), getobj([Box,Medium,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Ball,Medium,-],PossibleObjects,O), getobj([Box,Large,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Ball,Large,-],PossibleObjects,O), getobj([Box,Large,-],PossibleObjects,H).
-
-%Boxes
-
-canbeon(O,[H|-]) :- getobj([Box,Small,-],PossibleObjects,O), getobj([Table,Small,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Box,Medium,-],PossibleObjects,O), getobj([Table,Medium,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Box,Large,-],PossibleObjects,O), getobj([Table,Large,-],PossibleObjects,H).
-
-canbeon(O,[H|-]) :- getobj([Box,Small,-],PossibleObjects,O), getobj([Plank,Small,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Box,Medium,-],PossibleObjects,O), getobj([Plank,Medium,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Box,Large,-],PossibleObjects,O), getobj([Plank,Large,-],PossibleObjects,H).
-
-canbeon(O,[H|-]) :- getobj([Box,Large,-],PossibleObjects,O), getobj([Brick,Large,-],PossibleObjects,H).
-
-%Bricks
-
-canbeon(O,[H|-]) :- getobj([Brick,Small,-],PossibleObjects,O), getobj([Box,Small,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Brick,Small,-],PossibleObjects,O), getobj([Box,Medium,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Brick,Small,-],PossibleObjects,O), getobj([Box,Large,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Brick,Medium,-],PossibleObjects,O), getobj([Box,Medium,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Brick,Medium,-],PossibleObjects,O), getobj([Box,Large,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Brick,Large,-],PossibleObjects,O), getobj([Box,Large,-],PossibleObjects,H).
-
-canbeon(O,[H|-]) :- getobj([Brick,Small,-],PossibleObjects,O), getobj([Brick,Small,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Brick,Small,-],PossibleObjects,O), getobj([Brick,Medium,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Brick,Small,-],PossibleObjects,O), getobj([Brick,Large,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Brick,Medium,-],PossibleObjects,O), getobj([Brick,Medium,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Brick,Medium,-],PossibleObjects,O), getobj([Brick,Large,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Brick,Large,-],PossibleObjects,O), getobj([Brick,Large,-],PossibleObjects,H).
-
-canbeon(O,[H|-]) :- getobj([Brick,Small,-],PossibleObjects,O), getobj([Plank,Small,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Brick,Small,-],PossibleObjects,O), getobj([Plank,Medium,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Brick,Small,-],PossibleObjects,O), getobj([Plank,Large,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Brick,Medium,-],PossibleObjects,O), getobj([Plank,Medium,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Brick,Medium,-],PossibleObjects,O), getobj([Plank,Large,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Brick,Large,-],PossibleObjects,O), getobj([Plank,Large,-],PossibleObjects,H).
-
-canbeon(O,[H|-]) :- getobj([Brick,Small,-],PossibleObjects,O), getobj([Table,Small,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Brick,Small,-],PossibleObjects,O), getobj([Table,Medium,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Brick,Small,-],PossibleObjects,O), getobj([Table,Large,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Brick,Medium,-],PossibleObjects,O), getobj([Table,Medium,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Brick,Medium,-],PossibleObjects,O), getobj([Table,Large,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Brick,Large,-],PossibleObjects,O), getobj([Table,Large,-],PossibleObjects,H).
-
-canbeon(O,[H|-]) :- getobj([Brick,Small,-],PossibleObjects,O), getobj([Pyramid,Small,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Brick,Small,-],PossibleObjects,O), getobj([Pyramid,Medium,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Brick,Small,-],PossibleObjects,O), getobj([Pyramid,Large,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Brick,Medium,-],PossibleObjects,O), getobj([Pyramid,Medium,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Brick,Medium,-],PossibleObjects,O), getobj([Pyramid,Large,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Brick,Large,-],PossibleObjects,O), getobj([Pyramid,Large,-],PossibleObjects,H).
-
-%Planks
-
-canbeon(O,[H|-]) :- getobj([Plank,Small,-],PossibleObjects,O), getobj([Box,Medium,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Plank,Small,-],PossibleObjects,O), getobj([Box,Large,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Plank,Medium,-],PossibleObjects,O), getobj([Box,Large,-],PossibleObjects,H).
-
-canbeon(O,[H|-]) :- getobj([Plank,Small,-],PossibleObjects,O), getobj([Brick,Small,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Plank,Small,-],PossibleObjects,O), getobj([Brick,Medium,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Plank,Small,-],PossibleObjects,O), getobj([Brick,Large,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Plank,Medium,-],PossibleObjects,O), getobj([Brick,Medium,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Plank,Medium,-],PossibleObjects,O), getobj([Brick,Large,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Plank,Large,-],PossibleObjects,O), getobj([Brick,Large,-],PossibleObjects,H).
-
-canbeon(O,[H|-]) :- getobj([Plank,Small,-],PossibleObjects,O), getobj([Table,Small,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Plank,Small,-],PossibleObjects,O), getobj([Table,Medium,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Plank,Small,-],PossibleObjects,O), getobj([Table,Large,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Plank,Medium,-],PossibleObjects,O), getobj([Table,Medium,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Plank,Medium,-],PossibleObjects,O), getobj([Table,Large,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Plank,Large,-],PossibleObjects,O), getobj([Table,Large,-],PossibleObjects,H).
-
-canbeon(O,[H|-]) :- getobj([Plank,Small,-],PossibleObjects,O), getobj([Plank,Small,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Plank,Small,-],PossibleObjects,O), getobj([Plank,Medium,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Plank,Small,-],PossibleObjects,O), getobj([Plank,Large,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Plank,Medium,-],PossibleObjects,O), getobj([Plank,Medium,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Plank,Medium,-],PossibleObjects,O), getobj([Plank,Large,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Plank,Large,-],PossibleObjects,O), getobj([Plank,Large,-],PossibleObjects,H).
-
-canbeon(O,[H|-]) :- getobj([Plank,Small,-],PossibleObjects,O), getobj([Pyramid,Small,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Plank,Small,-],PossibleObjects,O), getobj([Pyramid,Medium,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Plank,Small,-],PossibleObjects,O), getobj([Pyramid,Large,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Plank,Medium,-],PossibleObjects,O), getobj([Pyramid,Medium,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Plank,Medium,-],PossibleObjects,O), getobj([Pyramid,Large,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Plank,Large,-],PossibleObjects,O), getobj([Pyramid,Large,-],PossibleObjects,H).
-
-%Pyramids
-
-canbeon(O,[H|-]) :- getobj([Pyramid,Small,-],PossibleObjects,O), getobj([Box,Medium,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Pyramid,Small,-],PossibleObjects,O), getobj([Box,Large,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Pyramid,Medium,-],PossibleObjects,O), getobj([Box,Large,-],PossibleObjects,H).
-
-canbeon(O,[H|-]) :- getobj([Pyramid,Small,-],PossibleObjects,O), getobj([Brick,Small,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Pyramid,Small,-],PossibleObjects,O), getobj([Brick,Medium,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Pyramid,Small,-],PossibleObjects,O), getobj([Brick,Large,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Pyramid,Medium,-],PossibleObjects,O), getobj([Brick,Medium,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Pyramid,Medium,-],PossibleObjects,O), getobj([Brick,Large,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Pyramid,Large,-],PossibleObjects,O), getobj([Brick,Large,-],PossibleObjects,H).
-
-canbeon(O,[H|-]) :- getobj([Pyramid,Small,-],PossibleObjects,O), getobj([Plank,Small,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Pyramid,Small,-],PossibleObjects,O), getobj([Plank,Medium,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Pyramid,Small,-],PossibleObjects,O), getobj([Plank,Large,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Pyramid,Medium,-],PossibleObjects,O), getobj([Plank,Medium,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Pyramid,Medium,-],PossibleObjects,O), getobj([Plank,Large,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Pyramid,Large,-],PossibleObjects,O), getobj([Plank,Large,-],PossibleObjects,H).
-
-canbeon(O,[H|-]) :- getobj([Pyramid,Small,-],PossibleObjects,O), getobj([Table,Small,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Pyramid,Small,-],PossibleObjects,O), getobj([Table,Medium,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Pyramid,Small,-],PossibleObjects,O), getobj([Table,Large,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Pyramid,Medium,-],PossibleObjects,O), getobj([Table,Medium,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Pyramid,Medium,-],PossibleObjects,O), getobj([Table,Large,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Pyramid,Large,-],PossibleObjects,O), getobj([Table,Large,-],PossibleObjects,H).
-
-canbeon(O,[H|-]) :- getobj([Pyramid,Small,-],PossibleObjects,O), getobj([Pyramid,Small,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Pyramid,Small,-],PossibleObjects,O), getobj([Pyramid,Medium,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Pyramid,Small,-],PossibleObjects,O), getobj([Pyramid,Large,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Pyramid,Medium,-],PossibleObjects,O), getobj([Pyramid,Medium,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Pyramid,Medium,-],PossibleObjects,O), getobj([Pyramid,Large,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Pyramid,Large,-],PossibleObjects,O), getobj([Pyramid,Large,-],PossibleObjects,H).
-
-%Tables
-
-canbeon(O,[H|-]) :- getobj([Table,Small,-],PossibleObjects,O), getobj([Box,Small,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Table,Small,-],PossibleObjects,O), getobj([Box,Medium,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Table,Small,-],PossibleObjects,O), getobj([Box,Large,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Table,Medium,-],PossibleObjects,O), getobj([Box,Medium,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Table,Medium,-],PossibleObjects,O), getobj([Box,Large,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Table,Large,-],PossibleObjects,O), getobj([Box,Large,-],PossibleObjects,H).
-
-canbeon(O,[H|-]) :- getobj([Table,Small,-],PossibleObjects,O), getobj([Brick,Small,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Table,Small,-],PossibleObjects,O), getobj([Brick,Medium,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Table,Small,-],PossibleObjects,O), getobj([Brick,Large,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Table,Medium,-],PossibleObjects,O), getobj([Brick,Medium,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Table,Medium,-],PossibleObjects,O), getobj([Brick,Large,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Table,Large,-],PossibleObjects,O), getobj([Brick,Large,-],PossibleObjects,H).
-
-canbeon(O,[H|-]) :- getobj([Table,Small,-],PossibleObjects,O), getobj([Table,Small,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Table,Small,-],PossibleObjects,O), getobj([Table,Medium,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Table,Small,-],PossibleObjects,O), getobj([Table,Large,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Table,Medium,-],PossibleObjects,O), getobj([Table,Medium,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Table,Medium,-],PossibleObjects,O), getobj([Table,Large,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Table,Large,-],PossibleObjects,O), getobj([Table,Large,-],PossibleObjects,H).
-
-canbeon(O,[H|-]) :- getobj([Table,Small,-],PossibleObjects,O), getobj([Plank,Small,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Table,Small,-],PossibleObjects,O), getobj([Plank,Medium,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Table,Small,-],PossibleObjects,O), getobj([Plank,Large,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Table,Medium,-],PossibleObjects,O), getobj([Plank,Medium,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Table,Medium,-],PossibleObjects,O), getobj([Plank,Large,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Table,Large,-],PossibleObjects,O), getobj([Plank,Large,-],PossibleObjects,H).
-
-canbeon(O,[H|-]) :- getobj([Table,Small,-],PossibleObjects,O), getobj([Pyramid,Small,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Table,Small,-],PossibleObjects,O), getobj([Pyramid,Medium,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Table,Small,-],PossibleObjects,O), getobj([Pyramid,Large,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Table,Medium,-],PossibleObjects,O), getobj([Pyramid,Medium,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Table,Medium,-],PossibleObjects,O), getobj([Pyramid,Large,-],PossibleObjects,H).
-canbeon(O,[H|-]) :- getobj([Table,Large,-],PossibleObjects,O), getobj([Pyramid,Large,-],PossibleObjects,H).
-
-%All objects can stand on the floor whatever their size or form
-
-canbeon(O,[]).
 
 %Following LL will be the list of lists representing the world at the moment we want to execute an action, L the list representing the arm (it will be either [] or [o|[]] as we cannot take an object if we already hold one) at the moment we want to execute an action, NLL the list of lists representing the world after the execution of hte action, L the list representing the arm after the execution of the action
 
