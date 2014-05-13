@@ -56,7 +56,7 @@ solve(_Goal, World, _Holding, _Objects, Plan) :-
       maplist(reverse,World,RWorld),
       whichL(Element,RWorld,K),
       nth0(K,RWorld,LK),
-      hdtlL(LK,Element),
+      hdtlL(LK,Element,_),
 /*      hdtlLL_at(World,K,NWorld,Element),*/
       Plan = ['I pick it up . . .', [pick, K], '. . . and I drop it down', [drop, K]].
 
@@ -80,20 +80,11 @@ reverseLL([T],[A|NH],L).
 
 reverseLL([],L,L).
 */
-/*	
-test :-
-Goal = movebeside([e],[g]),
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2),write(Action),write(Parameter1),write(Parameter2).
-
-test2 :-
-Goal = take([e]),
-retrieveGoalElements(Goal, Action, Parameter),write(Action),write(Parameter).
-*/
 
 %%--------------------------------------------------------------
 
-%split a list into its head and its tail
-hdtlL([H|T],Element) :- H = Element.
+%tests if element is the head of the list and assign Tail to the tail
+hdtlL([H|T],Element,T) :- H = Element.
 
 %return the number K if X is in the Kth list of lists LL
 %findall(X,whichL(a,[[d,e,f],[a,b,c]],X),R).
@@ -148,6 +139,16 @@ retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
 	
 retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
 	Goal = moveinside(Parameter1,Parameter2),Action = moveinside.
+	
+/*	
+test :-
+Goal = movebeside([e],[g]),
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2),write(Action),write(Parameter1),write(Parameter2).
+
+test2 :-
+Goal = take([e]),
+retrieveGoalElements(Goal, Action, Parameter),write(Action),write(Parameter).
+*/
 
 %Finds object satisfying type size color by checking against a list of possible objects
 %if Holding is empty we only have possible objects in world
@@ -475,7 +476,7 @@ putabove(O1,O2,LL,[O1|L],NLL,L) :- whichL(O2,LL,K2), nth1(K2,LL,LK2), canbeon(O1
 
 %Put the element holded by the arm on top of the element O2
 
-putontop(O1,O2,LL,[O1|L],NLL,L) :- canbeon(O1,[O2|-]), whichL(O2,LL,K2), nth1(K2,LL,LK2), hdtlL(LK2,O2,-), consLL_at(O1,LL,K2,NLL).
+putontop(O1,O2,LL,[O1|L],NLL,L) :- canbeon(O1,[O2|-]), whichL(O2,LL,K2), nth1(K2,LL,LK2), hdtlL(LK2,O2,_), consLL_at(O1,LL,K2,NLL).
 
 %Put the element holded by the arm on top of the element O2 when O2 is not a topmost element
 
@@ -500,7 +501,7 @@ take(O,LL,[H|T],NLL,NL) :- putabove(H,Oaux,LL,Kaux,[H|T],LLaux,T), take(O,LLaux,
 
 %If the arm does not hold something but the head of the list in which there is the element we want to take is not this element we move the head somewhere else
 
-take(O,LL,[],NLL,L) :- whichL(O,LL,K), nth1(K,LL,LK), hdtlL(LK,H,-), move(H,Oaux,LL,[],LLaux,Laux), take(O,LLaux,Laux,NLL,L).
+take(O,LL,[],NLL,L) :- whichL(O,LL,K), nth1(K,LL,LK), hdtlL(LK,H,_), move(H,Oaux,LL,[],LLaux,Laux), take(O,LLaux,Laux,NLL,L).
 
 %Move O1 at any place
 
