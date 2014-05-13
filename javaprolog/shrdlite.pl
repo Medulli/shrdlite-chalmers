@@ -11,11 +11,15 @@
 main :-
     json_read(user_input, json(Input)),
     member(utterance=Utterance, Input),
-    member(world=WorldRev, Input),
+    member(world=FirstWorldRev, Input),
     member(holding=Holding, Input),
     member(objects=Objects, Input),
 
-    maplist(reverse,WorldRev,World),
+    %reverse each list in the list of lists representing the world
+    maplist(reverse,FirstWorldRev,FirstWorld),
+
+    %intialize the world as a one element list (we need a list to save all the worlds)
+    World = [FirstWorld],
 
     parse_all(command, Utterance, Trees),
     ( Trees == [] ->
@@ -23,8 +27,9 @@ main :-
       Plan = @(null),
       Output = 'Parse error!'
     ;
+      getHeadList(CurrentWorld, World),
       findall(Goal, (member(Tree, Trees),
-                     interpret(Tree, World, Holding, Objects, Goal)
+                     interpret(Tree, CurrentWorld, Holding, Objects, Goal)
                     ), Goals),
       ( Goals == [] -> %Goals == take(List) -> "Please specify which object from list"
         Plan = @(null),
@@ -52,16 +57,19 @@ main :-
 
 %Take the selected object list if the arm does not hold something
 solve(_Goal, World, _Holding, _Objects, Plan) :-
+      getHeadList(CurrentWorld, World),
       retrieveGoalElements(_Goal, ActionTake, Element),
       _Holding == @(null),
       ActionTake == take,
-      whichListInTheWorld(Element,World,K),
-      nth0(K,World,LK),
+      whichListInTheWorld(Element,CurrentWorld,K),
+      nth0(K,CurrentWorld,LK),
       checkHead(LK,Element),
-      pickAt(K,World,NewWorld),
+      pickAt(K,CurrentWorld,NewWorld),
       Plan = ['I pick it up . . .',  [pick, K], '. . . and I drop it down', [drop, K]].
 
 %%--------------------------------------------------------------
+
+getHeadList(H,[H|T]).
 
 %tests if element is the head of the list
 checkHead([H|T],Element) :- H = Element.
