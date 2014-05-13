@@ -24,10 +24,10 @@ main :-
       findall(Goal, (member(Tree, Trees),
                      interpret(Tree, World, Holding, Objects, Goal)
                     ), Goals),
-      ( Goals == [] ->
+      ( Goals == [] -> %Goals == take(List) -> "Please specify which object from list"
         Plan = @(null),
         Output = 'Interpretation error!'
-      ; Goals = [_,_|_] ->
+      ; Goals = [_,_|_] -> %Goal is a list of goals i.e. "I can do this and this and this... Please specify what you want"
         Plan = @(null),
         Output = 'Ambiguity error!'
       ; Goals = [Goal],
