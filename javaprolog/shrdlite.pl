@@ -11,15 +11,12 @@
 main :-
     json_read(user_input, json(Input)),
     member(utterance=Utterance, Input),
-    member(world=FirstWorldRev, Input),
+    member(world=WorldRev, Input),
     member(holding=Holding, Input),
     member(objects=Objects, Input),
 
     %reverse each list in the list of lists representing the world
-    maplist(reverse,FirstWorldRev,FirstWorld),
-
-    %intialize the world as a one element list (we need a list to save all the worlds)
-    World = [FirstWorld],
+    maplist(reverse,WorldRev,World),
 
     parse_all(command, Utterance, Trees),
     ( Trees == [] ->
@@ -27,9 +24,8 @@ main :-
       Plan = @(null),
       Output = 'Parse error!'
     ;
-      getHeadList(CurrentWorld, World),
       findall(Goal, (member(Tree, Trees),
-                     interpret(Tree, CurrentWorld, Holding, Objects, Goal)
+                     interpret(Tree, World, Holding, Objects, Goal)
                     ), Goals),
       ( Goals == [] -> %Goals == take(List) -> "Please specify which object from list"
         Plan = @(null),
@@ -57,19 +53,16 @@ main :-
 
 %Take the selected object list if the arm does not hold something
 solve(_Goal, World, _Holding, _Objects, Plan) :-
-      getHeadList(CurrentWorld, World),
       retrieveGoalElements(_Goal, ActionTake, Element),
       _Holding == @(null),
       ActionTake == take,
-      whichListInTheWorld(Element,CurrentWorld,K),
+      whichListInTheWorld(Element,World,K),
       nth0(K,CurrentWorld,LK),
       checkHead(LK,Element),
-      pickAt(K,CurrentWorld,NewWorld),
+      pickAt(K,World,NewWorld),
       Plan = ['I pick it up . . .',  [pick, K], '. . . and I drop it down', [drop, K]].
 
 %%--------------------------------------------------------------
-
-getHeadList(H,[H|T]).
 
 %tests if element is the head of the list
 checkHead([H|T],Element) :- H = Element.
@@ -87,12 +80,6 @@ pickAt(N,[H|T1],[H|T2]) :- pickAt(M,T1,T2), N is M + 1.
 %the third argument is the list of lists corresponding to the one given as second argument in which the first argument is added at the head in the list of number: second argument
 dropAt(Element,0,[T1|T2],[[Element|T1]|T2]).
 dropAt(Element,N,[H|T1],[H|T2]) :- dropAt(Element,M,T1,T2), N is M + 1.
-
-%We need to check if taking an object which is not the head of a list should be allowed
-
-t2(X,[[X|Rx]|R] ,[Rx|R]).
-t2(X,[[Fx|Rx]|R],[[Fx|Sx]|R]) :- t2(X,[Rx|R],[Sx|R]).
-t2(X,[F|Rx] ,[F|Sx]) :- t2(X,Rx,Sx).
 
 %%-------------------------- Retrieve Goal info
 
@@ -275,13 +262,6 @@ interpret(move(X,relative(under,  Y)), World, Holding, Objects, moveunder(Select
 interpret(move(X,relative(inside, Y)), World, Holding, Objects, moveinside(SelectedObject,RelativeObject)) :-
 	interpret(X, World, Holding, Objects, SelectedObject),
 	interpret(Y, World, Holding, Objects, RelativeObject).
-
-%interpret(move(_X,Y), World, Holding, Objects, move(SelectedObject)) :-
-%    interpret(Y, World, Holding, Objects, SelectedObject).	%for move we find desired object
-%	interpret(X, World, Holding, Objects, SelectedObject).
-%    t2(SelectedObject,World,SubGoal),						%remove it from world
-%    t2(SelectedObject,Goal,SubGoal),						%add it back to all possible places
-%    interpret(Y, Goal, Holding, Objects, SelectedObject).	%but it must satisfy the relation
 
 %Will return the letter of the type/size/col which satisfies the object in PossibleObjects.
 %------------------------------------------------------------------------------------------------------------------------%
