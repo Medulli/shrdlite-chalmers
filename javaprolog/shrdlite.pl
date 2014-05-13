@@ -445,7 +445,7 @@ isinside(X,Y,World) :-
     nth0(IdxS, Col, X),
     nth0(IdxR, Col, Y),
     (IdxS is IdxR+1).
-
+/*
 %Following LL will be the list of lists representing the world at the moment we want to execute an action, L the list representing the arm (it will be either [] or [o|[]] as we cannot take an object if we already hold one) at the moment we want to execute an action, NLL the list of lists representing the world after the execution of hte action, L the list representing the arm after the execution of the action
 
 %Put the element holded at any place
@@ -507,4 +507,4 @@ moveright(O1,O2,LL,L,NLL,NL) :- take(O1,LL,L,LLaux,Laux), putright(O1,O2,LLaux,L
 
 %Move O1 to the beside O2
 
-movebeside(O1,O2,LL,L,NLL,NL) :- take(O1,LL,L,LLaux,Laux), putbeside(O1,O2,LLaux,Laux,NLL,NL).
+movebeside(O1,O2,LL,L,NLL,NL) :- take(O1,LL,L,LLaux,Laux), putbeside(O1,O2,LLaux,Laux,NLL,NL).*/
