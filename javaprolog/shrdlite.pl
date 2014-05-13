@@ -60,10 +60,22 @@ solve(_Goal, World, Holding, _Objects, Plan) :-
       Holding == @(null),
       ActionTake == take,
       whichListInTheWorld(Element,World,K),
-      nth0(K,CurrentWorld,LK),
+      nth0(K,World,LK),
       checkHead(LK,Element),
       Plan = ['I pick it up . . .',  [pick, K], '. . . and I drop it down', [drop, K]].
-
+/*
+solve(_Goal, World, Holding, _Objects, Plan) :-
+      retrieveGoalElements(_Goal, ActionMoveInside, Element1, Element2),
+      Holding == @(null),
+      ActionMoveInside == moveinside,
+      whichListInTheWorld(Element1,World,K1),
+      nth0(K1,World,LK1),
+      checkHead(LK1,Element1),
+      whichListInTheWorld(Element2,World,K2),
+      nth0(K2,World,LK2),
+      checkHead(LK2,Element2),
+      Plan = ['I pick it up . . .',  [pick, K1], '. . . and I drop it down', [drop, K2]].
+*/
 %%--------------------------------------------------------------
 
 %tests if element is the head of the list
