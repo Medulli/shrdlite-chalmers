@@ -18,7 +18,7 @@ main :-
     %reverse each list in the list of lists representing the world
     maplist(reverse,WorldRev,CurrentWorld),
 	
-	nb_setval(world, CurrentWorld).
+	nb_setval(world, CurrentWorld),
 
     parse_all(command, Utterance, Trees),
     ( Trees == [] ->
