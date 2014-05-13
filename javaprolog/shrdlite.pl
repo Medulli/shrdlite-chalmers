@@ -63,6 +63,12 @@ solve(_Goal, World, _Holding, _Objects, Plan) :-
 %    nth1(Col, World, [_|_]),
 %    Plan = ['I pick it up . . .', [pick, Col], '. . . and I drop it down', [drop, Col]].
 
+%reverse list function where [H|T] is the loaded list and L a list which will be fill with the elements of the first list in reverse order.
+
+reverse(List, Reversed) :- reverse(List, [], Reversed).
+reverse([], Reversed, Reversed).
+reverse([Head|Tail], SoFar, Reversed) :- reverse(Tail, [Head|SoFar], Reversed).
+
 /*	
 test :-
 Goal = movebeside([e],[g]),
