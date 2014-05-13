@@ -50,7 +50,7 @@ main :-
               output = Output],
     json_write(user_output, json(Result)).
 
-%Take the head of the Kth list if the arm does not hold something
+%Take the selected object list if the arm does not hold something
 solve(_Goal, World, _Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, ActionTake, Element),
       _Holding == @(null),
@@ -58,8 +58,8 @@ solve(_Goal, World, _Holding, _Objects, Plan) :-
       whichListInTheWorld(Element,World,K),
       nth0(K,World,LK),
       checkHead(LK,Element),
-/*      hdtlLL_at(World,K,NWorld,Element),*/
-      Plan = ['I pick it up . . .', [pick, K], '. . . and I drop it down', [drop, K]].
+      pickAt(K,World,NewWorld),
+      Plan = ['I pick it up . . .',  [pick, K], '. . . and I drop it down', [drop, K]].
 
 %%--------------------------------------------------------------
 
@@ -72,21 +72,13 @@ checkHead([H|T],Element) :- H = Element.
 whichListInTheWorld(X,[L|_],0) :- member(X,L).
 whichListInTheWorld(X,[_|LL],N) :- whichListInTheWorld(X,LL,M), N is M + 1.
 
-%the last argument is the list given in second place where X was remove at place K
+%the third argument is the list of lists corresponding to the one given as second argument in which the head is removed in the list of number: first argument
+pickAt(0,[[H|T1]|T2],[T1|T2]).
+pickAt(N,[H|T1],[H|T2]) :- pickAt(M,T1,T2), N is M + 1.
 
-removeLL_at(X,[Y|Xs],N,[Y|Ys]) :- removeLL_at(X,Xs,M,Ys), N is M + 1.
-
-%R is the list L in which X was added at place K
-
-insertLL_at(X,L,K,R) :- removeLL_at(X,R,K,L).
-
-%R is the list of lists LL in which X is added at the head of the Kth list of LL
-
-consLL_at(X,LL,K,R) :- nth1(K,LL,L), removeLL_at(L,LL,K,Raux), insertLL_at([X|L],Raux,K,R).
-
-%R is the list of lists LL in which the head X of the Kth list of LL was removed
-
-hdtlLL_at(LL,K,R,X) :- nth1(K,LL,L), removeLL_at(L,LL,K,Raux), hdtlL(L,X,T), insertLL_at(T,Raux,K,R).
+%the third argument is the list of lists corresponding to the one given as second argument in which the first argument is added at the head in the list of number: second argument
+dropAt(Element,0,[T1|T2],[[Element|T1]|T2]).
+dropAt(Element,N,[H|T1],[H|T2]) :- dropAt(Element,M,T1,T2), N is M + 1.
 
 %We need to check if taking an object which is not the head of a list should be allowed
 
