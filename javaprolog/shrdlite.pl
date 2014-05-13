@@ -11,9 +11,11 @@
 main :-
     json_read(user_input, json(Input)),
     member(utterance=Utterance, Input),
-    member(world=World, Input),
+    member(world=WorldRev, Input),
     member(holding=Holding, Input),
     member(objects=Objects, Input),
+
+    maplist(reverse,WorldRev,World),
 
     parse_all(command, Utterance, Trees),
     ( Trees == [] ->
@@ -53,9 +55,8 @@ solve(_Goal, World, _Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, ActionTake, Element),
       _Holding == @(null),
       ActionTake == take,
-      maplist(reverse,World,RWorld),
-      whichL(Element,RWorld,K),
-      nth0(K,RWorld,LK),
+      whichL(Element,World,K),
+      nth0(K,World,LK),
       hdtlL(LK,Element,_),
 /*      hdtlLL_at(World,K,NWorld,Element),*/
       Plan = ['I pick it up . . .', [pick, K], '. . . and I drop it down', [drop, K]].
@@ -68,18 +69,6 @@ solve(_Goal, World, _Holding, _Objects, Plan) :-
 reverse(L, R) :- reverse(L, [], R).
 reverse([], R, R).
 reverse([H|T], A, R) :- reverse(T, [H|A], R).
-
-%reverseLL function this function reverses each stack of the current world
-
-/*
-reverseLL([H|T],L):- reverseLL([H|T],[],L).
-
-reverseLL([H|T],A, L) :-
-reverse(H,NH),
-reverseLL([T],[A|NH],L).
-
-reverseLL([],L,L).
-*/
 
 %%--------------------------------------------------------------
 
