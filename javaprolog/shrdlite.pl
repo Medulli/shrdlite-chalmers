@@ -50,43 +50,18 @@ main :-
 
 %Take the head of the Kth list if the arm does not hold something
 solve(_Goal, World, _Holding, _Objects, Plan) :-
-%      _Goal == take([Element]),
+      retrieveGoalElements(_Goal, ActionTake, Element),
       _Holding == @(null),
+      ActionTake == take,
       whichL(Element,World,K),
-%      nth1(K,World,LK),
-%      hdtlL(LK,Element,_),
-%      hdtlLL_at(World,K,NWorld,Element),
-      Plan = ['I pick it up . . .', [pick, K]].
+      nth0(K,World,LK),
+      hdtlL(LK,Element),
+/*      hdtlLL_at(World,K,NWorld,Element),*/
+      Plan = ['I pick it up . . .', [pick, K], '. . . and I drop it down', [drop, K]].
 
 %solve(_Goal, World, _Holding, _Objects, Plan) :-
 %    nth1(Col, World, [_|_]),
 %    Plan = ['I pick it up . . .', [pick, Col], '. . . and I drop it down', [drop, Col]].
-
-%%-------------------------- Retrieve Goal info
-
-retrieveGoalElements(Goal, Action, Parameter) :-
-	Goal = take(Parameter),Action = take.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = movebeside(Parameter1,Parameter2),Action = movebeside.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = moveleft(Parameter1,Parameter2),Action = moveleft.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = moveright(Parameter1,Parameter2),Action = moveright.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = moveabove(Parameter1,Parameter2),Action = moveabove.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = moveontop(Parameter1,Parameter2),Action = moveontop.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = moveunder(Parameter1,Parameter2),Action = moveunder.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = moveinside(Parameter1,Parameter2),Action = moveinside.
 
 /*	
 test :-
@@ -101,7 +76,7 @@ retrieveGoalElements(Goal, Action, Parameter),write(Action),write(Parameter).
 %%--------------------------------------------------------------
 
 %split a list into its head and its tail
-hdtlL([H|T],H,T).
+hdtlL([H|T],Element) :- H = Element.
 
 %return the number K if X is in the Kth list of lists LL
 %findall(X,whichL(a,[[d,e,f],[a,b,c]],X),R).
@@ -131,6 +106,31 @@ t2(X,[[X|Rx]|R] ,[Rx|R]).
 t2(X,[[Fx|Rx]|R],[[Fx|Sx]|R]) :- t2(X,[Rx|R],[Sx|R]).
 t2(X,[F|Rx] ,[F|Sx]) :- t2(X,Rx,Sx).
 
+%%-------------------------- Retrieve Goal info
+
+retrieveGoalElements(Goal, Action, Parameter) :-
+        Goal = take([Parameter]),Action = take.
+	
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = movebeside(Parameter1,Parameter2),Action = movebeside.
+	
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = moveleft(Parameter1,Parameter2),Action = moveleft.
+	
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = moveright(Parameter1,Parameter2),Action = moveright.
+	
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = moveabove(Parameter1,Parameter2),Action = moveabove.
+	
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = moveontop(Parameter1,Parameter2),Action = moveontop.
+	
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = moveunder(Parameter1,Parameter2),Action = moveunder.
+	
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = moveinside(Parameter1,Parameter2),Action = moveinside.
 
 %Finds object satisfying type size color by checking against a list of possible objects
 %if Holding is empty we only have possible objects in world
