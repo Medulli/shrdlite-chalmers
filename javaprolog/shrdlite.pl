@@ -53,8 +53,9 @@ solve(_Goal, World, _Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, ActionTake, Element),
       _Holding == @(null),
       ActionTake == take,
-      whichL(Element,World,K),
-      nth0(K,World,LK),
+      maplist(reverse,World,RWorld),
+      whichL(Element,RWorld,K),
+      nth0(K,RWorld,LK),
       hdtlL(LK,Element),
 /*      hdtlLL_at(World,K,NWorld,Element),*/
       Plan = ['I pick it up . . .', [pick, K], '. . . and I drop it down', [drop, K]].
@@ -63,12 +64,22 @@ solve(_Goal, World, _Holding, _Objects, Plan) :-
 %    nth1(Col, World, [_|_]),
 %    Plan = ['I pick it up . . .', [pick, Col], '. . . and I drop it down', [drop, Col]].
 
-%reverse list function where [H|T] is the loaded list and L a list which will be fill with the elements of the first list in reverse order.
-
+%reverse list function where [H|T] is the loaded list and R the reversed list
 reverse(L, R) :- reverse(L, [], R).
 reverse([], R, R).
 reverse([H|T], A, R) :- reverse(T, [H|A], R).
 
+%reverseLL function this function reverses each stack of the current world
+
+/*
+reverseLL([H|T],L):- reverseLL([H|T],[],L).
+
+reverseLL([H|T],A, L) :-
+reverse(H,NH),
+reverseLL([T],[A|NH],L).
+
+reverseLL([],L,L).
+*/
 /*	
 test :-
 Goal = movebeside([e],[g]),
