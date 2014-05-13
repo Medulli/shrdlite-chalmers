@@ -30,6 +30,9 @@ main :-
       ( Goals == [] -> %Goals == take(List) -> "Please specify which object from list"
         Plan = @(null),
         Output = 'Interpretation error!'
+	  ; Goals = [take([_,_|_])] -> 
+        Plan = @(null),
+		Output = 'I can only hold one object!'
       ; Goals = [_,_|_] -> %Goal is a list of goals i.e. "I can do this and this and this... Please specify what you want"
         Plan = @(null),
         Output = 'Ambiguity error!'
@@ -52,9 +55,9 @@ main :-
     json_write(user_output, json(Result)).
 
 %Take the selected object list if the arm does not hold something
-solve(_Goal, World, _Holding, _Objects, Plan) :-
+solve(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, ActionTake, Element),
-      _Holding == @(null),
+      Holding == @(null),
       ActionTake == take,
       whichListInTheWorld(Element,World,K),
       nth0(K,CurrentWorld,LK),
@@ -233,11 +236,11 @@ interpret(relative(inside,X), World, Holding, Objects, SelectedObject) :-
 	SelectedObject),SelectedObject \== [].
 
 %Find object, and set goal accordingly.
-interpret(take(X), World, @(null), Objects, take([SelectedObject])) :-
-    interpret(X, World, @(null), Objects, [SelectedObject]).
+interpret(take(X), World, @(null), Objects, take(SelectedObject)) :-
+    interpret(X, World, @(null), Objects, SelectedObject).
 
-interpret(take(X), World, Holding \== @(null), Objects,  take([SelectedObject])) :-
-    interpret(X, World, Holding, Objects, [SelectedObject]).
+interpret(take(X), World, Holding \== @(null), Objects,  take(SelectedObject)) :-
+    interpret(X, World, Holding, Objects, SelectedObject).
 
 interpret(floor, _World, _Holding, _Objects, floor). %floor is floor... move this somewhere.. meh.
 
