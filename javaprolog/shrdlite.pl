@@ -55,31 +55,22 @@ solve(_Goal, World, _Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, ActionTake, Element),
       _Holding == @(null),
       ActionTake == take,
-      whichL(Element,World,K),
+      whichListInTheWorld(Element,World,K),
       nth0(K,World,LK),
-      hdtlL(LK,Element,_),
+      checkHead(LK,Element),
 /*      hdtlLL_at(World,K,NWorld,Element),*/
       Plan = ['I pick it up . . .', [pick, K], '. . . and I drop it down', [drop, K]].
 
-%solve(_Goal, World, _Holding, _Objects, Plan) :-
-%    nth1(Col, World, [_|_]),
-%    Plan = ['I pick it up . . .', [pick, Col], '. . . and I drop it down', [drop, Col]].
-
-%reverse list function where [H|T] is the loaded list and R the reversed list
-reverse(L, R) :- reverse(L, [], R).
-reverse([], R, R).
-reverse([H|T], A, R) :- reverse(T, [H|A], R).
-
 %%--------------------------------------------------------------
 
-%tests if element is the head of the list and assign Tail to the tail
-hdtlL([H|T],Element,T) :- H = Element.
+%tests if element is the head of the list
+checkHead([H|T],Element) :- H = Element.
 
 %return the number K if X is in the Kth list of lists LL
 %findall(X,whichL(a,[[d,e,f],[a,b,c]],X),R).
 
-whichL(X,[L|_],0) :- member(X,L).
-whichL(X,[_|LL],N) :- whichL(X,LL,M), N is M + 1.
+whichListInTheWorld(X,[L|_],0) :- member(X,L).
+whichListInTheWorld(X,[_|LL],N) :- whichListInTheWorld(X,LL,M), N is M + 1.
 
 %the last argument is the list given in second place where X was remove at place K
 
