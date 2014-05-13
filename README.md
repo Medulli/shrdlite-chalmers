@@ -27,26 +27,13 @@ In order to test the project from the command line :
 
 ##Current issues
 
-Basically the main problem is that there the shridlite.pl does not provide any plan in order to solve a user utterance.
-Here's the output from the command above : 
-<pre>
-|: {
-  "utterance": ["put", "the", "black", "ball", "in", "the", "red", "box" ],
-  "trees": [
-    "move(basic_entity(the,object(ball,-,black)),relative(inside,basic_entity(the,object(box,-,red))))"
-  ],
-  "goals": ["moveinside([f],[l])" ],
-  "plan": [
-    "I pick it up . . .",
-    ["pick", 0 ],
-    ". . . and I drop it down",
-    ["drop", 0 ]
-  ],
-  "output":"Success!"
-}
-</pre>
+When we type in the following query :
 
-As you can see the goal is ok but there is no plan to solve a current problem.
+move the black ball inside the red box
+
+we get the following error :
+
+[JSON error:SyntaxError: Unexpected end of input]
 
 ##Physical laws
 
