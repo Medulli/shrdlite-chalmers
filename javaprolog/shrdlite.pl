@@ -1,8 +1,5 @@
 #!/usr/bin/env swipl -q -g main,halt -t halt(1) -s
 
-%% Test from the command line:
-%% ./shrdlite.pl < ../examples/medium.json
-%:- use_module(library(lists).
 :- use_module(library(http/json)).
 :- [dcg_parser].
 :- [shrdlite_grammar].
@@ -78,6 +75,17 @@ solve(_Goal, World, Holding, _Objects, Plan) :-
       nb_setval(holding, [Element]),
       Plan = ['I pick it up . . .',  [pick, K]].
 
+%Take the selected object if the arm holds something
+solve(_Goal, World, Holding, _Objects, Plan) :-
+      retrieveGoalElements(_Goal, ActionTake, ElementPick),
+      Holding = [ElementDrop],
+      ActionTake == take,
+      canbeAt(ElementDrop,World,_Objects,KDrop),
+      dropAt(ElementDrop,KDrop,World,NewWorld),
+      nb_setval(world, NewWorld),
+      nb_setval(holding, []),
+      solve(_Goal, NewWorld, [], _Objects, Plan).
+
 %Move the selected object on top of the relative object in one step if the arm does not hold something and the selected object can be on the relative object
 solve(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, ActionMoveOnTop, Element1, Element2),
@@ -122,7 +130,7 @@ solve(_Goal, World, Holding, _Objects, Plan) :-
 checkHead([H|T],Element) :- H = Element.
 
 %return the number K if X is in the Kth list of lists LL
-%findall(X,whichL(a,[[d,e,f],[a,b,c]],X),R).
+%findall(X,whichListInTheWorld(a,[[d,e,f],[a,b,c]],X),R).
 
 whichListInTheWorld(X,[L|_],0) :- member(X,L).
 whichListInTheWorld(X,[_|LL],N) :- whichListInTheWorld(X,LL,M), N is M + 1.
@@ -134,6 +142,10 @@ pickAt(N,[H|T1],[H|T2]) :- pickAt(M,T1,T2), N is M + 1.
 %the third argument is the list of lists corresponding to the one given as second argument in which the first argument is added at the head in the list of number: second argument
 dropAt(Element,0,[T1|T2],[[Element|T1]|T2]).
 dropAt(Element,N,[H|T1],[H|T2]) :- dropAt(Element,M,T1,T2), N is M + 1.
+
+%find a list in which an element can be added given the object, the world, the objects
+canbeAt(X,[H|L],Objects,0) :- canbeon(X,H,Objects).
+canbeAt(X,[H|L],Objects,N) :- canbeAt(X,L,Objects,M), N is M + 1.
 
 %%-------------------------- Retrieve Goal info
 
@@ -479,8 +491,6 @@ isinside(X,Y,World) :-
     nth0(IdxR, Col, Y),
     (IdxS is IdxR+1).
 /*
-%Following LL will be the list of lists representing the world at the moment we want to execute an action, L the list representing the arm (it will be either [] or [o|[]] as we cannot take an object if we already hold one) at the moment we want to execute an action, NLL the list of lists representing the world after the execution of hte action, L the list representing the arm after the execution of the action
-
 %Put the element holded at any place
 
 putanyplace(O1,LL,[O1|L],NLL,L) :- nth1(K,LL,LK), canbeon(O1,LK), consLL_at(O1,LL,K,NLL).
