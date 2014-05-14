@@ -80,18 +80,23 @@ solve(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, ActionTake, ElementPick),
       Holding = [ElementDrop],
       ActionTake == take,
-      canbeAt(ElementDrop,World,_Objects,KDrop),
-      dropAt(ElementDrop,KDrop,World,NewWorld),
+/*      canbeAt(ElementDrop,World,_Objects,KDrop),
+      dropAt(ElementDrop,KDrop,World,WorldAux),
+      whichListInTheWorld(ElementPick,WorldAux,KPick),
+      nth0(KPick,WorldAux,LKPick),
+      checkHead(LKPick,ElementPick),
+      pickAt(KPick,WorldAux,NewWorld),
       nb_setval(world, NewWorld),
-      nb_setval(holding, []),
-      solve(_Goal, NewWorld, [], _Objects, Plan).
+      nb_setval(holding, [ElementPick]),
+      Plan = ['I drop it down', [drop, KDrop], '. . . and I pick it up . . .',  [pick, KPick]].*/
+      Plan = ['I drop it down', [drop, 0], '. . . and I pick it up . . .',  [pick, 3]].
 
 %Move the selected object on top of the relative object in one step if the arm does not hold something and the selected object can be on the relative object
 solve(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, ActionMoveOnTop, Element1, Element2),
       Holding == @(null),
       ActionMoveOnTop == moveontop,
-      getForm(Element2,Objects,ObjectForm),
+      getForm(Element2,_Objects,ObjectForm),
       ObjectForm \== box,
       whichListInTheWorld(Element1,World,K1),
       nth0(K1,World,LK1),
@@ -99,7 +104,7 @@ solve(_Goal, World, Holding, _Objects, Plan) :-
       whichListInTheWorld(Element2,World,K2),
       nth0(K2,World,LK2),
       checkHead(LK2,Element2),
-      canbeon(Element1,LK2,Objects),
+      canbeon(Element1,LK2,_Objects),
       pickAt(K1,World,WorldAux),
       dropAt(Element1,K2,WorldAux,NewWorld),
       nb_setval(world, NewWorld),
@@ -110,7 +115,7 @@ solve(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, ActionMoveInside, Element1, Element2),
       Holding == @(null),
       ActionMoveInside == moveinside,
-      getForm(Element2,Objects,ObjectForm),
+      getForm(Element2,_Objects,ObjectForm),
       ObjectForm == box,
       whichListInTheWorld(Element1,World,K1),
       nth0(K1,World,LK1),
@@ -118,7 +123,7 @@ solve(_Goal, World, Holding, _Objects, Plan) :-
       whichListInTheWorld(Element2,World,K2),
       nth0(K2,World,LK2),
       checkHead(LK2,Element2),
-      canbeon(Element1,LK2,Objects),
+      canbeon(Element1,LK2,_Objects),
       pickAt(K1,World,WorldAux),
       dropAt(Element1,K2,WorldAux,NewWorld),
       nb_setval(world, NewWorld),
@@ -153,25 +158,25 @@ retrieveGoalElements(Goal, Action, Parameter) :-
         Goal = take([Parameter]),Action = take.
 	
 retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = movebeside(Parameter1,Parameter2),Action = movebeside.
+	Goal = movebeside([Parameter1],[Parameter2]),Action = movebeside.
 	
 retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = moveleft(Parameter1,Parameter2),Action = moveleft.
+	Goal = moveleft([Parameter1],[Parameter2]),Action = moveleft.
 	
 retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = moveright(Parameter1,Parameter2),Action = moveright.
+	Goal = moveright([Parameter1],[Parameter2]),Action = moveright.
 	
 retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = moveabove(Parameter1,Parameter2),Action = moveabove.
+	Goal = moveabove([Parameter1],[Parameter2]),Action = moveabove.
 	
 retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = moveontop(Parameter1,Parameter2),Action = moveontop.
+	Goal = moveontop([Parameter1],[Parameter2]),Action = moveontop.
 	
 retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = moveunder(Parameter1,Parameter2),Action = moveunder.
+	Goal = moveunder([Parameter1],[Parameter2]),Action = moveunder.
 	
 retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = moveinside(Parameter1,Parameter2),Action = moveinside.
+	Goal = moveinside([Parameter1],[Parameter2]),Action = moveinside.
 	
 /*	
 test :-
@@ -299,7 +304,7 @@ interpret(relative(inside,X), World, Holding, Objects, SelectedObject) :-
 	SelectedObject),SelectedObject \== [].
 
 %Find object, and set goal accordingly.
-interpret(take(X), World, Holding, Objects,  take(SelectedObject)) :-
+interpret(take(X), World, Holding, Objects, take(SelectedObject)) :-
     interpret(X, World, Holding, Objects, SelectedObject).
 
 interpret(floor, _World, _Holding, _Objects, floor). %floor is floor... move this somewhere.. meh.
@@ -357,11 +362,11 @@ getobj([anyform,-,-],PossibleObjects,SelectedObject) :-
 
 %Get the form and the size of an object knowing its name (one letter) and the possible objects. Output : ObjectFormSize=[form,size]
 getFormAndSize(ObjectLetter,PossibleObjects,ObjectFormSize) :-
-	member(ObjectLetter = ObjectJson,PossibleObjects),ObjectJson=json([form=FormObj,size=SizeObj,color=_]),ObjectFormSize=[FormObj,SizeObj].
+	PossibleObjects = json(PossibleObjectsJson),member(ObjectLetter = ObjectJson,PossibleObjectsJson),ObjectJson=json([form=FormObj,size=SizeObj,color=_]),ObjectFormSize=[FormObj,SizeObj].
 
-%Get the form of an object knowing its name (one letter) and the possible objects. Output : ObjectFormSize=[form,size]
+%Get the form of an object knowing its name (one letter) and the possible objects. Output : ObjectForm=form
 getForm(ObjectLetter,PossibleObjects,ObjectForm) :-
-	member(ObjectLetter = ObjectJson,PossibleObjects),ObjectJson=json([form=FormObj,size=SizeObj,color=_]),ObjectForm=FormObj.
+	PossibleObjects = json(PossibleObjectsJson),member(ObjectLetter = ObjectJson,PossibleObjectsJson),ObjectJson=json([form=ObjectForm,size=_,color=_]).
 
 /*********************** getFormAndSize ***********************
 testFormSize :-
