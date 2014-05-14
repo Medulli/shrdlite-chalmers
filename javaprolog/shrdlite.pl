@@ -62,7 +62,7 @@ main :-
               output = Output],
     json_write(user_output, json(Result)).
 
-%Take the selected object list if the arm does not hold something
+%Take the selected object if the arm does not hold something
 solve(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, ActionTake, Element),
       Holding == @(null),
@@ -74,19 +74,27 @@ solve(_Goal, World, Holding, _Objects, Plan) :-
       nb_setval(world, NewWorld),
       nb_setval(holding, [Element]),
       Plan = ['I pick it up . . .',  [pick, K]].
-/*
+
+%Move the selected object inside the relative object if the arm does not hold something
 solve(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, ActionMoveInside, Element1, Element2),
       Holding == @(null),
       ActionMoveInside == moveinside,
+      getForm(Element2,Objects,ObjectForm),
+      ObjectForm == box,
       whichListInTheWorld(Element1,World,K1),
       nth0(K1,World,LK1),
       checkHead(LK1,Element1),
       whichListInTheWorld(Element2,World,K2),
       nth0(K2,World,LK2),
       checkHead(LK2,Element2),
+      canbeon(Element1,LK2,Objects),
+      pickAt(K1,World,WorldAux),
+      dropAt(Element1,K2,WorldAux,NewWorld),
+      nb_setval(world, NewWorld),
+      nb_setval(holding, [Element]),
       Plan = ['I pick it up . . .',  [pick, K1], '. . . and I drop it down', [drop, K2]].
-*/
+
 %%--------------------------------------------------------------
 
 %tests if element is the head of the list
@@ -317,6 +325,10 @@ getobj([anyform,-,-],PossibleObjects,SelectedObject) :-
 %Get the form and the size of an object knowing its name (one letter) and the possible objects. Output : ObjectFormSize=[form,size]
 getFormAndSize(ObjectLetter,PossibleObjects,ObjectFormSize) :-
 	member(ObjectLetter = ObjectJson,PossibleObjects),ObjectJson=json([form=FormObj,size=SizeObj,color=_]),ObjectFormSize=[FormObj,SizeObj].
+
+%Get the form of an object knowing its name (one letter) and the possible objects. Output : ObjectFormSize=[form,size]
+getForm(ObjectLetter,PossibleObjects,ObjectForm) :-
+	member(ObjectLetter = ObjectJson,PossibleObjects),ObjectJson=json([form=FormObj,size=SizeObj,color=_]),ObjectForm=FormObj.
 
 /*********************** getFormAndSize ***********************
 testFormSize :-
