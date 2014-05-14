@@ -22,7 +22,7 @@ Go to http://localhost:8000/shrdlite.html
 
 In order to test the project from the command line :
 
-    swipl -q -g main,halt -s shrdlite.pl < ../examples/medium.json
+    swipl -q -g main,halt -s javaprolog/shrdlite.pl < examples/small.json
 
 
 ##Current issues

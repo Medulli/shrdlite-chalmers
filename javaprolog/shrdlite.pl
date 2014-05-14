@@ -16,7 +16,9 @@ main :-
     member(objects=Objects, Input),
 
     %reverse each list in the list of lists representing the world
-    maplist(reverse,WorldRev,World),
+    maplist(reverse,WorldRev,CurrentWorld),
+
+    nb_setval(world, CurrentWorld),
 
     parse_all(command, Utterance, Trees),
     ( Trees == [] ->
@@ -24,6 +26,9 @@ main :-
       Plan = @(null),
       Output = 'Parse error!'
     ;
+
+      nb_getval(world,World),
+
       findall(Goal, (member(Tree, Trees),
                      interpret(Tree, World, Holding, Objects, Goal)
                     ), Goals),
@@ -62,6 +67,8 @@ solve(_Goal, World, Holding, _Objects, Plan) :-
       whichListInTheWorld(Element,World,K),
       nth0(K,World,LK),
       checkHead(LK,Element),
+      pickAt(K,World,NewWorld),
+      nb_setval(world, NewWorld),
       Plan = ['I pick it up . . .',  [pick, K], '. . . and I drop it down', [drop, K]].
 /*
 solve(_Goal, World, Holding, _Objects, Plan) :-
@@ -86,6 +93,14 @@ checkHead([H|T],Element) :- H = Element.
 
 whichListInTheWorld(X,[L|_],0) :- member(X,L).
 whichListInTheWorld(X,[_|LL],N) :- whichListInTheWorld(X,LL,M), N is M + 1.
+
+%the third argument is the list of lists corresponding to the one given as second argument in which the head is removed in the list of number: first argument
+pickAt(0,[[H|T1]|T2],[T1|T2]).
+pickAt(N,[H|T1],[H|T2]) :- pickAt(M,T1,T2), N is M + 1.
+
+%the third argument is the list of lists corresponding to the one given as second argument in which the first argument is added at the head in the list of number: second argument
+dropAt(Element,0,[T1|T2],[[Element|T1]|T2]).
+dropAt(Element,N,[H|T1],[H|T2]) :- dropAt(Element,M,T1,T2), N is M + 1.
 
 %%-------------------------- Retrieve Goal info
 
