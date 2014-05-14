@@ -183,11 +183,11 @@ interpret(object(Type,Size,Color), World, @(null), Objects, SelectedObject) :-
 
 
 %If we're holding something, add that to the possible objects
-interpret(object(Type,Size,Color), World, Holding \== @(null), Objects, SelectedObject) :-
+interpret(object(Type,Size,Color), World, Holding, Objects, SelectedObject) :-
 	json(AllPossibleObjects) = Objects,
 	findall(X=json([A,B,C]), (member(Col,World),member(X=json([A,B,C]),AllPossibleObjects),member(X,Col)), PossibleWorldObjects),
 	member(Holding = json([A1,A2,A3]),AllPossibleObjects),
-	append(PossibleWorldObjects,Holding = json([A1,A2,A3]),PossibleObjects),
+	append(PossibleWorldObjects,[Holding = json([A1,A2,A3])],PossibleObjects),
 	getobj([Type,Size,Color], PossibleObjects, SelectedObject).
 
 %All these are basically "any" or "all" object, I guess we could do something along findall(...,...,[Obj]) for the and findall(...,...,[Obj|_]) for any
