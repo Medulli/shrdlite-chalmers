@@ -89,7 +89,7 @@ form(pl) : box ---> [boxes].
 form(sg) : table ---> [table].
 form(pl) : table ---> [tables].
 
-nat : N ---> [N], {integer(N), N > 0}.
+nat : N ---> [N], {integer(N), N >= 0}.
 
 %% Lexicon (without semantic content)
 
