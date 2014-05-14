@@ -11,14 +11,16 @@
 main :-
     json_read(user_input, json(Input)),
     member(utterance=Utterance, Input),
-    member(world=WorldRev, Input),
-    member(holding=Holding, Input),
+    member(world=WorldJson, Input),
+    member(holding=HoldingJson, Input),
     member(objects=Objects, Input),
 
     %reverse each list in the list of lists representing the world
-    maplist(reverse,WorldRev,CurrentWorld),
+    maplist(reverse,WorldJson,CurrentWorld),
 
+    %set the global variables
     nb_setval(world, CurrentWorld),
+    nb_setval(holding, HoldingJson),
 
     parse_all(command, Utterance, Trees),
     ( Trees == [] ->
@@ -28,6 +30,7 @@ main :-
     ;
 
       nb_getval(world,World),
+      nb_getval(holding,Holding),
 
       findall(Goal, (member(Tree, Trees),
                      interpret(Tree, World, Holding, Objects, Goal)
@@ -69,7 +72,8 @@ solve(_Goal, World, Holding, _Objects, Plan) :-
       checkHead(LK,Element),
       pickAt(K,World,NewWorld),
       nb_setval(world, NewWorld),
-      Plan = ['I pick it up . . .',  [pick, K], '. . . and I drop it down', [drop, K]].
+      nb_setval(holding, [Element]),
+      Plan = ['I pick it up . . .',  [pick, K]].
 /*
 solve(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, ActionMoveInside, Element1, Element2),
