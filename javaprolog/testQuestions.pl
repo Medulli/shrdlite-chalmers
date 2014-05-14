@@ -153,6 +153,149 @@ parse_term((A ; B), Xs0, Xs) :-
 parse_term({Goal}, Xs, Xs) :-
     call(Goal).
 
+%Finds object satisfying type size color by checking against a list of possible objects
+%if Holding is empty we only have possible objects in world
+interpret(object(Type,Size,Color), World, @(null), Objects, SelectedObject) :-
+    %get a list of (all) objects
+	json(AllPossibleObjects) = Objects,
+	%find all objects and that are in world, Col is a list of objects (letters) in world, X is "the letter" of the objects in AllPossibleObjects, which must be a member of the list we're currently checking...
+	findall(X=json([A,B,C]), (member(Col,World),member(X=json([A,B,C]),AllPossibleObjects),member(X,Col)), PossibleObjects),
+	%get the actual letter of the object we desired from the pool PossibleObjects
+	getobj([Type,Size,Color], PossibleObjects, SelectedObject).
+
+
+%If we're holding something, add that to the possible objects
+interpret(object(Type,Size,Color), World, Holding, Objects, SelectedObject) :-
+	json(AllPossibleObjects) = Objects,
+	findall(X=json([A,B,C]), (member(Col,World),member(X=json([A,B,C]),AllPossibleObjects),member(X,Col)), PossibleWorldObjects),
+	member(Holding = json([A1,A2,A3]),AllPossibleObjects),
+	append(PossibleWorldObjects,[Holding = json([A1,A2,A3])],PossibleObjects),
+	getobj([Type,Size,Color], PossibleObjects, SelectedObject).
+
+%All these are basically "any" or "all" object, I guess we could do something along findall(...,...,[Obj]) for the and findall(...,...,[Obj|_]) for any
+interpret(basic_entity(any,X), World, Holding, Objects, [SelectedObject]) :-
+    interpret(X, World, Holding, Objects, SelectedObject).
+
+interpret(basic_entity(the,X), World, Holding, Objects, [SelectedObject]) :-
+    findall(SelectedObjectAux, interpret(X, World, Holding, Objects, SelectedObjectAux), [SelectedObject]).
+
+interpret(basic_entity(all,X), World, Holding, Objects, SelectedObject) :-
+    findall(SelectedObjectAux, interpret(X, World, Holding, Objects, SelectedObjectAux), SelectedObject).
+
+
+interpret(relative_entity(any,X, Relation), World, Holding, Objects, [SelectedObject]) :-
+
+    %Find all relative objects
+	findall(RelativeObjectAux, ( interpret(Relation, World, Holding, Objects, RelativeObjectListAuxAux),
+	member(RelativeObjectAux, RelativeObjectListAuxAux)),
+	RelativeObjectListAux),
+	%Remove duplicates from list
+    sort(RelativeObjectListAux,RelativeObjectList),
+    %Make one "instance" for every element
+	member(SelectedObject, RelativeObjectList),
+	%Selected objects must also satisfy description
+	interpret(X, World, Holding, Objects, SelectedObject).
+
+
+interpret(relative_entity(all,X, Relation), World, Holding, Objects, SelectedObject) :-
+	findall(RelativeObjectAux, ( interpret(Relation, World, Holding, Objects, RelativeObjectListAuxAux),
+								 member(RelativeObjectAux, RelativeObjectListAuxAux)),
+								RelativeObjectListAux),
+	sort(RelativeObjectListAux,RelativeObjectList),
+	%Find all objects which supports the relation
+    findall(SelectedObjectAux,( member(SelectedObjectAux, RelativeObjectList),
+								interpret(X,        World, Holding, Objects, SelectedObjectAux)),
+								SelectedObject).
+
+interpret(relative_entity(the,X, Relation), World, Holding, Objects, [SelectedObject]) :-
+	findall(RelativeObjectAux, ( interpret(Relation, World, Holding, Objects, RelativeObjectListAuxAux),
+								 member(RelativeObjectAux, RelativeObjectListAuxAux)),
+								RelativeObjectListAux),
+	sort(RelativeObjectListAux,RelativeObjectList),
+	%There should be only one object fitting the description and relation
+    findall(SelectedObjectAux,( member(SelectedObjectAux, RelativeObjectList),
+								interpret(X,        World, Holding, Objects, SelectedObjectAux)),
+								[SelectedObject]).
+
+%find all objects satisfying relations
+interpret(relative(beside,X), World, Holding, Objects, SelectedObject) :-
+    %find the relative object satisfying type/size/col
+    interpret(X, World, Holding, Objects, RelativeObject),
+    %find all objects satisfying the relation
+	findall(SelectedObjectAux,
+	(member(RelativeObjectAux, RelativeObject), isbeside(SelectedObjectAux,RelativeObjectAux,World)),
+	%Can result in an empty list, so add a condition to avoid that
+	SelectedObject),SelectedObject \== [].
+
+interpret(relative(leftof,X), World, Holding, Objects, SelectedObject) :-
+    interpret(X, World, Holding, Objects, RelativeObject),
+	findall(SelectedObjectAux,
+	(member(RelativeObjectAux, RelativeObject), isleftof(SelectedObjectAux,RelativeObjectAux,World)),
+	SelectedObject),SelectedObject \== [].
+
+interpret(relative(rightof,X), World, Holding, Objects, SelectedObject) :-
+    interpret(X, World, Holding, Objects, RelativeObject),
+	findall(SelectedObjectAux,
+	(member(RelativeObjectAux, RelativeObject), isrightof(SelectedObjectAux,RelativeObjectAux,World)),
+	SelectedObject),SelectedObject \== [].
+
+interpret(relative(above,X), World, Holding, Objects, SelectedObject) :-
+    interpret(X, World, Holding, Objects, RelativeObject),
+	findall(SelectedObjectAux,
+	(member(RelativeObjectAux, RelativeObject), isabove(SelectedObjectAux,RelativeObjectAux,World)),
+	SelectedObject),SelectedObject \== [].
+
+interpret(relative(ontop,X), World, Holding, Objects, SelectedObject) :-
+    interpret(X, World, Holding, Objects, RelativeObject),
+	findall(SelectedObjectAux,
+	(member(RelativeObjectAux, RelativeObject), isontop(SelectedObjectAux,RelativeObjectAux,World)),
+	SelectedObject),SelectedObject \== [].
+
+interpret(relative(ontop,floor), World, _Holding, _Objects, SelectedObject) :-
+    member(Col,World),member(SelectedObject,Col),
+    nth0(IdxS, Col, SelectedObject),
+    (IdxS is 0).
+
+interpret(relative(under,X), World, Holding, Objects, SelectedObject) :-
+    interpret(X, World, Holding, Objects, RelativeObject),
+	findall(SelectedObjectAux,
+	(member(RelativeObjectAux, RelativeObject), isunder(SelectedObjectAux,RelativeObjectAux,World)),
+	SelectedObject),SelectedObject \== [].
+
+interpret(relative(inside,X), World, Holding, Objects, SelectedObject) :-
+    interpret(X, World, Holding, Objects, RelativeObject),
+	findall(SelectedObjectAux,
+	(member(RelativeObjectAux, RelativeObject), isinside(SelectedObjectAux,RelativeObjectAux,World)),
+	SelectedObject),SelectedObject \== [].
+
+%Find object, and set goal accordingly.
+interpret(take(X), World, Holding, Objects,  take(SelectedObject)) :-
+    interpret(X, World, Holding, Objects, SelectedObject).
+
+interpret(floor, _World, _Holding, _Objects, floor). %floor is floor... move this somewhere.. meh.
+
+interpret(move(X,relative(beside, Y)), World, Holding, Objects, movebeside(SelectedObject,RelativeObject)) :-
+	interpret(X, World, Holding, Objects, SelectedObject),
+	interpret(Y, World, Holding, Objects, RelativeObject).
+interpret(move(X,relative(leftof, Y)), World, Holding, Objects, moveleft(SelectedObject,RelativeObject)) :-
+	interpret(X, World, Holding, Objects, SelectedObject),
+	interpret(Y, World, Holding, Objects, RelativeObject).
+interpret(move(X,relative(rightof,Y)), World, Holding, Objects, moveright(SelectedObject,RelativeObject)) :-
+	interpret(X, World, Holding, Objects, SelectedObject),
+	interpret(Y, World, Holding, Objects, RelativeObject).
+interpret(move(X,relative(above,  Y)), World, Holding, Objects, moveabove(SelectedObject,RelativeObject)) :-
+	interpret(X, World, Holding, Objects, SelectedObject),
+	interpret(Y, World, Holding, Objects, RelativeObject).
+interpret(move(X,relative(ontop,  Y)), World, Holding, Objects, moveontop(SelectedObject,RelativeObject)) :-
+	interpret(X, World, Holding, Objects, SelectedObject),
+	interpret(Y, World, Holding, Objects, RelativeObject).
+interpret(move(X,relative(under,  Y)), World, Holding, Objects, moveunder(SelectedObject,RelativeObject)) :-
+	interpret(X, World, Holding, Objects, SelectedObject),
+	interpret(Y, World, Holding, Objects, RelativeObject).
+interpret(move(X,relative(inside, Y)), World, Holding, Objects, moveinside(SelectedObject,RelativeObject)) :-
+	interpret(X, World, Holding, Objects, SelectedObject),
+	interpret(Y, World, Holding, Objects, RelativeObject).
+	
 %% Command test
 testBase :-
 Utterance = [put,the,white,ball,in,a,box,on,the,floor],
