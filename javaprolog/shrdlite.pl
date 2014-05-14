@@ -583,30 +583,9 @@ isinside(X,Y,World) :-
 
 putanyplace(O1,LL,[O1|L],NLL,L) :- nth1(K,LL,LK), canbeon(O1,LK), consLL_at(O1,LL,K,NLL).
 
-%Put the element holded by the arm above the element O2
-
-putabove(O1,O2,LL,[O1|L],NLL,L) :- whichL(O2,LL,K2), nth1(K2,LL,LK2), canbeon(O1,LK2), consLL_at(O1,LL,K2,NLL).
-
-%Put the element holded by the arm on top of the element O2
-
-putontop(O1,O2,LL,[O1|L],NLL,L) :- canbeon(O1,[O2|-]), whichL(O2,LL,K2), nth1(K2,LL,LK2), hdtlL(LK2,O2,_), consLL_at(O1,LL,K2,NLL).
-
 %Put the element holded by the arm on top of the element O2 when O2 is not a topmost element
 
 putontop(O1,O2,LL,[O1|L],NLL,L) :- canbeon(O1,[O2|-]), whichL(O2,LL,K2), nth1(K2,LL,LK2), hdtlL(LK2,H,T), moveanyplace(H,LL,[O1|L],LLaux1,Laux1), take(O1,LLaux1,Laux1,LLaux2,Laux2), putontop(O1,O2,LLaux2,Laux2,NLL,L).
-
-%Put the element holded by the arm to the left the element O2
-
-putleft(O1,O2,LL,[O1|L],NLL,L) :- whichL(O2,LL,K2), nth1(K2L,LL,LK2), K2L is K2 - 1, canbeon(O1,LK2), consLL_at(O1,LL,K2,NLL).
-
-%Put the element holded by the arm to the right the element O2
-
-putright(O1,O2,LL,[O1|L],NLL,L) :- whichL(O2,LL,K2), nth1(K2R,LL,LK2), K2R is K2 + 1, canbeon(O1,LK2), consLL_at(O1,LL,K2,NLL).
-
-%Put the element holded by the arm beside the element O2
-
-putbeside(O1,O2,LL,[O1|L],NLL,L) :- putleft(O1,O2,LL,[O1|L],NLL,L).
-putbeside(O1,O2,LL,[O1|L],NLL,L) :- putright(O1,O2,LL,[O1|L],NLL,L).
 
 %If the arm holds something and we want to take an object different from the one it holds we put it somewhere
 
@@ -614,28 +593,4 @@ take(O,LL,[H|T],NLL,NL) :- putabove(H,Oaux,LL,Kaux,[H|T],LLaux,T), take(O,LLaux,
 
 %If the arm does not hold something but the head of the list in which there is the element we want to take is not this element we move the head somewhere else
 
-take(O,LL,[],NLL,L) :- whichL(O,LL,K), nth1(K,LL,LK), hdtlL(LK,H,_), move(H,Oaux,LL,[],LLaux,Laux), take(O,LLaux,Laux,NLL,L).
-
-%Move O1 at any place
-
-moveanyplace(O1,O2,LL,L,NLL,NL) :- take(O1,LL,L,LLaux,Laux), putanyplace(O1,LLaux,Laux,NLL,NL).
-
-%Move O1 above O2
-
-moveabove(O1,O2,LL,L,NLL,NL) :- take(O1,LL,L,LLaux,Laux), putabove(O1,O2,LLaux,Laux,NLL,NL).
-
-%Move O1 on top of O2
-
-moveontop(O1,O2,LL,L,NLL,NL) :- take(O1,LL,L,LLaux,Laux), putontop(O1,O2,LLaux,Laux,NLL,NL).
-
-%Move O1 to the left of O2
-
-moveleft(O1,O2,LL,L,NLL,NL) :- take(O1,LL,L,LLaux,Laux), putleft(O1,O2,LLaux,Laux,NLL,NL).
-
-%Move O1 to the right of O2
-
-moveright(O1,O2,LL,L,NLL,NL) :- take(O1,LL,L,LLaux,Laux), putright(O1,O2,LLaux,Laux,NLL,NL).
-
-%Move O1 to the beside O2
-
-movebeside(O1,O2,LL,L,NLL,NL) :- take(O1,LL,L,LLaux,Laux), putbeside(O1,O2,LLaux,Laux,NLL,NL).*/
+take(O,LL,[],NLL,L) :- whichL(O,LL,K), nth1(K,LL,LK), hdtlL(LK,H,_), move(H,Oaux,LL,[],LLaux,Laux), take(O,LLaux,Laux,NLL,L).*/
