@@ -239,10 +239,7 @@ interpret(relative(inside,X), World, Holding, Objects, SelectedObject) :-
 	SelectedObject),SelectedObject \== [].
 
 %Find object, and set goal accordingly.
-interpret(take(X), World, @(null), Objects, take(SelectedObject)) :-
-    interpret(X, World, @(null), Objects, SelectedObject).
-
-interpret(take(X), World, Holding \== @(null), Objects,  take(SelectedObject)) :-
+interpret(take(X), World, Holding, Objects,  take(SelectedObject)) :-
     interpret(X, World, Holding, Objects, SelectedObject).
 
 interpret(floor, _World, _Holding, _Objects, floor). %floor is floor... move this somewhere.. meh.
