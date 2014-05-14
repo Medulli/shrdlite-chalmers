@@ -91,6 +91,22 @@ solve(_Goal, World, Holding, _Objects, Plan) :-
       Plan = ['I drop it down', [drop, KDrop], '. . . and I pick it up . . .',  [pick, KPick]].*/
       Plan = ['I drop it down', [drop, 0], '. . . and I pick it up . . .',  [pick, 3]].
 
+%Move the selected object above the relative object in one step if the arm does not hold something and the selected object can be on the relative object
+solve(_Goal, World, Holding, _Objects, Plan) :-
+      retrieveGoalElements(_Goal, ActionMoveAbove, Element1, Element2),
+      Holding == @(null),
+      ActionMoveAbove == moveabove,
+      whichListInTheWorld(Element1,World,K1),
+      nth0(K1,World,LK1),
+      checkHead(LK1,Element1),
+      whichListInTheWorld(Element2,World,K2),
+      nth0(K2,World,LK2),
+      canbeon(Element1,LK2,_Objects),
+      pickAt(K1,World,WorldAux),
+      dropAt(Element1,K2,WorldAux,NewWorld),
+      nb_setval(world, NewWorld),
+      Plan = ['I pick it up . . .',  [pick, K1], '. . . and I drop it down', [drop, K2]].
+
 %Move the selected object on top of the relative object in one step if the arm does not hold something and the selected object can be on the relative object
 solve(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, ActionMoveOnTop, Element1, Element2),
