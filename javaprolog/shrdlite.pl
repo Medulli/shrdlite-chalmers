@@ -43,8 +43,16 @@ main :-
       ; 
         %Goal is a list of goals i.e. "I can do this and this and this... Please specify what you want"
         Goals = [_,_|_] ->
-        Plan = @(null),
-        Output = 'Ambiguity error!'
+		handleAmbiguity(Goals,World,Holding,Objects,PrecisionGoal),
+		%we could not get a goal
+		(FinalGoal = [] ->
+			Plan = @(null),
+			Output = 'Ambiguity error, this object does not exist!'
+			%we have a goal !
+			;plan(PrecisionGoal, World, Holding, Objects, PlanList),
+			solve(PlanList, Plan),
+			nb_getval(output,Output)
+		)
       ; Goals = [Goal],
         plan(Goal, World, Holding, Objects, PlanList),
         solve(PlanList, Plan),
@@ -64,6 +72,7 @@ main :-
               output = Output],
     json_write(user_output, json(Result)).
 
+%Solver
 getPlan([K,-1,move], Plan) :- Plan = ['I pick up the element at place . . . ', K, [pick, K]],nb_setval(output,'Success!').
 getPlan([-1,K,move], Plan) :- Plan = ['I drop it down at place . . . ', K, [drop, K]],nb_setval(output,'Success!').
 getPlan([K1,K2,move], Plan) :- Plan = ['I pick up the element at place . . . ', K1, [pick, K1], 'and I drop it down at place . . . ', K2, [drop, K2]],nb_setval(output,'Success!').
@@ -77,6 +86,45 @@ solve(PlanList, Plan) :- maplist(getPlan, PlanList, PlanAux),append(PlanAux, Pla
 	%move dem objects nub
 	;Plan=PlanAppend
 ).
+
+%Used to get rid of ambiguities
+getCorrectGoal(Precision,PossibleGoal,Result) :- retrieveGoalElements(PossibleGoal, _, Parameter), 
+	(Precision = Parameter -> Result = [PossibleGoal]
+	;Result = []
+	).
+getCorrectGoal(Precision,PossibleGoal,Result) :- retrieveGoalElements(PossibleGoal, _, Parameter1,Parameter2),
+	((Precision = Parameter1;Precision = Parameter2) -> Result = [PossibleGoal]
+	;Result = []
+	).
+	
+getCorrectGoalList([X],PossibleGoalsList,FinalGoal) :- X = [Precision],maplist(getCorrectGoal(Precision),PossibleGoalsList,MatchingGoalsList),delete(MatchingGoalsList,[],FinalGoal).
+getCorrectGoalList([X|R],PossibleGoalsList,FinalGoal) :-  getCorrectGoalList([X],PossibleGoalsList,FinalGoalHead),
+	(FinalGoalHead = [] -> getCorrectGoalList(R,PossibleGoalsList,FinalGoal)
+	;FinalGoal = FinalGoalHead
+	).
+	
+handleAmbiguity(Goals,World,Holding,Objects,Plan,Output,FinalGoal) :-
+	%ask for a new input
+	%%TO BE CHECKED. Add a prompt message ?
+	json_read(user_input, json(InputPrecision)),
+	member(utterance=UtterancePrecision, InputPrecision),
+	%Parse it and find the corresponding object
+	parse_all(precision, UtterancePrecision, TreesPrecision),
+	findall(Goal, (member(Tree, TreesPrecision),
+						 interpret(Tree, World, Holding, Objects, Goal)
+						), GoalsPrecision),
+	%if nothing found then raise error
+	(GoalsPrecision = [] ->
+		FinalGoal=[]
+		%else try to match the new object with the ones from the list of goals
+		;getCorrectGoalList(GoalsPrecision,Goals,FinalGoalList),
+		%nothing found, raise error
+		(FinalGoalList = [] -> 
+		FinalGoal=[]
+		%else we have a goal !
+		;FinalGoalList = [FinalGoal]
+		)
+	).
 
 %Take the selected object if the arm does not hold something
 plan(_Goal, World, Holding, _Objects, Plan) :-
@@ -238,13 +286,13 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       Plan = [[K2,K3,move]|PlanAux].
 
 %% Where : the list of positions (indexes) of the objects
-plan(_Goal, World, Holding, _Objects, Plan) :-
+plan(_Goal, World, _, _, Plan) :-
       retrieveGoalElements(_Goal, where, Parameter),
       maplist(whichListInTheWorld(World),Parameter,IdxList),
       Plan = [[IdxList,where]].	
 	  
 %% Whatrightstack : the list of characteristics (form, size, color) of the objects
-plan(_Goal, World, Holding, _Objects, Plan) :-
+plan(_Goal, World, _, _Objects, Plan) :-
       retrieveGoalElements(_Goal, whatrightstack, Parameter),
 	  length(World, LengthWorld),LengthRest is Parameter + 1,
 	  %stack picked is within bounds
@@ -285,9 +333,6 @@ canbeAt(X,[H|L],Objects,0) :- canbeon(X,H,Objects).
 canbeAt(X,[H|L],Objects,N) :- canbeAt(X,L,Objects,M), N is M + 1.
 
 %%-------------------------- Retrieve Goal info
-%%Take ---------------------------------------------------------------------------------------------------
-retrieveGoalElements(Goal, Action, Parameter) :-
-        Goal = take([Parameter]),Action = take.
 
 %% For stacks, Parameter is always the index of the stack
 		
@@ -314,8 +359,6 @@ retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
 	Goal = moveinside([Parameter1],[Parameter2]),Action = moveinside.
 	
 %%%%% NOT IN THE PLANNER BELOW THIS LINE !
-retrieveGoalElements(Goal, Action, Parameter1) :-
-	Goal = moveontop([Parameter1],floor),Action = moveontopfloor.
 	
 retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
 	Goal = moveleftstack([Parameter1],[Parameter2]),Action = moveleftstack.
@@ -331,7 +374,59 @@ retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
 	
 retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
 	Goal = movebesidestack([Parameter1],[Parameter2]),Action = movebesidestack.
+	
+%%Count ---------------------------------------------------------------------------------------------------
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = countbeside([Parameter1],[Parameter2]),Action = countbeside.
+	
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = countleft([Parameter1],[Parameter2]),Action = countleft.
+	
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = countright([Parameter1],[Parameter2]),Action = countright.
+	
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = countabove([Parameter1],[Parameter2]),Action = countabove.
+	
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = countontop([Parameter1],[Parameter2]),Action = countontop.
+	
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = countunder([Parameter1],[Parameter2]),Action = countunder.
+	
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = countinside([Parameter1],[Parameter2]),Action = countinside.
+	
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = countleftstack([Parameter1],[Parameter2]),Action = countleftstack.
+	
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = countrightstack([Parameter1],[Parameter2]),Action = countrightstack.
+	
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = countabovestack([Parameter1],[Parameter2]),Action = countabovestack.
+	
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = countontopstack([Parameter1],[Parameter2]),Action = countontopstack.
+	
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = countbesidestack([Parameter1],[Parameter2]),Action = countbesidestack.
+	
+%% /!\ Parameter is a list of stack numbers !
+retrieveGoalElements(Goal, Action, Parameter) :-
+	Goal = countinsidestacks(Parameter),Action = countinsidestacks.
+	
+retrieveGoalElements(Goal, Action, Parameter1) :-
+	Goal = countontop([Parameter1],floor),Action = countontopfloor.
+	
+%%here to get rid of warnings
+retrieveGoalElements(Goal, Action, Parameter1) :-
+	Goal = moveontop([Parameter1],floor),Action = moveontopfloor.
 
+%%Take ---------------------------------------------------------------------------------------------------
+retrieveGoalElements(Goal, Action, Parameter) :-
+        Goal = take([Parameter]),Action = take.
+	
 %%Where ---------------------------------------------------------------------------------------------------
 %done
 retrieveGoalElements(Goal, Action, Parameter) :-
@@ -359,8 +454,8 @@ retrieveGoalElements(Goal, Action, Parameter) :-
 retrieveGoalElements(Goal, Action, Parameter) :-
 	Goal = whatinside([Parameter]),Action = whatinside.
 	
-retrieveGoalElements(Goal, Action, Parameter1) :-
-	Goal = whatontop([Parameter1],floor),Action = whatontopfloor.	
+retrieveGoalElements(Goal, Action, Parameter) :-
+	Goal = whatontop([Parameter],floor),Action = whatontopfloor.	
 
 %% /!\ Parameter is a list of stack numbers !
 retrieveGoalElements(Goal, Action, Parameter) :-
@@ -381,55 +476,7 @@ retrieveGoalElements(Goal, Action, Parameter) :-
 	
 retrieveGoalElements(Goal, Action, Parameter) :-
 	Goal = whatbesidestack([Parameter]),Action = whatbesidestack.
-	
-%%Count ---------------------------------------------------------------------------------------------------
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = countbeside([Parameter1],[Parameter2]),Action = countbeside.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = countleft([Parameter1],[Parameter2]),Action = countleft.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = countright([Parameter1],[Parameter2]),Action = countright.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = countabove([Parameter1],[Parameter2]),Action = countabove.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = countontop([Parameter1],[Parameter2]),Action = countontop.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = countunder([Parameter1],[Parameter2]),Action = countunder.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = countinside([Parameter1],[Parameter2]),Action = countinside.
-	
-retrieveGoalElements(Goal, Action, Parameter1) :-
-	Goal = countontop([Parameter1],floor),Action = countontopfloor.
-	
-%% /!\ Parameter is a list of stack numbers !
-retrieveGoalElements(Goal, Action, Parameter) :-
-	Goal = countinsidestacks(Parameter),Action = countinsidestacks.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = countleftstack([Parameter1],[Parameter2]),Action = countleftstack.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = countrightstack([Parameter1],[Parameter2]),Action = countrightstack.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = countabovestack([Parameter1],[Parameter2]),Action = countabovestack.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = countontopstack([Parameter1],[Parameter2]),Action = countontopstack.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = countbesidestack([Parameter1],[Parameter2]),Action = countbesidestack.
-	
-%%Precision in case of ambiguity ---------------------------------------------------------------------------------------------------
-retrieveGoalElements(Goal, Action, Parameter) :-
-        Goal = [[Parameter]],Action = precision.
-	
+		
 %---------------------------------------------------------------------------------------------------------------
 /*	
 test :-

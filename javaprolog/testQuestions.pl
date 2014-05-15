@@ -1261,9 +1261,60 @@ test30 :-
 %%Precision in case of ambiguity ---------------------------------------------------------------------------------------------------
 retrieveGoalElements(Goal, Action, Parameter) :-
         Goal = [[Parameter]],Action = precision.
+		
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = moveontopstack([Parameter1],[Parameter2]),Action = moveontopstack.
 	
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = moveright([Parameter1],[Parameter2]),Action = moveright.
+	
+retrieveGoalElements(Goal, Action, Parameter) :-
+        Goal = take([Parameter]),Action = take.
+
+getCorrectGoal(Precision,PossibleGoal,Result) :- retrieveGoalElements(PossibleGoal, _, Parameter), 
+	(Precision = Parameter -> Result = [PossibleGoal]
+	;Result = []
+	).
+getCorrectGoal(Precision,PossibleGoal,Result) :- retrieveGoalElements(PossibleGoal, _, Parameter1,Parameter2),
+	((Precision = Parameter1;Precision = Parameter2) -> Result = [PossibleGoal]
+	;Result = []
+	).
+	
+getCorrectGoalList([X],PossibleGoalsList,FinalGoal) :- X = [Precision],maplist(getCorrectGoal(Precision),PossibleGoalsList,MatchingGoalsList),delete(MatchingGoalsList,[],FinalGoal).
+getCorrectGoalList([X|R],PossibleGoalsList,FinalGoal) :-  getCorrectGoalList([X],PossibleGoalsList,FinalGoalHead),
+	(FinalGoalHead = [] -> getCorrectGoalList(R,PossibleGoalsList,FinalGoal)
+	;FinalGoal = FinalGoalHead
+	).
+	
+handleAmbiguity(Goals,World,Holding,Objects,Plan,Output,FinalGoal) :-
+	%ask for a new input
+	%json_read(user_input, json(InputPrecision)),
+	%member(utterance=UtterancePrecision, InputPrecision),
+	UtterancePrecision = [the, small, red, one],
+	%Parse it and find the corresponding object
+	parse_all(precision, UtterancePrecision, TreesPrecision),
+	findall(Goal, (member(Tree, TreesPrecision),
+						 interpret(Tree, World, Holding, Objects, Goal)
+						), GoalsPrecision),
+	%if nothing found then raise error
+	(GoalsPrecision = [] -> 
+		Plan = @(null),
+		Output = 'Ambiguity error, this object does not exist!',
+		FinalGoal=[]
+		%else try to match the new object with the ones from the list of goals
+		;getCorrectGoalList(GoalsPrecision,Goals,FinalGoalList),
+		%nothing found, raise error
+		(FinalGoalList = [] -> 
+		Plan = @(null),
+		Output = 'Ambiguity error, this object does not exist!',
+		FinalGoal=[]
+		%else we have a goal !
+		;FinalGoalList = [FinalGoal]
+		)
+	).
+
 test31 :-
-World = [[e],[l,g],[n],[f,m,k],[p]],
+World = [[e],[q,l,g],[n],[f,m,k],[p]],
 Holding = @(null),
 Objects = json([
 	a=json([form=brick,size=large,color=green]),
@@ -1280,16 +1331,81 @@ Objects = json([
 	l=json([form=box,size=large,color=red]),
 	m=json([form=box,size=small,color=blue]),
 	n=json([form=ball,size=small,color=red]),
-	p=json([form=ball,size=large,color=blue])
+	p=json([form=ball,size=large,color=blue]),
+	q=json([form=box,size=small,color=red])
 	]),
-Utterance = [take, the, ball],
+%Utterance = [take, the, ball],
+Utterance = [move, the, box, on, stack, 0],
 parse_all(command, Utterance, Trees),write(Trees),
 findall(Goal, (member(Tree, Trees),
                      interpret(Tree, World, Holding, Objects, Goal)
                     ), Goals),write(Goals),nl,
-%[take([e]),take([n]),take([f]),take([p])]
+%UtterancePrecision = [the, small, one],
 UtterancePrecision = [the, small, red, one],
+%UtterancePrecision = [the, medium, red, one],
 parse_all(precision, UtterancePrecision, TreesPrecision),write(TreesPrecision),
 findall(Goal, (member(Tree, TreesPrecision),
                      interpret(Tree, World, Holding, Objects, Goal)
-                    ), GoalsPrecision),write(GoalsPrecision),nl.
+                    ), GoalsPrecision),write(GoalsPrecision),nl,		
+(GoalsPrecision = [] -> 
+	Plan = @(null),
+	Output = 'Ambiguity error, this object does not exist!',write(Output)
+	;%retrieveGoalElements(GoalsPrecision, precision, Precision),write(Precision),nl,	
+	%maplist(getCorrectGoal(Precision),Goals,MatchingGoalsList),write(MatchingGoalsList),delete(MatchingGoalsList,[],[FinalGoal]),write(FinalGoal)		
+	getCorrectGoalList(GoalsPrecision,Goals,FinalGoalList),
+	(FinalGoalList = [] -> 
+	Plan = @(null),
+	Output = 'Ambiguity error, this object does not exist!',write(Output)
+	;FinalGoalList = [FinalGoal],write(FinalGoal)
+	)
+).
+
+test32 :-
+%PossibleGoal=take([e]),
+PossibleGoal=moveontopstack([e],[0]),
+%Precision = e,
+Precision = n,
+getCorrectGoal(Precision,PossibleGoal,Result),write(Result).
+
+test33 :-
+%PossibleGoalsList = [take([e]),take([n]),take([f]),take([p])],
+PossibleGoalsList = [moveontopstack([e],[0]),moveontopstack([n],[0]),moveontopstack([f],[0]),moveontopstack([p],[0])],
+Precision = n,
+maplist(getCorrectGoal(Precision),PossibleGoalsList,MatchingGoalsList),write(MatchingGoalsList),delete(MatchingGoalsList,[],[FinalGoal]),write(FinalGoal).	
+
+test34 :-	
+PossibleGoalsList = [moveontopstack([e],[0]),moveontopstack([n],[0]),moveontopstack([f],[0]),moveontopstack([p],[0])],
+%Precision = [[q],[m],[n]],
+Precision = [[q],[m],[a]],
+%Precision = [[q]],
+getCorrectGoalList(Precision,PossibleGoalsList,FinalGoal),write(FinalGoal).
+
+test35 :-
+World = [[e],[q,l,g],[n],[f,m,k],[p]],
+Holding = @(null),
+Objects = json([
+	a=json([form=brick,size=large,color=green]),
+	b=json([form=brick,size=small,color=white]),
+	c=json([form=plank,size=large,color=red]),
+	d=json([form=plank,size=small,color=green]),
+	e=json([form=ball,size=large,color=white]),
+	f=json([form=ball,size=small,color=black]),
+	g=json([form=table,size=large,color=blue]),
+	h=json([form=table,size=small,color=red]),
+	i=json([form=pyramid,size=large,color=yellow]),
+	j=json([form=pyramid,size=small,color=red]),
+	k=json([form=box,size=large,color=yellow]),
+	l=json([form=box,size=large,color=red]),
+	m=json([form=box,size=small,color=blue]),
+	n=json([form=ball,size=small,color=red]),
+	p=json([form=ball,size=large,color=blue]),
+	q=json([form=box,size=small,color=red])
+	]),
+%Utterance = [take, the, ball],
+Utterance = [move, the, box, on, stack, 0],
+parse_all(command, Utterance, Trees),
+findall(Goal, (member(Tree, Trees),
+                     interpret(Tree, World, Holding, Objects, Goal)
+                    ), Goals),
+handleAmbiguity(Goals,World,Holding,Objects,Plan,Output,FinalGoal),
+write(FinalGoal),nl,write(Plan).
