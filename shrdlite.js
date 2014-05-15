@@ -444,6 +444,7 @@ function userInput() {
 
     $.ajax({
         url: AjaxScript,
+        type: 'POST',
         dataType: "text",
         cache: false,
         timeout: 1000 * AjaxTimeout,
