@@ -106,7 +106,7 @@ solve(_Goal, World, Holding, _Objects, Plan) :-
       pickAt(K1,World,WorldAux),
       dropAt(Element1,K2,WorldAux,NewWorld),
       nb_setval(world, NewWorld),
-      Plan = ['I pick it up . . .',  [pick, K1], '. . . and I drop it down', [drop, K2]].
+      Plan = ['I pick up the element at place . . . ', K1, [pick, K1], 'and I drop it down at place . . . ', K2, [drop, K2]].
 
 solve(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, ActionMoveBeside, Element1, Element2),
@@ -122,7 +122,7 @@ solve(_Goal, World, Holding, _Objects, Plan) :-
       pickAt(K1,World,WorldAux),
       dropAt(Element1,K2,WorldAux,NewWorld),
       nb_setval(world, NewWorld),
-      Plan = ['I pick it up . . .',  [pick, K1], '. . . and I drop it down', [drop, K2]].
+      Plan = ['I pick up the element at place . . . ', K1, [pick, K1], 'and I drop it down at place . . . ', K2, [drop, K2]].
 
 %Move the selected object to the left the relative object in one step if the arm does not hold something and the selected object can be on the relative object
 solve(_Goal, World, Holding, _Objects, Plan) :-
@@ -139,7 +139,7 @@ solve(_Goal, World, Holding, _Objects, Plan) :-
       pickAt(K1,World,WorldAux),
       dropAt(Element1,K2,WorldAux,NewWorld),
       nb_setval(world, NewWorld),
-      Plan = ['I pick it up . . .',  [pick, K1], '. . . and I drop it down', [drop, K2]].
+      Plan = ['I pick up the element at place . . . ', K1, [pick, K1], 'and I drop it down at place . . . ', K2, [drop, K2]].
 
 %Move the selected object to the right the relative object in one step if the arm does not hold something and the selected object can be on the relative object
 solve(_Goal, World, Holding, _Objects, Plan) :-
@@ -156,7 +156,7 @@ solve(_Goal, World, Holding, _Objects, Plan) :-
       pickAt(K1,World,WorldAux),
       dropAt(Element1,K2,WorldAux,NewWorld),
       nb_setval(world, NewWorld),
-      Plan = ['I pick it up . . .',  [pick, K1], '. . . and I drop it down', [drop, K2]].
+      Plan = ['I pick up the element at place . . . ', K1, [pick, K1], 'and I drop it down at place . . . ', K2, [drop, K2]].
 
 %Move the selected object above the relative object in one step if the arm does not hold something and the selected object can be on the relative object
 solve(_Goal, World, Holding, _Objects, Plan) :-
@@ -172,7 +172,7 @@ solve(_Goal, World, Holding, _Objects, Plan) :-
       pickAt(K1,World,WorldAux),
       dropAt(Element1,K2,WorldAux,NewWorld),
       nb_setval(world, NewWorld),
-      Plan = ['I pick it up . . .',  [pick, K1], '. . . and I drop it down', [drop, K2]].
+      Plan = ['I pick up the element at place . . . ', K1, [pick, K1], 'and I drop it down at place . . . ', K2, [drop, K2]].
 
 %Move the selected object on top of the relative object in one step if the arm does not hold something and the selected object can be on the relative object
 solve(_Goal, World, Holding, _Objects, Plan) :-
@@ -191,7 +191,7 @@ solve(_Goal, World, Holding, _Objects, Plan) :-
       pickAt(K1,World,WorldAux),
       dropAt(Element1,K2,WorldAux,NewWorld),
       nb_setval(world, NewWorld),
-      Plan = ['I pick it up . . .',  [pick, K1], '. . . and I drop it down', [drop, K2]].
+      Plan = ['I pick up the element at place . . . ', K1, [pick, K1], 'and I drop it down at place . . . ', K2, [drop, K2]].
 
 %Move the selected object inside the relative object in one step if the arm does not hold something and the selected object can be on the relative object
 solve(_Goal, World, Holding, _Objects, Plan) :-
@@ -210,7 +210,7 @@ solve(_Goal, World, Holding, _Objects, Plan) :-
       pickAt(K1,World,WorldAux),
       dropAt(Element1,K2,WorldAux,NewWorld),
       nb_setval(world, NewWorld),
-      Plan = ['I pick it up . . .',  [pick, K1], '. . . and I drop it down', [drop, K2]].
+      Plan = ['I pick up the element at place . . . ', K1, [pick, K1], 'and I drop it down at place . . . ', K2, [drop, K2]].
 
 %%--------------------------------------------------------------
 
