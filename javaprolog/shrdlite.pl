@@ -329,6 +329,7 @@ retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
 	Goal = movebesidestack([Parameter1],[Parameter2]),Action = movebesidestack.
 
 %%Where ---------------------------------------------------------------------------------------------------
+%done
 retrieveGoalElements(Goal, Action, Parameter) :-
         Goal = where([Parameter]),Action = where.
 	
@@ -363,7 +364,8 @@ retrieveGoalElements(Goal, Action, Parameter) :-
 	
 retrieveGoalElements(Goal, Action, Parameter) :-
 	Goal = whatleftstack([Parameter]),Action = whatleftstack.
-	
+
+%done	
 retrieveGoalElements(Goal, Action, Parameter) :-
 	Goal = whatrightstack([Parameter]),Action = whatrightstack.
 	
@@ -437,6 +439,7 @@ retrieveGoalElements(Goal, Action, Parameter),write(Action),write(Parameter).
 
 %---------------------------------------------------------------------------------------------------- Constraints management ----------------------------------------------------------------------------------------------------
 %Get the form, the size and the color of an object knowing its name (one letter) and the possible objects. Output : ObjectFormSizeColor=[form,size,color]
+%Not used (yet)
 getFormSizeColor(ObjectLetter,PossibleObjects,ObjectFormSizeColor) :-
 	PossibleObjects = json(PossibleObjectsJson),member(ObjectLetter = ObjectJson,PossibleObjectsJson),ObjectJson=json([form=FormObj,size=SizeObj,color=ColorObj]),ObjectFormSizeColor=[FormObj,SizeObj,ColorObj].
 
