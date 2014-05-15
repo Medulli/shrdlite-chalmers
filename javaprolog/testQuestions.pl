@@ -983,7 +983,7 @@ findall(Goal, (member(Tree, Trees),
                     ), Goals),write(Goals).
 
 retrieveGoalElements(Goal, Action, Parameter) :-
-	Goal = whatinsidestacks(Parameter),Action = whatinsidestacks.				
+	Goal = whatrightstack([Parameter]),Action = whatrightstack.		
 retrieveGoalElements(Goal, Action, Parameter) :-
         Goal = take([Parameter]),Action = take.
 	
@@ -1025,6 +1025,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       %nb_setval(world, NewWorld),
       %b_setval(holding, [Element]),
       Plan = [[K,-1]].
+
 %tests if element is the head of the list
 checkHead([H|T],Element) :- H = Element.
 
@@ -1034,8 +1035,8 @@ checkTail([H|T],Tail) :- T = Tail.
 %return the number K if X is in the Kth list of lists LL
 %findall(X,whichListInTheWorld(a,[[d,e,f],[a,b,c]],X),R).
 
-whichListInTheWorld(X,[L|_],0) :- member(X,L).
-whichListInTheWorld(X,[_|LL],N) :- whichListInTheWorld(X,LL,M), N is M + 1.
+whichListInTheWorld([L|_],X,0) :- member(X,L).
+whichListInTheWorld([_|LL],X,N) :- whichListInTheWorld(LL,X,M), N is M + 1.
 
 %the third argument is the list of lists corresponding to the one given as second argument in which the head is removed in the list of number: first argument
 pickAt(0,[[H|T1]|T2],[T1|T2]).
@@ -1098,3 +1099,111 @@ parse_all(command, Utterance, Trees),write(Trees),
 findall(Goal, (member(Tree, Trees),
                      interpret(Tree, World, Holding, Objects, Goal)
                     ), Goals),write(Goals).
+
+%Get the form, the size and the color of an object knowing its name (one letter) and the possible objects. Output : ObjectFormSizeColor=[form,size,color]
+getFormSizeColor(PossibleObjects,ObjectLetter,ObjectFormSizeColor) :-
+	PossibleObjects = json(PossibleObjectsJson),member(ObjectLetter = ObjectJson,PossibleObjectsJson),ObjectJson=json([form=FormObj,size=SizeObj,color=ColorObj]),ObjectFormSizeColor=[SizeObj,ColorObj,FormObj].
+getFormSizeColorText(PossibleObjects,ObjectLetter,ObjectFormSizeColor) :-
+	PossibleObjects = json(PossibleObjectsJson),member(ObjectLetter = ObjectJson,PossibleObjectsJson),ObjectJson=json([form=FormObj,size=SizeObj,color=ColorObj]),
+	atom_string(SizeObj,SizeObjStr),atom_string(ColorObj,ColorObjStr),atom_string(FormObj,FormObjStr),
+	string_concat('a ',SizeObjStr,FinalStr1),
+	string_concat(FinalStr1,' ',FinalStr2),
+	string_concat(FinalStr2,ColorObjStr,FinalStr3),
+	string_concat(FinalStr3,' ',FinalStr4),
+	string_concat(FinalStr4,FormObjStr,FinalStr5),
+	ObjectFormSizeColor=FinalStr5.
+					
+plan(_Goal, World, Holding, _Objects, Plan) :-
+      retrieveGoalElements(_Goal, whatrightstack, Parameter),
+	  length(World, LengthWorld),LengthRest is Parameter + 1,
+	  %stack picked is within bounds
+	  (LengthRest < LengthWorld ->
+		  length(Rest, LengthRest), append(Rest, RightStacks, World),
+		  flatten(RightStacks,ListObjLetters),
+		  maplist(getFormSizeColorText(_Objects),ListObjLetters,ObjectFormSizeColorList),%,write(ObjectFormSizeColor),
+		  Plan = [[ObjectFormSizeColorList,what]]
+		  %or not
+		; Plan = [[[],what]]
+	  ).
+	  
+getPlan([K,-1,move], Plan) :- Plan = ['I pick up the element at place . . . ', K, [pick, K]].
+getPlan([-1,K,move], Plan) :- Plan = ['I drop it down at place . . . ', K, [drop, K]].
+getPlan([K1,K2,move], Plan) :- Plan = ['I pick up the element at place . . . ', K1, [pick, K1], 'and I drop it down at place . . . ', K2, [drop, K2]].
+%is it possible to not send a pick or drop ?
+getPlan([L,where], Plan) :- Plan = ['On place(s) . . . ', L].
+getPlan([L,what], Plan) :- Plan = ['The list of relevant objects is . . . ', L].
+getPlan([N,count], Plan) :- Plan = ['There is/are . . . ', N ,'Object(s)'].
+solve(PlanList, Plan) :- maplist(getPlan, PlanList, PlanAux),append(PlanAux, Plan).
+					
+test27 :-
+World = [[e],[l,g],[],[f,m,k],[]],
+Holding = @(null),
+Objects = json([
+	a=json([form=brick,size=large,color=green]),
+	b=json([form=brick,size=small,color=white]),
+	c=json([form=plank,size=large,color=red]),
+	d=json([form=plank,size=small,color=green]),
+	e=json([form=ball,size=large,color=white]),
+	f=json([form=ball,size=small,color=black]),
+	g=json([form=table,size=large,color=blue]),
+	h=json([form=table,size=small,color=red]),
+	i=json([form=pyramid,size=large,color=yellow]),
+	j=json([form=pyramid,size=small,color=red]),
+	k=json([form=box,size=large,color=yellow]),
+	l=json([form=box,size=large,color=red]),
+	m=json([form=box,size=small,color=blue])
+	]),
+Utterance = [what, is, right, of, stack, 1],
+parse_all(command, Utterance, Trees),%write(Trees),
+findall(Goal, (member(Tree, Trees),
+                     interpret(Tree, World, Holding, Objects, Goal)
+                    ), Goals),%write(Goals),
+Goals = [Goal],
+plan(Goal, World, Holding, Objects, PlanList),write(PlanList),
+solve(PlanList, Plan),write(Plan).
+
+test28 :-
+	A = red,
+	B = blue,
+	atom_string(A,Astr),
+	atom_string(B,Bstr),
+	string_concat(Astr,' ',Cstr),
+	string_concat(Cstr,Bstr,Dstr),
+	write(Dstr).%,write(Bstr).
+
+retrieveGoalElements(Goal, Action, Parameter) :-
+        Goal = where(Parameter),Action = where.
+	
+%% Where : the list of positions (indexes) of the objects
+plan(_Goal, World, Holding, _Objects, Plan) :-
+      retrieveGoalElements(_Goal, where, Parameter),
+      maplist(whichListInTheWorld(World),Parameter,IdxList),
+      Plan = [[IdxList,where]].	
+	  
+test29 :-
+World = [[e],[l,g],[],[f,m,k],[]],
+Holding = @(null),
+Objects = json([
+	a=json([form=brick,size=large,color=green]),
+	b=json([form=brick,size=small,color=white]),
+	c=json([form=plank,size=large,color=red]),
+	d=json([form=plank,size=small,color=green]),
+	e=json([form=ball,size=large,color=white]),
+	f=json([form=ball,size=small,color=black]),
+	g=json([form=table,size=large,color=blue]),
+	h=json([form=table,size=small,color=red]),
+	i=json([form=pyramid,size=large,color=yellow]),
+	j=json([form=pyramid,size=small,color=red]),
+	k=json([form=box,size=large,color=yellow]),
+	l=json([form=box,size=large,color=red]),
+	m=json([form=box,size=small,color=blue])
+	]),
+Utterance = [where, are, all, balls],
+parse_all(command, Utterance, Trees),%write(Trees),
+findall(Goal, (member(Tree, Trees),
+                     interpret(Tree, World, Holding, Objects, Goal)
+                    ), Goals),%write(Goals),
+Goals = [Goal],
+plan(Goal, World, Holding, Objects, PlanList),write(PlanList),
+solve(PlanList, Plan),write(Plan).	  
+

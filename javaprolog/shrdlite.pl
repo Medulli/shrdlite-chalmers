@@ -70,13 +70,15 @@ getPlan([-1,K,move], Plan) :- Plan = ['I drop it down at place . . . ', K, [drop
 getPlan([K1,K2,move], Plan) :- Plan = ['I pick up the element at place . . . ', K1, [pick, K1], 'and I drop it down at place . . . ', K2, [drop, K2]].
 %is it possible to not send a pick or drop ?
 getPlan([L,where], Plan) :- Plan = ['On place(s) . . . ', L].
+getPlan([L,what], Plan) :- Plan = ['The list of relevant objects is . . . ', L].
+getPlan([N,count], Plan) :- Plan = ['There is/are . . . ', N ,'Object(s)'].
 solve(PlanList, Plan) :- maplist(getPlan, PlanList, PlanAux),append(PlanAux, Plan).
 
 %Take the selected object if the arm does not hold something
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, take, Element),
       Holding == @(null),
-      whichListInTheWorld(Element,World,K),
+      whichListInTheWorld(World,Element,K),
       nth0(K,World,LK),
       checkHead(LK,Element),
       pickAt(K,World,NewWorld),
@@ -91,7 +93,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       ActionTake == take,
       canbeAt(ElementDrop,World,_Objects,KDrop),
       dropAt(ElementDrop,KDrop,World,WorldAux),
-      whichListInTheWorld(ElementPick,WorldAux,KPick),
+      whichListInTheWorld(WorldAux,ElementPick,KPick),
       nth0(KPick,WorldAux,LKPick),
       checkHead(LKPick,ElementPick),
       pickAt(KPick,WorldAux,NewWorld),
@@ -104,10 +106,10 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, movebeside, Element1, Element2),
       Holding == @(null),
-      whichListInTheWorld(Element1,World,K1),
+      whichListInTheWorld(World,Element1,K1),
       nth0(K1,World,LK1),
       checkHead(LK1,Element1),
-      whichListInTheWorld(Element2,World,K2Aux),
+      whichListInTheWorld(World,Element2,K2Aux),
       K2 is K2Aux - 1,
       nth0(K2,World,LK2),
       canbeon(Element1,LK2,_Objects),
@@ -119,10 +121,10 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, movebeside, Element1, Element2),
       Holding == @(null),
-      whichListInTheWorld(Element1,World,K1),
+      whichListInTheWorld(World,Element1,K1),
       nth0(K1,World,LK1),
       checkHead(LK1,Element1),
-      whichListInTheWorld(Element2,World,K2Aux),
+      whichListInTheWorld(World,Element2,K2Aux),
       K2 is K2Aux + 1,
       nth0(K2,World,LK2),
       canbeon(Element1,LK2,_Objects),
@@ -135,10 +137,10 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, moveleft, Element1, Element2),
       Holding == @(null),
-      whichListInTheWorld(Element1,World,K1),
+      whichListInTheWorld(World,Element1,K1),
       nth0(K1,World,LK1),
       checkHead(LK1,Element1),
-      whichListInTheWorld(Element2,World,K2Aux),
+      whichListInTheWorld(World,Element2,K2Aux),
       K2 is K2Aux - 1,
       nth0(K2,World,LK2),
       canbeon(Element1,LK2,_Objects),
@@ -151,10 +153,10 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, moveright, Element1, Element2),
       Holding == @(null),
-      whichListInTheWorld(Element1,World,K1),
+      whichListInTheWorld(World,Element1,K1),
       nth0(K1,World,LK1),
       checkHead(LK1,Element1),
-      whichListInTheWorld(Element2,World,K2Aux),
+      whichListInTheWorld(World,Element2,K2Aux),
       K2 is K2Aux + 1,
       nth0(K2,World,LK2),
       canbeon(Element1,LK2,_Objects),
@@ -167,10 +169,10 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, moveabove, Element1, Element2),
       Holding == @(null),
-      whichListInTheWorld(Element1,World,K1),
+      whichListInTheWorld(World,Element1,K1),
       nth0(K1,World,LK1),
       checkHead(LK1,Element1),
-      whichListInTheWorld(Element2,World,K2),
+      whichListInTheWorld(World,Element2,K2),
       nth0(K2,World,LK2),
       canbeon(Element1,LK2,_Objects),
       pickAt(K1,World,WorldAux),
@@ -184,10 +186,10 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       Holding == @(null),
       getForm(Element2,_Objects,ObjectForm),
       ObjectForm \== box,
-      whichListInTheWorld(Element1,World,K1),
+      whichListInTheWorld(World,Element1,K1),
       nth0(K1,World,LK1),
       checkHead(LK1,Element1),
-      whichListInTheWorld(Element2,World,K2),
+      whichListInTheWorld(World,Element2,K2),
       nth0(K2,World,LK2),
       checkHead(LK2,Element2),
       canbeon(Element1,LK2,_Objects),
@@ -202,10 +204,10 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       Holding == @(null),
       getForm(Element2,_Objects,ObjectForm),
       ObjectForm == box,
-      whichListInTheWorld(Element1,World,K1),
+      whichListInTheWorld(World,Element1,K1),
       nth0(K1,World,LK1),
       checkHead(LK1,Element1),
-      whichListInTheWorld(Element2,World,K2),
+      whichListInTheWorld(World,Element2,K2),
       nth0(K2,World,LK2),
       checkHead(LK2,Element2),
       canbeon(Element1,LK2,_Objects),
@@ -220,7 +222,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       Holding == @(null),
       getForm(Element2,_Objects,ObjectForm),
       ObjectForm == box,
-      whichListInTheWorld(Element2,World,K2),
+      whichListInTheWorld(World,Element2,K2),
       nth0(K2,World,LK2),
       checkHead(LK2,HdLK2),
       HdLK2 \== Element2,
@@ -234,8 +236,23 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
 %% Where : the list of positions (indexes) of the objects
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, where, Parameter),
-      maplist(whichListInTheWorld(World),Parameter,IdxList)
-      Plan = [IdxList,where].
+      maplist(whichListInTheWorld(World),Parameter,IdxList),
+      Plan = [[IdxList,where]].	
+	  
+%% Whatrightstack : the list of characteristics (form, size, color) of the objects
+plan(_Goal, World, Holding, _Objects, Plan) :-
+      retrieveGoalElements(_Goal, whatrightstack, Parameter),
+	  length(World, LengthWorld),LengthRest is Parameter + 1,
+	  %stack picked is within bounds
+	  (LengthRest < LengthWorld ->
+		  %World is split into 2 parts : Rest with the left until the stack, RightStacks with everything we want to examine.
+		  length(Rest, LengthRest), append(Rest, RightStacks, World),
+		  flatten(RightStacks,ListObjLetters),
+		  maplist(getFormSizeColorText(_Objects),ListObjLetters,ObjectFormSizeColorList),
+		  Plan = [[ObjectFormSizeColorList,what]]
+		  %or not
+		; Plan = [[[],what]]
+	  ).
 	  
 %%--------------------------------------------------------------
 
@@ -248,8 +265,8 @@ checkTail([H|T],Tail) :- T = Tail.
 %return the number K if X is in the Kth list of lists LL
 %findall(X,whichListInTheWorld(a,[[d,e,f],[a,b,c]],X),R).
 
-whichListInTheWorld(X,[L|_],0) :- member(X,L).
-whichListInTheWorld(X,[_|LL],N) :- whichListInTheWorld(X,LL,M), N is M + 1.
+whichListInTheWorld([L|_],X,0) :- member(X,L).
+whichListInTheWorld([_|LL],X,N) :- whichListInTheWorld(LL,X,M), N is M + 1.
 
 %the third argument is the list of lists corresponding to the one given as second argument in which the head is removed in the list of number: first argument
 pickAt(0,[[H|T1]|T2],[T1|T2]).
@@ -419,6 +436,20 @@ retrieveGoalElements(Goal, Action, Parameter),write(Action),write(Parameter).
 */
 
 %---------------------------------------------------------------------------------------------------- Constraints management ----------------------------------------------------------------------------------------------------
+%Get the form, the size and the color of an object knowing its name (one letter) and the possible objects. Output : ObjectFormSizeColor=[form,size,color]
+getFormSizeColor(ObjectLetter,PossibleObjects,ObjectFormSizeColor) :-
+	PossibleObjects = json(PossibleObjectsJson),member(ObjectLetter = ObjectJson,PossibleObjectsJson),ObjectJson=json([form=FormObj,size=SizeObj,color=ColorObj]),ObjectFormSizeColor=[FormObj,SizeObj,ColorObj].
+
+%The same, in text form	
+getFormSizeColorText(PossibleObjects,ObjectLetter,ObjectFormSizeColor) :-
+	PossibleObjects = json(PossibleObjectsJson),member(ObjectLetter = ObjectJson,PossibleObjectsJson),ObjectJson=json([form=FormObj,size=SizeObj,color=ColorObj]),
+	atom_string(SizeObj,SizeObjStr),atom_string(ColorObj,ColorObjStr),atom_string(FormObj,FormObjStr),
+	string_concat('a ',SizeObjStr,FinalStr1),
+	string_concat(FinalStr1,' ',FinalStr2),
+	string_concat(FinalStr2,ColorObjStr,FinalStr3),
+	string_concat(FinalStr3,' ',FinalStr4),
+	string_concat(FinalStr4,FormObjStr,FinalStr5),
+	ObjectFormSizeColor=FinalStr5.
 
 %Get the form and the size of an object knowing its name (one letter) and the possible objects. Output : ObjectFormSize=[form,size]
 getFormAndSize(ObjectLetter,PossibleObjects,ObjectFormSize) :-
