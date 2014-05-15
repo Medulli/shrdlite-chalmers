@@ -84,6 +84,10 @@ $(function() {
         userInput();
         return false;
     });
+    $('#userinput').on('webkitspeechchange', function() {
+        userInput();
+        return false;
+    });
     $('#inputexamples').change(function(){
         userInput();
         return false;
