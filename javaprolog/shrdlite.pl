@@ -37,26 +37,26 @@ main :-
         Goals == [] ->
         Plan = @(null),
         Output = 'Interpretation error!'
-      ; Goals = [take([_,_|_])] -> 
+      ; Goals = [take([_,_|_])] ->
         Plan = @(null),
-		Output = 'I can only hold one object!'
-      ; 
+Output = 'I can only hold one object!'
+      ;
         %Goal is a list of goals i.e. "I can do this and this and this... Please specify what you want"
         Goals = [_,_|_] ->
-		handleAmbiguity(Goals,World,Holding,Objects,PrecisionGoal),
-		%we could not get a goal
-		(FinalGoal = [] ->
-			Plan = @(null),
-			Output = 'Ambiguity error, this object does not exist!'
-			%we have a goal !
-			;plan(PrecisionGoal, World, Holding, Objects, PlanList),
-			solve(PlanList, Plan),
-			nb_getval(output,Output)
-		)
+handleAmbiguity(Goals,World,Holding,Objects,PrecisionGoal),
+%we could not get a goal
+(FinalGoal = [] ->
+Plan = @(null),
+Output = 'Ambiguity error, this object does not exist!'
+%we have a goal !
+;plan(PrecisionGoal, World, Holding, Objects, PlanList),
+solve(PlanList, Plan),
+nb_getval(output,Output)
+)
       ; Goals = [Goal],
         plan(Goal, World, Holding, Objects, PlanList),
         solve(PlanList, Plan),
-		nb_getval(output,Output)
+nb_getval(output,Output)
       )
     ),
     findall(JT, (member(T, Trees),
@@ -81,50 +81,50 @@ getPlan([L,what], Plan) :- Plan=[],list_string(L,LStr),string_concat('The list o
 getPlan([N,count], Plan) :- Plan=[],list_string([N],LStr),string_concat('There is/are . . . ',LStr,SuccesStr1),string_concat(SuccesStr1,' Object(s).',SuccesStr2),nb_setval(output,SuccesStr2).
 solve(PlanList, Plan) :- maplist(getPlan, PlanList, PlanAux),append(PlanAux, PlanAppend),
 (PlanAppend ==[] ->
-	%no plan sent, just infos display
-	Plan = @(null)
-	%move dem objects nub
-	;Plan=PlanAppend
+%no plan sent, just infos display
+Plan = @(null)
+%move dem objects nub
+;Plan=PlanAppend
 ).
 
 %Used to get rid of ambiguities
-getCorrectGoal(Precision,PossibleGoal,Result) :- retrieveGoalElements(PossibleGoal, _, Parameter), 
-	(Precision = Parameter -> Result = [PossibleGoal]
-	;Result = []
-	).
+getCorrectGoal(Precision,PossibleGoal,Result) :- retrieveGoalElements(PossibleGoal, _, Parameter),
+(Precision = Parameter -> Result = [PossibleGoal]
+;Result = []
+).
 getCorrectGoal(Precision,PossibleGoal,Result) :- retrieveGoalElements(PossibleGoal, _, Parameter1,Parameter2),
-	((Precision = Parameter1;Precision = Parameter2) -> Result = [PossibleGoal]
-	;Result = []
-	).
-	
+((Precision = Parameter1;Precision = Parameter2) -> Result = [PossibleGoal]
+;Result = []
+).
+
 getCorrectGoalList([X],PossibleGoalsList,FinalGoal) :- X = [Precision],maplist(getCorrectGoal(Precision),PossibleGoalsList,MatchingGoalsList),delete(MatchingGoalsList,[],FinalGoal).
-getCorrectGoalList([X|R],PossibleGoalsList,FinalGoal) :-  getCorrectGoalList([X],PossibleGoalsList,FinalGoalHead),
-	(FinalGoalHead = [] -> getCorrectGoalList(R,PossibleGoalsList,FinalGoal)
-	;FinalGoal = FinalGoalHead
-	).
-	
+getCorrectGoalList([X|R],PossibleGoalsList,FinalGoal) :- getCorrectGoalList([X],PossibleGoalsList,FinalGoalHead),
+(FinalGoalHead = [] -> getCorrectGoalList(R,PossibleGoalsList,FinalGoal)
+;FinalGoal = FinalGoalHead
+).
+
 handleAmbiguity(Goals,World,Holding,Objects,Plan,Output,FinalGoal) :-
-	%ask for a new input
-	%%TO BE CHECKED. Add a prompt message ?
-	json_read(user_input, json(InputPrecision)),
-	member(utterance=UtterancePrecision, InputPrecision),
-	%Parse it and find the corresponding object
-	parse_all(precision, UtterancePrecision, TreesPrecision),
-	findall(Goal, (member(Tree, TreesPrecision),
-						 interpret(Tree, World, Holding, Objects, Goal)
-						), GoalsPrecision),
-	%if nothing found then raise error
-	(GoalsPrecision = [] ->
-		FinalGoal=[]
-		%else try to match the new object with the ones from the list of goals
-		;getCorrectGoalList(GoalsPrecision,Goals,FinalGoalList),
-		%nothing found, raise error
-		(FinalGoalList = [] -> 
-		FinalGoal=[]
-		%else we have a goal !
-		;FinalGoalList = [FinalGoal]
-		)
-	).
+%ask for a new input
+%%TO BE CHECKED. Add a prompt message ?
+json_read(user_input, json(InputPrecision)),
+member(utterance=UtterancePrecision, InputPrecision),
+%Parse it and find the corresponding object
+parse_all(precision, UtterancePrecision, TreesPrecision),
+findall(Goal, (member(Tree, TreesPrecision),
+interpret(Tree, World, Holding, Objects, Goal)
+), GoalsPrecision),
+%if nothing found then raise error
+(GoalsPrecision = [] ->
+FinalGoal=[]
+%else try to match the new object with the ones from the list of goals
+;getCorrectGoalList(GoalsPrecision,Goals,FinalGoalList),
+%nothing found, raise error
+(FinalGoalList = [] ->
+FinalGoal=[]
+%else we have a goal !
+;FinalGoalList = [FinalGoal]
+)
+).
 
 %Take the selected object if the arm does not hold something
 plan(_Goal, World, Holding, _Objects, Plan) :-
@@ -151,8 +151,8 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       pickAt(KPick,WorldAux,NewWorld),
       nb_setval(world, NewWorld),
       nb_setval(holding, [ElementPick]),
-      Plan = ['I drop it down', [drop, KDrop], '. . . and I pick it up . . .',  [pick, KPick]].
-      Plan = ['I drop it down', [drop, 0], '. . . and I pick it up . . .',  [pick, 3]].*/
+      Plan = ['I drop it down', [drop, KDrop], '. . . and I pick it up . . .', [pick, KPick]].
+      Plan = ['I drop it down', [drop, 0], '. . . and I pick it up . . .', [pick, 3]].*/
 
 %Move the selected object beside the relative object in one step if the arm does not hold something and the selected object can be on the relative object
 plan(_Goal, World, Holding, _Objects, Plan) :-
@@ -290,22 +290,22 @@ plan(_Goal, World, _, _, Plan) :-
       retrieveGoalElements(_Goal, where, Parameter),
       maplist(whichListInTheWorld(World),Parameter,IdxList),
       Plan = [[IdxList,where]].	
-	  
+
 %% Whatrightstack : the list of characteristics (form, size, color) of the objects
 plan(_Goal, World, _, _Objects, Plan) :-
       retrieveGoalElements(_Goal, whatrightstack, Parameter),
-	  length(World, LengthWorld),LengthRest is Parameter + 1,
-	  %stack picked is within bounds
-	  (LengthRest < LengthWorld ->
-		  %World is split into 2 parts : Rest with the left until the stack, RightStacks with everything we want to examine.
-		  length(Rest, LengthRest), append(Rest, RightStacks, World),
-		  flatten(RightStacks,ListObjLetters),
-		  maplist(getFormSizeColorText(_Objects),ListObjLetters,ObjectFormSizeColorList),
-		  Plan = [[ObjectFormSizeColorList,what]]
-		  %or not
-		; Plan = [[[],what]]
-	  ).
-	  
+length(World, LengthWorld),LengthRest is Parameter + 1,
+%stack picked is within bounds
+(LengthRest < LengthWorld ->
+%World is split into 2 parts : Rest with the left until the stack, RightStacks with everything we want to examine.
+length(Rest, LengthRest), append(Rest, RightStacks, World),
+flatten(RightStacks,ListObjLetters),
+maplist(getFormSizeColorText(_Objects),ListObjLetters,ObjectFormSizeColorList),
+Plan = [[ObjectFormSizeColorList,what]]
+%or not
+; Plan = [[[],what]]
+).
+
 %%--------------------------------------------------------------
 
 %tests if element is the head of the list
@@ -333,217 +333,150 @@ canbeAt(X,[H|L],Objects,0) :- canbeon(X,H,Objects).
 canbeAt(X,[H|L],Objects,N) :- canbeAt(X,L,Objects,M), N is M + 1.
 
 %%-------------------------- Retrieve Goal info
-	
+
+%% For stacks, Parameter is always the index of the stack
+
+%%Move ---------------------------------------------------------------------------------------------------
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+Goal = movebeside([Parameter1],[Parameter2]),Action = movebeside.
+
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+Goal = moveleft([Parameter1],[Parameter2]),Action = moveleft.
+
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+Goal = moveright([Parameter1],[Parameter2]),Action = moveright.
+
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+Goal = moveabove([Parameter1],[Parameter2]),Action = moveabove.
+
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+Goal = moveontop([Parameter1],[Parameter2]),Action = moveontop.
+
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+Goal = moveunder([Parameter1],[Parameter2]),Action = moveunder.
+
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+Goal = moveinside([Parameter1],[Parameter2]),Action = moveinside.
+
+%%%%% NOT IN THE PLANNER BELOW THIS LINE !
+
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+Goal = moveleftstack([Parameter1],[Parameter2]),Action = moveleftstack.
+
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+Goal = moverightstack([Parameter1],[Parameter2]),Action = moverightstack.
+
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+Goal = moveabovestack([Parameter1],[Parameter2]),Action = moveabovestack.
+
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+Goal = moveontopstack([Parameter1],[Parameter2]),Action = moveontopstack.
+
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+Goal = movebesidestack([Parameter1],[Parameter2]),Action = movebesidestack.
+
+%%Count ---------------------------------------------------------------------------------------------------
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+Goal = countbeside([Parameter1],[Parameter2]),Action = countbeside.
+
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+Goal = countleft([Parameter1],[Parameter2]),Action = countleft.
+
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+Goal = countright([Parameter1],[Parameter2]),Action = countright.
+
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+Goal = countabove([Parameter1],[Parameter2]),Action = countabove.
+
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+Goal = countontop([Parameter1],[Parameter2]),Action = countontop.
+
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+Goal = countunder([Parameter1],[Parameter2]),Action = countunder.
+
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+Goal = countinside([Parameter1],[Parameter2]),Action = countinside.
+
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+Goal = countleftstack([Parameter1],[Parameter2]),Action = countleftstack.
+
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+Goal = countrightstack([Parameter1],[Parameter2]),Action = countrightstack.
+
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+Goal = countabovestack([Parameter1],[Parameter2]),Action = countabovestack.
+
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+Goal = countontopstack([Parameter1],[Parameter2]),Action = countontopstack.
+
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+Goal = countbesidestack([Parameter1],[Parameter2]),Action = countbesidestack.
+
 %% /!\ Parameter is a list of stack numbers !
 retrieveGoalElements(Goal, Action, Parameter) :-
-	Goal = countinsidestacks(Parameter),Action = countinsidestacks.
-	
+Goal = countinsidestacks(Parameter),Action = countinsidestacks.
+
 retrieveGoalElements(Goal, Action, Parameter1) :-
-	Goal = countontop([Parameter1],floor),Action = countontopfloor.
-	
+Goal = countontop([Parameter1],floor),Action = countontopfloor.
+
+%%here to get rid of warnings
 retrieveGoalElements(Goal, Action, Parameter1) :-
-	Goal = moveontop([Parameter1],floor),Action = moveontopfloor.
+Goal = moveontop([Parameter1],floor),Action = moveontopfloor.
 
 %%Take ---------------------------------------------------------------------------------------------------
 retrieveGoalElements(Goal, Action, Parameter) :-
         Goal = take([Parameter]),Action = take.
-	
+
 %%Where ---------------------------------------------------------------------------------------------------
 %done
 retrieveGoalElements(Goal, Action, Parameter) :-
         Goal = where([Parameter]),Action = where.
-	
+
 %%What ---------------------------------------------------------------------------------------------------	
 retrieveGoalElements(Goal, Action, Parameter) :-
-	Goal = whatbeside([Parameter]),Action = whatbeside.
-	
+Goal = whatbeside([Parameter]),Action = whatbeside.
+
 retrieveGoalElements(Goal, Action, Parameter) :-
-	Goal = whatleft([Parameter]),Action = whatleft.
-	
+Goal = whatleft([Parameter]),Action = whatleft.
+
 retrieveGoalElements(Goal, Action, Parameter) :-
-	Goal = whatright([Parameter]),Action = whatright.
-	
+Goal = whatright([Parameter]),Action = whatright.
+
 retrieveGoalElements(Goal, Action, Parameter) :-
-	Goal = whatabove([Parameter]),Action = whatabove.
-	
+Goal = whatabove([Parameter]),Action = whatabove.
+
 retrieveGoalElements(Goal, Action, Parameter) :-
-	Goal = whatontop([Parameter]),Action = whatontop.
-	
+Goal = whatontop([Parameter]),Action = whatontop.
+
 retrieveGoalElements(Goal, Action, Parameter) :-
-	Goal = whatunder([Parameter]),Action = whatunder.
-	
+Goal = whatunder([Parameter]),Action = whatunder.
+
 retrieveGoalElements(Goal, Action, Parameter) :-
-	Goal = whatinside([Parameter]),Action = whatinside.
-	
+Goal = whatinside([Parameter]),Action = whatinside.
+
 retrieveGoalElements(Goal, Action, Parameter) :-
-	Goal = whatontop([Parameter],floor),Action = whatontopfloor.	
+Goal = whatontop([Parameter],floor),Action = whatontopfloor.	
 
 %% /!\ Parameter is a list of stack numbers !
 retrieveGoalElements(Goal, Action, Parameter) :-
-	Goal = whatinsidestacks(Parameter),Action = whatinsidestacks.
-	
+Goal = whatinsidestacks(Parameter),Action = whatinsidestacks.
+
 retrieveGoalElements(Goal, Action, Parameter) :-
-	Goal = whatleftstack([Parameter]),Action = whatleftstack.
+Goal = whatleftstack([Parameter]),Action = whatleftstack.
 
 %done	
 retrieveGoalElements(Goal, Action, Parameter) :-
-	Goal = whatrightstack([Parameter]),Action = whatrightstack.
-	
+Goal = whatrightstack([Parameter]),Action = whatrightstack.
+
 retrieveGoalElements(Goal, Action, Parameter) :-
-	Goal = whatabovestack([Parameter]),Action = whatabovestack.
-	
+Goal = whatabovestack([Parameter]),Action = whatabovestack.
+
 retrieveGoalElements(Goal, Action, Parameter) :-
-	Goal = whatontopstack([Parameter]),Action = whatontopstack.
-	
+Goal = whatontopstack([Parameter]),Action = whatontopstack.
+
 retrieveGoalElements(Goal, Action, Parameter) :-
-	Goal = whatbesidestack([Parameter]),Action = whatbesidestack.
+Goal = whatbesidestack([Parameter]),Action = whatbesidestack.
 
-%%Count ---------------------------------------------------------------------------------------------------
-
-retrieveGoalElements(Goal, Action, Parameter1) :-
-	Goal = countontop([Parameter1],floor),Action = countontopfloor.
-	
-%% /!\ Parameter is a list of stack numbers !
-retrieveGoalElements(Goal, Action, Parameter) :-
-	Goal = countinsidestacks(Parameter),Action = countinsidestacks.
-
-%% For stacks, Parameter is always the index of the stack
-
-%%Precision in case of ambiguity ---------------------------------------------------------------------------------------------------
-retrieveGoalElements(Goal, Action, Parameter) :-
-        Goal = [[Parameter]],Action = precision.
-	
-%---------------------------------------------------------------------------------------------------------------
-
-%%%%% NOT IN THE PLANNER BELOW THIS LINE !
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = moveleftstack([Parameter1],[Parameter2]),Action = moveleftstack.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = moverightstack([Parameter1],[Parameter2]),Action = moverightstack.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = moveabovestack([Parameter1],[Parameter2]),Action = moveabovestack.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = moveontopstack([Parameter1],[Parameter2]),Action = moveontopstack.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = movebesidestack([Parameter1],[Parameter2]),Action = movebesidestack.
-	
-%%Count ---------------------------------------------------------------------------------------------------
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = countbeside([Parameter1],[Parameter2]),Action = countbeside.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = countleft([Parameter1],[Parameter2]),Action = countleft.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = countright([Parameter1],[Parameter2]),Action = countright.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = countabove([Parameter1],[Parameter2]),Action = countabove.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = countontop([Parameter1],[Parameter2]),Action = countontop.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = countunder([Parameter1],[Parameter2]),Action = countunder.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = countinside([Parameter1],[Parameter2]),Action = countinside.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = countleftstack([Parameter1],[Parameter2]),Action = countleftstack.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = countrightstack([Parameter1],[Parameter2]),Action = countrightstack.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = countabovestack([Parameter1],[Parameter2]),Action = countabovestack.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = countontopstack([Parameter1],[Parameter2]),Action = countontopstack.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = countbesidestack([Parameter1],[Parameter2]),Action = countbesidestack.
-		
-%%Move ---------------------------------------------------------------------------------------------------
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = movebeside([Parameter1],[Parameter2]),Action = movebeside.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = moveleft([Parameter1],[Parameter2]),Action = moveleft.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = moveright([Parameter1],[Parameter2]),Action = moveright.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = moveabove([Parameter1],[Parameter2]),Action = moveabove.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = moveontop([Parameter1],[Parameter2]),Action = moveontop.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = moveunder([Parameter1],[Parameter2]),Action = moveunder.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = moveinside([Parameter1],[Parameter2]),Action = moveinside.
-	
-%%%%% NOT IN THE PLANNER BELOW THIS LINE !	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = moveleftstack([Parameter1],[Parameter2]),Action = moveleftstack.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = moverightstack([Parameter1],[Parameter2]),Action = moverightstack.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = moveabovestack([Parameter1],[Parameter2]),Action = moveabovestack.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = moveontopstack([Parameter1],[Parameter2]),Action = moveontopstack.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = movebesidestack([Parameter1],[Parameter2]),Action = movebesidestack.
-
-%%Count ---------------------------------------------------------------------------------------------------
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = countbeside([Parameter1],[Parameter2]),Action = countbeside.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = countleft([Parameter1],[Parameter2]),Action = countleft.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = countright([Parameter1],[Parameter2]),Action = countright.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = countabove([Parameter1],[Parameter2]),Action = countabove.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = countontop([Parameter1],[Parameter2]),Action = countontop.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = countunder([Parameter1],[Parameter2]),Action = countunder.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = countinside([Parameter1],[Parameter2]),Action = countinside.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = countleftstack([Parameter1],[Parameter2]),Action = countleftstack.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = countrightstack([Parameter1],[Parameter2]),Action = countrightstack.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = countabovestack([Parameter1],[Parameter2]),Action = countabovestack.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = countontopstack([Parameter1],[Parameter2]),Action = countontopstack.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = countbesidestack([Parameter1],[Parameter2]),Action = countbesidestack.
-		
 %---------------------------------------------------------------------------------------------------------------
 /*	
 test :-
@@ -577,29 +510,29 @@ list_string(List, String) :-
 
 %The same than getFormSizeColor in text form	
 getFormSizeColorText(PossibleObjects,ObjectLetter,ObjectFormSizeColor) :-
-	PossibleObjects = json(PossibleObjectsJson),member(ObjectLetter = ObjectJson,PossibleObjectsJson),ObjectJson=json([form=FormObj,size=SizeObj,color=ColorObj]),
-	atom_string(SizeObj,SizeObjStr),atom_string(ColorObj,ColorObjStr),atom_string(FormObj,FormObjStr),
-	string_concat('a ',SizeObjStr,FinalStr1),
-	string_concat(FinalStr1,' ',FinalStr2),
-	string_concat(FinalStr2,ColorObjStr,FinalStr3),
-	string_concat(FinalStr3,' ',FinalStr4),
-	string_concat(FinalStr4,FormObjStr,FinalStr5),
-	string_concat(FinalStr5,'.',FinalStr6),
-	ObjectFormSizeColor=FinalStr6.
+PossibleObjects = json(PossibleObjectsJson),member(ObjectLetter = ObjectJson,PossibleObjectsJson),ObjectJson=json([form=FormObj,size=SizeObj,color=ColorObj]),
+atom_string(SizeObj,SizeObjStr),atom_string(ColorObj,ColorObjStr),atom_string(FormObj,FormObjStr),
+string_concat('a ',SizeObjStr,FinalStr1),
+string_concat(FinalStr1,' ',FinalStr2),
+string_concat(FinalStr2,ColorObjStr,FinalStr3),
+string_concat(FinalStr3,' ',FinalStr4),
+string_concat(FinalStr4,FormObjStr,FinalStr5),
+string_concat(FinalStr5,'.',FinalStr6),
+ObjectFormSizeColor=FinalStr6.
 
 %---------------------------------------------------------------------------------------------------- Constraints management ----------------------------------------------------------------------------------------------------
 %Get the form, the size and the color of an object knowing its name (one letter) and the possible objects. Output : ObjectFormSizeColor=[form,size,color]
 %Not used (yet)
 getFormSizeColor(ObjectLetter,PossibleObjects,ObjectFormSizeColor) :-
-	PossibleObjects = json(PossibleObjectsJson),member(ObjectLetter = ObjectJson,PossibleObjectsJson),ObjectJson=json([form=FormObj,size=SizeObj,color=ColorObj]),ObjectFormSizeColor=[FormObj,SizeObj,ColorObj].
+PossibleObjects = json(PossibleObjectsJson),member(ObjectLetter = ObjectJson,PossibleObjectsJson),ObjectJson=json([form=FormObj,size=SizeObj,color=ColorObj]),ObjectFormSizeColor=[FormObj,SizeObj,ColorObj].
 
 %Get the form and the size of an object knowing its name (one letter) and the possible objects. Output : ObjectFormSize=[form,size]
 getFormAndSize(ObjectLetter,PossibleObjects,ObjectFormSize) :-
-	PossibleObjects = json(PossibleObjectsJson),member(ObjectLetter = ObjectJson,PossibleObjectsJson),ObjectJson=json([form=FormObj,size=SizeObj,color=_]),ObjectFormSize=[FormObj,SizeObj].
+PossibleObjects = json(PossibleObjectsJson),member(ObjectLetter = ObjectJson,PossibleObjectsJson),ObjectJson=json([form=FormObj,size=SizeObj,color=_]),ObjectFormSize=[FormObj,SizeObj].
 
 %Get the form of an object knowing its name (one letter) and the possible objects. Output : ObjectForm=form
 getForm(ObjectLetter,PossibleObjects,ObjectForm) :-
-	PossibleObjects = json(PossibleObjectsJson),member(ObjectLetter = ObjectJson,PossibleObjectsJson),ObjectJson=json([form=ObjectForm,size=_,color=_]).
+PossibleObjects = json(PossibleObjectsJson),member(ObjectLetter = ObjectJson,PossibleObjectsJson),ObjectJson=json([form=ObjectForm,size=_,color=_]).
 
 /*********************** getFormAndSize ***********************
 testFormSize :-
@@ -611,59 +544,59 @@ getFormAndSize(a,PossibleObjects,ObjectFormSize),write(ObjectFormSize).
 %weirds laws for boxes ?
 canbeonFormAndSize([Form1,Size1,Form2,Size2]) :-
 (Form1 = ball,(
-		(Size1 = small,((Form2 = box,Size2 = small);(Form2 = box,Size2 = medium);(Form2 = box,Size2 = large)));
-		(Size1 = medium,((Form2 = box,Size2 = medium);(Form2 = box,Size2 = large)));
-		(Size1 = large,(Form2 = box,Size2 = large))
-	);
+(Size1 = small,((Form2 = box,Size2 = small);(Form2 = box,Size2 = medium);(Form2 = box,Size2 = large)));
+(Size1 = medium,((Form2 = box,Size2 = medium);(Form2 = box,Size2 = large)));
+(Size1 = large,(Form2 = box,Size2 = large))
+);
 Form1 = box,(
-		(Size1 = small,((Form2 = table,Size2 = small);(Form2 = table,Size2 = large);(Form2 = plank,Size2 = small)));
-		(Size1 = medium,((Form2 = table,Size2 = medium);(Form2 = plank,Size2 = medium)));
-		(Size1 = large,((Form2 = table,Size2 = large);(Form2 = plank,Size2 = large);(Form2 = brick,Size2 = large)))
-	);
+(Size1 = small,((Form2 = table,Size2 = small);(Form2 = table,Size2 = large);(Form2 = plank,Size2 = small)));
+(Size1 = medium,((Form2 = table,Size2 = medium);(Form2 = plank,Size2 = medium)));
+(Size1 = large,((Form2 = table,Size2 = large);(Form2 = plank,Size2 = large);(Form2 = brick,Size2 = large)))
+);
 Form1 = brick,(
-		(Size1 = small,((Form2 = box,Size2 = medium);(Form2 = box,Size2 = large);
-			(Form2 = brick,Size2 = small);(Form2 = brick,Size2 = medium);(Form2 = brick,Size2 = large);
-			(Form2 = plank,Size2 = small);(Form2 = plank,Size2 = medium);(Form2 = plank,Size2 = large);
-			(Form2 = table,Size2 = small);(Form2 = table,Size2 = medium);(Form2 = table,Size2 = large)));
-		(Size1 = medium,((Form2 = box,Size2 = large);
-			(Form2 = brick,Size2 = medium);(Form2 = brick,Size2 = large);
-			(Form2 = plank,Size2 = medium);(Form2 = plank,Size2 = large);
-			(Form2 = table,Size2 = medium);(Form2 = table,Size2 = large)));
-		(Size1 = large,((Form2 = table,Size2 = large);(Form2 = plank,Size2 = large);(Form2 = brick,Size2 = large)))
-	);
+(Size1 = small,((Form2 = box,Size2 = medium);(Form2 = box,Size2 = large);
+(Form2 = brick,Size2 = small);(Form2 = brick,Size2 = medium);(Form2 = brick,Size2 = large);
+(Form2 = plank,Size2 = small);(Form2 = plank,Size2 = medium);(Form2 = plank,Size2 = large);
+(Form2 = table,Size2 = small);(Form2 = table,Size2 = medium);(Form2 = table,Size2 = large)));
+(Size1 = medium,((Form2 = box,Size2 = large);
+(Form2 = brick,Size2 = medium);(Form2 = brick,Size2 = large);
+(Form2 = plank,Size2 = medium);(Form2 = plank,Size2 = large);
+(Form2 = table,Size2 = medium);(Form2 = table,Size2 = large)));
+(Size1 = large,((Form2 = table,Size2 = large);(Form2 = plank,Size2 = large);(Form2 = brick,Size2 = large)))
+);
 Form1 = plank,(
-		(Size1 = small,((Form2 = box,Size2 = medium);(Form2 = box,Size2 = large);
-			(Form2 = brick,Size2 = small);(Form2 = brick,Size2 = medium);(Form2 = brick,Size2 = large);
-			(Form2 = plank,Size2 = small);(Form2 = plank,Size2 = medium);(Form2 = plank,Size2 = large);
-			(Form2 = table,Size2 = small);(Form2 = table,Size2 = medium);(Form2 = table,Size2 = large)));
-		(Size1 = medium,((Form2 = box,Size2 = large);
-			(Form2 = brick,Size2 = medium);(Form2 = brick,Size2 = large);
-			(Form2 = plank,Size2 = medium);(Form2 = plank,Size2 = large);
-			(Form2 = table,Size2 = medium);(Form2 = table,Size2 = large)));
-		(Size1 = large,((Form2 = table,Size2 = large);(Form2 = plank,Size2 = large);(Form2 = brick,Size2 = large)))
-	);
+(Size1 = small,((Form2 = box,Size2 = medium);(Form2 = box,Size2 = large);
+(Form2 = brick,Size2 = small);(Form2 = brick,Size2 = medium);(Form2 = brick,Size2 = large);
+(Form2 = plank,Size2 = small);(Form2 = plank,Size2 = medium);(Form2 = plank,Size2 = large);
+(Form2 = table,Size2 = small);(Form2 = table,Size2 = medium);(Form2 = table,Size2 = large)));
+(Size1 = medium,((Form2 = box,Size2 = large);
+(Form2 = brick,Size2 = medium);(Form2 = brick,Size2 = large);
+(Form2 = plank,Size2 = medium);(Form2 = plank,Size2 = large);
+(Form2 = table,Size2 = medium);(Form2 = table,Size2 = large)));
+(Size1 = large,((Form2 = table,Size2 = large);(Form2 = plank,Size2 = large);(Form2 = brick,Size2 = large)))
+);
 Form1 = pyramid,(
-		(Size1 = small,((Form2 = box,Size2 = medium);(Form2 = box,Size2 = large);
-			(Form2 = brick,Size2 = small);(Form2 = brick,Size2 = medium);(Form2 = brick,Size2 = large);
-			(Form2 = plank,Size2 = small);(Form2 = plank,Size2 = medium);(Form2 = plank,Size2 = large);
-			(Form2 = table,Size2 = small);(Form2 = table,Size2 = medium);(Form2 = table,Size2 = large)));
-		(Size1 = medium,((Form2 = box,Size2 = large);
-			(Form2 = brick,Size2 = medium);(Form2 = brick,Size2 = large);
-			(Form2 = plank,Size2 = medium);(Form2 = plank,Size2 = large);
-			(Form2 = table,Size2 = medium);(Form2 = table,Size2 = large)));
-		(Size1 = large,((Form2 = table,Size2 = large);(Form2 = plank,Size2 = large);(Form2 = brick,Size2 = large)))
-	);
+(Size1 = small,((Form2 = box,Size2 = medium);(Form2 = box,Size2 = large);
+(Form2 = brick,Size2 = small);(Form2 = brick,Size2 = medium);(Form2 = brick,Size2 = large);
+(Form2 = plank,Size2 = small);(Form2 = plank,Size2 = medium);(Form2 = plank,Size2 = large);
+(Form2 = table,Size2 = small);(Form2 = table,Size2 = medium);(Form2 = table,Size2 = large)));
+(Size1 = medium,((Form2 = box,Size2 = large);
+(Form2 = brick,Size2 = medium);(Form2 = brick,Size2 = large);
+(Form2 = plank,Size2 = medium);(Form2 = plank,Size2 = large);
+(Form2 = table,Size2 = medium);(Form2 = table,Size2 = large)));
+(Size1 = large,((Form2 = table,Size2 = large);(Form2 = plank,Size2 = large);(Form2 = brick,Size2 = large)))
+);
 Form1 = table,(
-		(Size1 = small,((Form2 = box,Size2 = small);(Form2 = box,Size2 = medium);(Form2 = box,Size2 = large);
-			(Form2 = brick,Size2 = small);(Form2 = brick,Size2 = medium);(Form2 = brick,Size2 = large);
-			(Form2 = plank,Size2 = small);(Form2 = plank,Size2 = medium);(Form2 = plank,Size2 = large);
-			(Form2 = table,Size2 = small);(Form2 = table,Size2 = medium);(Form2 = table,Size2 = large)));
-		(Size1 = medium,((Form2 = box,Size2 = medium);(Form2 = box,Size2 = large);
-			(Form2 = brick,Size2 = medium);(Form2 = brick,Size2 = large);
-			(Form2 = plank,Size2 = medium);(Form2 = plank,Size2 = large);
-			(Form2 = table,Size2 = medium);(Form2 = table,Size2 = large)));
-		(Size1 = large,((Form2 = box,Size2 = large);(Form2 = table,Size2 = large);(Form2 = plank,Size2 = large);(Form2 = brick,Size2 = large)))
-	)
+(Size1 = small,((Form2 = box,Size2 = small);(Form2 = box,Size2 = medium);(Form2 = box,Size2 = large);
+(Form2 = brick,Size2 = small);(Form2 = brick,Size2 = medium);(Form2 = brick,Size2 = large);
+(Form2 = plank,Size2 = small);(Form2 = plank,Size2 = medium);(Form2 = plank,Size2 = large);
+(Form2 = table,Size2 = small);(Form2 = table,Size2 = medium);(Form2 = table,Size2 = large)));
+(Size1 = medium,((Form2 = box,Size2 = medium);(Form2 = box,Size2 = large);
+(Form2 = brick,Size2 = medium);(Form2 = brick,Size2 = large);
+(Form2 = plank,Size2 = medium);(Form2 = plank,Size2 = large);
+(Form2 = table,Size2 = medium);(Form2 = table,Size2 = large)));
+(Size1 = large,((Form2 = box,Size2 = large);(Form2 = table,Size2 = large);(Form2 = plank,Size2 = large);(Form2 = brick,Size2 = large)))
+)
 ).
 
 %everything can be on the floor
@@ -675,17 +608,17 @@ canbeon(O,[H|L],PossibleObjects) :- getFormAndSize(O,PossibleObjects,OFormSize),
 /*********************** canbeon testing ***********************
 %false
 testFalse :-
-PossibleObjects = [a=json([form=ball,size=large,color=white]), b=json([form=box,size=small,color=black]), c=json([form=table,size=large,color=red]),  d=json([form=box,size=large,color=blue]),  e=json([form=box,size=medium,color=red])],
+PossibleObjects = [a=json([form=ball,size=large,color=white]), b=json([form=box,size=small,color=black]), c=json([form=table,size=large,color=red]), d=json([form=box,size=large,color=blue]), e=json([form=box,size=medium,color=red])],
 canbeon(a,[b,e,d],PossibleObjects).
 
 %true
 testTrue :-
-PossibleObjects = [a=json([form=ball,size=small,color=white]), b=json([form=box,size=small,color=black]), c=json([form=table,size=large,color=red]),  d=json([form=box,size=large,color=blue]),  e=json([form=box,size=medium,color=red])],
+PossibleObjects = [a=json([form=ball,size=small,color=white]), b=json([form=box,size=small,color=black]), c=json([form=table,size=large,color=red]), d=json([form=box,size=large,color=blue]), e=json([form=box,size=medium,color=red])],
 canbeon(a,[e,d],PossibleObjects).
 
 %true (floor testing)
 testFloor :-
-PossibleObjects = [a=json([form=ball,size=small,color=white]), b=json([form=box,size=small,color=black]), c=json([form=table,size=large,color=red]),  d=json([form=box,size=large,color=blue]),  e=json([form=box,size=medium,color=red])],
+PossibleObjects = [a=json([form=ball,size=small,color=white]), b=json([form=box,size=small,color=black]), c=json([form=table,size=large,color=red]), d=json([form=box,size=large,color=blue]), e=json([form=box,size=medium,color=red])],
 canbeon(a,[],PossibleObjects).
 */
 
