@@ -1,6 +1,5 @@
 # shrdlite
 
-
 ##Command to compile
 
 In ./javaprolog
@@ -17,23 +16,11 @@ Then in ./
 
 Go to http://localhost:8000/shrdlite.html
 
-
 ##Test command
 
 In order to test the project from the command line :
 
     swipl -q -g main,halt -s javaprolog/shrdlite.pl < examples/small.json
-
-
-##Current issues
-
-When we type in the following query :
-
-move the black ball inside the red box
-
-we get the following error :
-
-[JSON error:SyntaxError: Unexpected end of input]
 
 ##Physical laws
 
