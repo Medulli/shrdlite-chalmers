@@ -42,14 +42,13 @@ main :-
 		Output = 'I can only hold one object!'
       ; 
         %Goal is a list of goals i.e. "I can do this and this and this... Please specify what you want"
-		%%PROBLEM : when there is an ambiguity, Goals is an empty list []. It has to do with the lines 3 and 13 in interpreter.pl and getobj()
         Goals = [_,_|_] ->
         Plan = @(null),
         Output = 'Ambiguity error!'
       ; Goals = [Goal],
         plan(Goal, World, Holding, Objects, PlanList),
         solve(PlanList, Plan),
-        Output = 'Success!'
+		nb_getval(output,Output)
       )
     ),
     findall(JT, (member(T, Trees),
@@ -65,14 +64,19 @@ main :-
               output = Output],
     json_write(user_output, json(Result)).
 
-getPlan([K,-1,move], Plan) :- Plan = ['I pick up the element at place . . . ', K, [pick, K]].
-getPlan([-1,K,move], Plan) :- Plan = ['I drop it down at place . . . ', K, [drop, K]].
-getPlan([K1,K2,move], Plan) :- Plan = ['I pick up the element at place . . . ', K1, [pick, K1], 'and I drop it down at place . . . ', K2, [drop, K2]].
-%is it possible to not send a pick or drop ?
-getPlan([L,where], Plan) :- Plan = ['On place(s) . . . ', L].
-getPlan([L,what], Plan) :- Plan = ['The list of relevant objects is . . . ', L].
-getPlan([N,count], Plan) :- Plan = ['There is/are . . . ', N ,'Object(s)'].
-solve(PlanList, Plan) :- maplist(getPlan, PlanList, PlanAux),append(PlanAux, Plan).
+getPlan([K,-1,move], Plan) :- Plan = ['I pick up the element at place . . . ', K, [pick, K]],nb_setval(output,'Success!').
+getPlan([-1,K,move], Plan) :- Plan = ['I drop it down at place . . . ', K, [drop, K]],nb_setval(output,'Success!').
+getPlan([K1,K2,move], Plan) :- Plan = ['I pick up the element at place . . . ', K1, [pick, K1], 'and I drop it down at place . . . ', K2, [drop, K2]],nb_setval(output,'Success!').
+getPlan([L,where], Plan) :- Plan=[],list_string(L,LStr),string_concat('On place(s) . . . ',LStr,SuccesStr),nb_setval(output,SuccesStr).
+getPlan([L,what], Plan) :- Plan=[],list_string(L,LStr),string_concat('The list of relevant object(s) is . . . ',LStr,SuccesStr),nb_setval(output,SuccesStr).
+getPlan([N,count], Plan) :- Plan=[],list_string([N],LStr),string_concat('There is/are . . . ',LStr,SuccesStr1),string_concat(SuccesStr1,' Object(s).',SuccesStr2),nb_setval(output,SuccesStr2).
+solve(PlanList, Plan) :- maplist(getPlan, PlanList, PlanAux),append(PlanAux, PlanAppend),
+(PlanAppend ==[] ->
+	%no plan sent, just infos display
+	Plan = @(null)
+	%move dem objects nub
+	;Plan=PlanAppend
+).
 
 %Take the selected object if the arm does not hold something
 plan(_Goal, World, Holding, _Objects, Plan) :-
@@ -436,14 +440,28 @@ test2 :-
 Goal = take([e]),
 retrieveGoalElements(Goal, Action, Parameter),write(Action),write(Parameter).
 */
+%----------------------------------------------------------------- Strings management
+list_codes([], "").
 
-%---------------------------------------------------------------------------------------------------- Constraints management ----------------------------------------------------------------------------------------------------
-%Get the form, the size and the color of an object knowing its name (one letter) and the possible objects. Output : ObjectFormSizeColor=[form,size,color]
-%Not used (yet)
-getFormSizeColor(ObjectLetter,PossibleObjects,ObjectFormSizeColor) :-
-	PossibleObjects = json(PossibleObjectsJson),member(ObjectLetter = ObjectJson,PossibleObjectsJson),ObjectJson=json([form=FormObj,size=SizeObj,color=ColorObj]),ObjectFormSizeColor=[FormObj,SizeObj,ColorObj].
+list_codes([Atom], Codes) :- atom_codes(Atom, Codes).
 
-%The same, in text form	
+list_codes([Atom|ListTail], Codes) :-
+        atom_codes(Atom, AtomCodes),
+    append(AtomCodes, ",", AtomCodesWithComma),
+    append(AtomCodesWithComma, ListTailCodes, Codes),
+    list_codes(ListTail, ListTailCodes).
+
+list_string(List, String) :-
+    ground(List),
+    list_codes(List, Codes),
+    atom_codes(String, Codes).
+
+list_string(List, String) :-
+    ground(String),
+    atom_codes(String, Codes),
+    list_codes(List, Codes).
+
+%The same than getFormSizeColor in text form	
 getFormSizeColorText(PossibleObjects,ObjectLetter,ObjectFormSizeColor) :-
 	PossibleObjects = json(PossibleObjectsJson),member(ObjectLetter = ObjectJson,PossibleObjectsJson),ObjectJson=json([form=FormObj,size=SizeObj,color=ColorObj]),
 	atom_string(SizeObj,SizeObjStr),atom_string(ColorObj,ColorObjStr),atom_string(FormObj,FormObjStr),
@@ -452,7 +470,14 @@ getFormSizeColorText(PossibleObjects,ObjectLetter,ObjectFormSizeColor) :-
 	string_concat(FinalStr2,ColorObjStr,FinalStr3),
 	string_concat(FinalStr3,' ',FinalStr4),
 	string_concat(FinalStr4,FormObjStr,FinalStr5),
-	ObjectFormSizeColor=FinalStr5.
+	string_concat(FinalStr5,'.',FinalStr6),
+	ObjectFormSizeColor=FinalStr6.
+
+%---------------------------------------------------------------------------------------------------- Constraints management ----------------------------------------------------------------------------------------------------
+%Get the form, the size and the color of an object knowing its name (one letter) and the possible objects. Output : ObjectFormSizeColor=[form,size,color]
+%Not used (yet)
+getFormSizeColor(ObjectLetter,PossibleObjects,ObjectFormSizeColor) :-
+	PossibleObjects = json(PossibleObjectsJson),member(ObjectLetter = ObjectJson,PossibleObjectsJson),ObjectJson=json([form=FormObj,size=SizeObj,color=ColorObj]),ObjectFormSizeColor=[FormObj,SizeObj,ColorObj].
 
 %Get the form and the size of an object knowing its name (one letter) and the possible objects. Output : ObjectFormSize=[form,size]
 getFormAndSize(ObjectLetter,PossibleObjects,ObjectFormSize) :-

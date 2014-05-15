@@ -159,9 +159,9 @@ interpret(object(Type,Size,Color), World, @(null), Objects, SelectedObject) :-
     %get a list of (all) objects
 	json(AllPossibleObjects) = Objects,
 	%find all objects and that are in world, Col is a list of objects (letters) in world, X is "the letter" of the objects in AllPossibleObjects, which must be a member of the list we're currently checking...
-	findall(X=json([A,B,C]), (member(Col,World),member(X=json([A,B,C]),AllPossibleObjects),member(X,Col)), PossibleObjects),%nl,write(PossibleObjects),nl,
+	findall(X=json([A,B,C]), (member(Col,World),member(X=json([A,B,C]),AllPossibleObjects),member(X,Col)), PossibleObjects),
 	%get the actual letter of the object we desired from the pool PossibleObjects
-	getobj([Type,Size,Color], PossibleObjects, SelectedObject).%,nl,write(SelectedObject),nl.
+	getobj([Type,Size,Color], PossibleObjects, SelectedObject).
 
 
 %If we're holding something, add that to the possible objects
@@ -172,13 +172,12 @@ interpret(object(Type,Size,Color), World, Holding, Objects, SelectedObject) :-
 	append(PossibleWorldObjects,[Holding = json([A1,A2,A3])],PossibleObjects),
 	getobj([Type,Size,Color], PossibleObjects, SelectedObject).
 
-	% Use that for stacks
 %All these are basically "any" or "all" object, I guess we could do something along findall(...,...,[Obj]) for the and findall(...,...,[Obj|_]) for any
 interpret(basic_entity(any,X), World, Holding, Objects, [SelectedObject]) :-
     interpret(X, World, Holding, Objects, SelectedObject).
 
 interpret(basic_entity(the,X), World, Holding, Objects, [SelectedObject]) :-
-    findall(SelectedObjectAux, interpret(X, World, Holding, Objects, SelectedObjectAux), [SelectedObject]).
+    interpret(X, World, Holding, Objects, SelectedObject).
 
 interpret(basic_entity(all,X), World, Holding, Objects, SelectedObject) :-
     findall(SelectedObjectAux, interpret(X, World, Holding, Objects, SelectedObjectAux), SelectedObject).
@@ -1146,10 +1145,9 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
 getPlan([K,-1,move], Plan) :- Plan = ['I pick up the element at place . . . ', K, [pick, K]],nb_setval(output,'Success!').
 getPlan([-1,K,move], Plan) :- Plan = ['I drop it down at place . . . ', K, [drop, K]],nb_setval(output,'Success!').
 getPlan([K1,K2,move], Plan) :- Plan = ['I pick up the element at place . . . ', K1, [pick, K1], 'and I drop it down at place . . . ', K2, [drop, K2]],nb_setval(output,'Success!').
-%is it possible to not send a pick or drop ?
-getPlan([L,where], Plan) :- Plan = ['On place(s) . . . ', L].
+getPlan([L,where], Plan) :- Plan=[],list_string(L,LStr),string_concat('On place(s) . . . ',LStr,SuccesStr),nb_setval(output,SuccesStr).
 getPlan([L,what], Plan) :- Plan=[],list_string(L,LStr),string_concat('The list of relevant object(s) is . . . ',LStr,SuccesStr),nb_setval(output,SuccesStr).
-getPlan([N,count], Plan) :- Plan = ['There is/are . . . ', N ,'Object(s)'].
+getPlan([N,count], Plan) :- Plan=[],list_string([N],LStr),string_concat('There is/are . . . ',LStr,SuccesStr1),string_concat(SuccesStr1,' Object(s).',SuccesStr2),nb_setval(output,SuccesStr2).
 solve(PlanList, Plan) :- maplist(getPlan, PlanList, PlanAux),append(PlanAux, PlanAppend),
 (PlanAppend ==[] ->
 	Plan = @(null)
@@ -1204,24 +1202,6 @@ Goals = [Goal],
 plan(Goal, World, Holding, Objects, PlanList),%write(PlanList).
 solve(PlanList, Plan),write(Plan),nb_getval(output,OutputStr),nl,write(OutputStr).
 
-test30 :-
-	nb_setval(output,'Success!'),
-	%list_string(['a small black ball','a small blue box'],Str),write(Str).
-	%atom_string('a small black ball',LStr),write(LStr).
-	%etPlan([['a small black ball','a small blue box'],what], Plan),
-	%nb_getval(output,OutputStr),nl,write(OutputStr).
-	PlanList=[[['a small black ball','a small blue box'],what]],
-	solve(PlanList, Plan),nb_getval(output,OutputStr),nl,write(OutputStr).%,Plan==@(null)
-	
-test31 :-
-	nb_setval(output,'Success!'),
-	%list_string(['a small black ball','a small blue box'],Str),write(Str).
-	%atom_string('a small black ball',LStr),write(LStr).
-	%etPlan([['a small black ball','a small blue box'],what], Plan),
-	%nb_getval(output,OutputStr),nl,write(OutputStr).
-	PlanList=[[[0],where]],
-	solve(PlanList, Plan),nb_getval(output,OutputStr),nl,write(OutputStr).%,Plan==@(null)
-
 test28 :-
 	A = red,
 	B = blue,
@@ -1265,5 +1245,51 @@ findall(Goal, (member(Tree, Trees),
                     ), Goals),%write(Goals),
 Goals = [Goal],
 plan(Goal, World, Holding, Objects, PlanList),write(PlanList),
-solve(PlanList, Plan),write(Plan).	  
+solve(PlanList, Plan),write(Plan).	
 
+test30 :-
+	nb_setval(output,'Success!'),
+	%list_string(['a small black ball','a small blue box'],Str),write(Str).
+	%atom_string('a small black ball',LStr),write(LStr).
+	%etPlan([['a small black ball','a small blue box'],what], Plan),
+	%nb_getval(output,OutputStr),nl,write(OutputStr).
+	%PlanList=[[['a small black ball','a small blue box'],what]],
+	PlanList=[[[0,1],where]],
+	%PlanList=[[12,count]],
+	solve(PlanList, Plan),nb_getval(output,OutputStr),nl,write(OutputStr).%,Plan==@(null)
+
+%%Precision in case of ambiguity ---------------------------------------------------------------------------------------------------
+retrieveGoalElements(Goal, Action, Parameter) :-
+        Goal = [[Parameter]],Action = precision.
+	
+test31 :-
+World = [[e],[l,g],[n],[f,m,k],[p]],
+Holding = @(null),
+Objects = json([
+	a=json([form=brick,size=large,color=green]),
+	b=json([form=brick,size=small,color=white]),
+	c=json([form=plank,size=large,color=red]),
+	d=json([form=plank,size=small,color=green]),
+	e=json([form=ball,size=large,color=white]),
+	f=json([form=ball,size=small,color=black]),
+	g=json([form=table,size=large,color=blue]),
+	h=json([form=table,size=small,color=red]),
+	i=json([form=pyramid,size=large,color=yellow]),
+	j=json([form=pyramid,size=small,color=red]),
+	k=json([form=box,size=large,color=yellow]),
+	l=json([form=box,size=large,color=red]),
+	m=json([form=box,size=small,color=blue]),
+	n=json([form=ball,size=small,color=red]),
+	p=json([form=ball,size=large,color=blue])
+	]),
+Utterance = [take, the, ball],
+parse_all(command, Utterance, Trees),write(Trees),
+findall(Goal, (member(Tree, Trees),
+                     interpret(Tree, World, Holding, Objects, Goal)
+                    ), Goals),write(Goals),nl,
+%[take([e]),take([n]),take([f]),take([p])]
+UtterancePrecision = [the, small, red, one],
+parse_all(precision, UtterancePrecision, TreesPrecision),write(TreesPrecision),
+findall(Goal, (member(Tree, TreesPrecision),
+                     interpret(Tree, World, Holding, Objects, Goal)
+                    ), GoalsPrecision),write(GoalsPrecision),nl.
