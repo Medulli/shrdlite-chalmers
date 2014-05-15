@@ -1111,7 +1111,24 @@ getFormSizeColorText(PossibleObjects,ObjectLetter,ObjectFormSizeColor) :-
 	string_concat(FinalStr2,ColorObjStr,FinalStr3),
 	string_concat(FinalStr3,' ',FinalStr4),
 	string_concat(FinalStr4,FormObjStr,FinalStr5),
-	ObjectFormSizeColor=FinalStr5.
+	string_concat(FinalStr5,'.',FinalStr6),
+	ObjectFormSizeColor=FinalStr6.
+
+/*
+%Get the form, the size and the color of an object knowing its name (one letter) and the possible objects. Output : ObjectFormSizeColor=[form,size,color]
+getFormSizeColor(PossibleObjects,ObjectLetter,ObjectFormSizeColor) :-
+	PossibleObjects = json(PossibleObjectsJson),member(ObjectLetter = ObjectJson,PossibleObjectsJson),ObjectJson=json([form=FormObj,size=SizeObj,color=ColorObj]),ObjectFormSizeColor=[SizeObj,ColorObj,FormObj].
+getFormSizeColorText(PossibleObjects,ObjectLetter,ObjectFormSizeColor) :-
+	PossibleObjects = json(PossibleObjectsJson),member(ObjectLetter = ObjectJson,PossibleObjectsJson),ObjectJson=json([form=FormObj,size=SizeObj,color=ColorObj]),
+	atom_string(SizeObj,SizeObjStr),atom_string(ColorObj,ColorObjStr),atom_string(FormObj,FormObjStr),
+	string_concat('\'a ',SizeObjStr,FinalStr1),
+	string_concat(FinalStr1,' ',FinalStr2),
+	string_concat(FinalStr2,ColorObjStr,FinalStr3),
+	string_concat(FinalStr3,' ',FinalStr4),
+	string_concat(FinalStr4,FormObjStr,FinalStr5),
+	string_concat(FinalStr5,'.\'',FinalStr6),
+	ObjectFormSizeColor=FinalStr6.
+*/
 					
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, whatrightstack, Parameter),
@@ -1126,15 +1143,40 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
 		; Plan = [[[],what]]
 	  ).
 	  
-getPlan([K,-1,move], Plan) :- Plan = ['I pick up the element at place . . . ', K, [pick, K]].
-getPlan([-1,K,move], Plan) :- Plan = ['I drop it down at place . . . ', K, [drop, K]].
-getPlan([K1,K2,move], Plan) :- Plan = ['I pick up the element at place . . . ', K1, [pick, K1], 'and I drop it down at place . . . ', K2, [drop, K2]].
+getPlan([K,-1,move], Plan) :- Plan = ['I pick up the element at place . . . ', K, [pick, K]],nb_setval(output,'Success!').
+getPlan([-1,K,move], Plan) :- Plan = ['I drop it down at place . . . ', K, [drop, K]],nb_setval(output,'Success!').
+getPlan([K1,K2,move], Plan) :- Plan = ['I pick up the element at place . . . ', K1, [pick, K1], 'and I drop it down at place . . . ', K2, [drop, K2]],nb_setval(output,'Success!').
 %is it possible to not send a pick or drop ?
 getPlan([L,where], Plan) :- Plan = ['On place(s) . . . ', L].
-getPlan([L,what], Plan) :- Plan = ['The list of relevant objects is . . . ', L].
+getPlan([L,what], Plan) :- Plan=[],list_string(L,LStr),string_concat('The list of relevant object(s) is . . . ',LStr,SuccesStr),nb_setval(output,SuccesStr).
 getPlan([N,count], Plan) :- Plan = ['There is/are . . . ', N ,'Object(s)'].
-solve(PlanList, Plan) :- maplist(getPlan, PlanList, PlanAux),append(PlanAux, Plan).
+solve(PlanList, Plan) :- maplist(getPlan, PlanList, PlanAux),append(PlanAux, PlanAppend),
+(PlanAppend ==[] ->
+	Plan = @(null)
+	;Plan=PlanAppend
+).
+
+list_codes([], "").
+
+list_codes([Atom], Codes) :- atom_codes(Atom, Codes).
+
+list_codes([Atom|ListTail], Codes) :-
+        atom_codes(Atom, AtomCodes),
+    append(AtomCodes, ",", AtomCodesWithComma),
+    append(AtomCodesWithComma, ListTailCodes, Codes),
+    list_codes(ListTail, ListTailCodes).
+
+list_string(List, String) :-
+    ground(List),
+    list_codes(List, Codes),
+    atom_codes(String, Codes).
+
+list_string(List, String) :-
+    ground(String),
+    atom_codes(String, Codes),
+    list_codes(List, Codes).
 					
+
 test27 :-
 World = [[e],[l,g],[],[f,m,k],[]],
 Holding = @(null),
@@ -1159,8 +1201,26 @@ findall(Goal, (member(Tree, Trees),
                      interpret(Tree, World, Holding, Objects, Goal)
                     ), Goals),%write(Goals),
 Goals = [Goal],
-plan(Goal, World, Holding, Objects, PlanList),write(PlanList),
-solve(PlanList, Plan),write(Plan).
+plan(Goal, World, Holding, Objects, PlanList),%write(PlanList).
+solve(PlanList, Plan),write(Plan),nb_getval(output,OutputStr),nl,write(OutputStr).
+
+test30 :-
+	nb_setval(output,'Success!'),
+	%list_string(['a small black ball','a small blue box'],Str),write(Str).
+	%atom_string('a small black ball',LStr),write(LStr).
+	%etPlan([['a small black ball','a small blue box'],what], Plan),
+	%nb_getval(output,OutputStr),nl,write(OutputStr).
+	PlanList=[[['a small black ball','a small blue box'],what]],
+	solve(PlanList, Plan),nb_getval(output,OutputStr),nl,write(OutputStr).%,Plan==@(null)
+	
+test31 :-
+	nb_setval(output,'Success!'),
+	%list_string(['a small black ball','a small blue box'],Str),write(Str).
+	%atom_string('a small black ball',LStr),write(LStr).
+	%etPlan([['a small black ball','a small blue box'],what], Plan),
+	%nb_getval(output,OutputStr),nl,write(OutputStr).
+	PlanList=[[[0],where]],
+	solve(PlanList, Plan),nb_getval(output,OutputStr),nl,write(OutputStr).%,Plan==@(null)
 
 test28 :-
 	A = red,
