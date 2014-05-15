@@ -386,7 +386,7 @@ interpret(count(X,absolute(above,  basic_stack(N))), World, Holding, Objects, co
 	interpret(X, World, Holding, Objects, SelectedObject).
 interpret(count(X,absolute(ontop,  basic_stack(N))), World, Holding, Objects, countontopstack(SelectedObject,[N])) :-
 	interpret(X, World, Holding, Objects, SelectedObject).
-interpret(count(X,absolute(inside, world)), World, Holding, Objects, countontopstack(SelectedObject,N)) :-
+interpret(count(X,absolute(inside, world)), World, Holding, Objects, countinsidestacks(SelectedObject,N)) :-
 	interpret(X, World, Holding, Objects, SelectedObject),
 	length(World,LengthWorld),listFirstIndexes(LengthWorld, N).
 	
@@ -411,7 +411,7 @@ interpret(what(absolute(leftof, basic_stack(N))), World, Holding, Objects, whatl
 interpret(what(absolute(rightof,basic_stack(N))), World, Holding, Objects, whatrightstack([N])).
 interpret(what(absolute(above,  basic_stack(N))), World, Holding, Objects, whatabovestack([N])).
 interpret(what(absolute(ontop,  basic_stack(N))), World, Holding, Objects, whatontopstack([N])).
-interpret(what(absolute(inside, world)), World, Holding, Objects, whatontopstack(N)) :-
+interpret(what(absolute(inside, world)), World, Holding, Objects, whatinsidestacks(N)) :-
 	length(World,LengthWorld),listFirstIndexes(LengthWorld, N).
 	
 %Will return the letter of the type/size/col which satisfies the object in PossibleObjects.
@@ -592,10 +592,6 @@ isrightofstack(X,N,World) :-
     member(ColS,World),member(X,ColS), nth0(IdxS,World,ColS),
     (IdxS > N).
 iswithinbounds(N,World) :- integer(N), N >= 0, length(World,LengthWorld), N < LengthWorld.
-
-%%----------- some utilities for the interpreter
-whichListInTheWorld([L|_],X,0) :- member(X,L).
-whichListInTheWorld([_|LL],X,N) :- whichListInTheWorld(LL,X,M), N is M + 1.
 
 listFirstIndexes(Length, List) :- HighValue is Length - 1, numlist(0,HighValue,List).
 
@@ -985,3 +981,96 @@ parse_all(precision, Utterance, Trees),write(Trees),
 findall(Goal, (member(Tree, Trees),
                      interpret(Tree, World, Holding, Objects, Goal)
                     ), Goals),write(Goals).
+
+retrieveGoalElements(Goal, Action, Parameter) :-
+	Goal = whatinsidestacks(Parameter),Action = whatinsidestacks.				
+retrieveGoalElements(Goal, Action, Parameter) :-
+        Goal = take([Parameter]),Action = take.
+	
+test24 :-
+World = [[e],[l,g],[],[f,m,k],[]],
+Holding = @(null),
+Objects = json([
+	a=json([form=brick,size=large,color=green]),
+	b=json([form=brick,size=small,color=white]),
+	c=json([form=plank,size=large,color=red]),
+	d=json([form=plank,size=small,color=green]),
+	e=json([form=ball,size=large,color=white]),
+	f=json([form=ball,size=small,color=black]),
+	g=json([form=table,size=large,color=blue]),
+	h=json([form=table,size=small,color=red]),
+	i=json([form=pyramid,size=large,color=yellow]),
+	j=json([form=pyramid,size=small,color=red]),
+	k=json([form=box,size=large,color=yellow]),
+	l=json([form=box,size=large,color=red]),
+	m=json([form=box,size=small,color=blue])
+	]),
+Utterance = [what, is, in, the, world],
+parse_all(command, Utterance, Trees),write(Trees),
+findall(Goal, (member(Tree, Trees),
+                     interpret(Tree, World, Holding, Objects, Goal)
+                    ), Goals),write(Goals),
+Goals = [Goal],
+retrieveGoalElements(Goal, whatinsidestacks, Parameter),write(Parameter).
+
+plan(_Goal, World, Holding, _Objects, Plan) :-
+%%Can be called : retrieveGoalElements(_Goal, take, Element) without the line ActionTake == take
+%%To be tested, but should work
+      retrieveGoalElements(_Goal, take, Element),
+      Holding == @(null),
+      whichListInTheWorld(Element,World,K),
+      nth0(K,World,LK),
+      checkHead(LK,Element),
+      pickAt(K,World,NewWorld),
+      %nb_setval(world, NewWorld),
+      %b_setval(holding, [Element]),
+      Plan = [[K,-1]].
+%tests if element is the head of the list
+checkHead([H|T],Element) :- H = Element.
+
+%tests if element is the tail of the list
+checkTail([H|T],Tail) :- T = Tail.
+
+%return the number K if X is in the Kth list of lists LL
+%findall(X,whichListInTheWorld(a,[[d,e,f],[a,b,c]],X),R).
+
+whichListInTheWorld(X,[L|_],0) :- member(X,L).
+whichListInTheWorld(X,[_|LL],N) :- whichListInTheWorld(X,LL,M), N is M + 1.
+
+%the third argument is the list of lists corresponding to the one given as second argument in which the head is removed in the list of number: first argument
+pickAt(0,[[H|T1]|T2],[T1|T2]).
+pickAt(N,[H|T1],[H|T2]) :- pickAt(M,T1,T2), N is M + 1.
+
+%the third argument is the list of lists corresponding to the one given as second argument in which the first argument is added at the head in the list of number: second argument
+dropAt(Element,0,[T1|T2],[[Element|T1]|T2]).
+dropAt(Element,N,[H|T1],[H|T2]) :- dropAt(Element,M,T1,T2), N is M + 1.
+
+%find a list in which an element can be added given the object, the world, the objects
+canbeAt(X,[H|L],Objects,0) :- canbeon(X,H,Objects).
+canbeAt(X,[H|L],Objects,N) :- canbeAt(X,L,Objects,M), N is M + 1.
+
+test25 :-
+World = [[e],[l,g],[],[f,m,k],[]],
+Holding = @(null),
+Objects = json([
+	a=json([form=brick,size=large,color=green]),
+	b=json([form=brick,size=small,color=white]),
+	c=json([form=plank,size=large,color=red]),
+	d=json([form=plank,size=small,color=green]),
+	e=json([form=ball,size=large,color=white]),
+	f=json([form=ball,size=small,color=black]),
+	g=json([form=table,size=large,color=blue]),
+	h=json([form=table,size=small,color=red]),
+	i=json([form=pyramid,size=large,color=yellow]),
+	j=json([form=pyramid,size=small,color=red]),
+	k=json([form=box,size=large,color=yellow]),
+	l=json([form=box,size=large,color=red]),
+	m=json([form=box,size=small,color=blue])
+	]),
+Utterance = [take, the, white, ball],
+parse_all(command, Utterance, Trees),write(Trees),
+findall(Goal, (member(Tree, Trees),
+                     interpret(Tree, World, Holding, Objects, Goal)
+                    ), Goals),write(Goals),
+Goals = [Goal],
+plan(_Goal, World, Holding, _Objects, Plan),write(Plan).
