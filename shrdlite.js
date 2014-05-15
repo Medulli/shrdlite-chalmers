@@ -431,6 +431,7 @@ function userInput() {
         enableInput();
         return;
     }
+    var program = $('#program').val();
     disableInput();
 
     sayUtterance("user", userinput);
@@ -442,13 +443,15 @@ function userInput() {
                     'utterance': userinput.split(/\s+/)
                    };
 
+    console.log(ajaxdata);
+
     $.ajax({
         url: AjaxScript,
         type: 'POST',
         dataType: "text",
         cache: false,
         timeout: 1000 * AjaxTimeout,
-        data: {'data': JSON.stringify(ajaxdata)}
+        data: {'data': JSON.stringify(ajaxdata), 'program': program }
     }).fail(function(jqxhr, status, error) {
         alertError("Internal error: " + status, error);
         systemPrompt();

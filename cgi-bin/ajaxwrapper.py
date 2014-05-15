@@ -21,7 +21,7 @@ from subprocess import Popen, PIPE, STDOUT
 
 # # SWI Prolog
 SCRIPTDIR = 'javaprolog'
-SCRIPT = ['swipl', '-q', '-g', 'main,halt', '-t', 'halt(1)', '-s', 'shrdlite.pl']
+SCRIPT = ['swipl', '-q', '-g', 'main,halt', '-t', 'halt(1)', '-s']
 
 
 # # Haskell
@@ -37,6 +37,8 @@ try:
         SCRIPTDIR = os.path.join("..", SCRIPTDIR)
     form = cgi.FieldStorage()
     data = form.getfirst('data')
+    program = form.getfirst('program')
+    SCRIPT.append(program)
     script = Popen(SCRIPT, cwd=SCRIPTDIR, stdin=PIPE, stdout=PIPE, stderr=PIPE)
     out, err = script.communicate(data)
 
