@@ -268,7 +268,6 @@ function getObjectDimensions(objectid) {
 }
 
 function getAltitude(stack, objectid) {
-//////////////////////////////////////////////changed
     var altitude = 0;
     for (var i=0; i<stack.length; i++) {
         if (objectid == stack[i])

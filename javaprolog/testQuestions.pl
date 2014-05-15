@@ -1,302 +1,157 @@
-#!/usr/bin/env swipl -q -g main,halt -t halt(1) -s
 
-:- use_module(library(http/json)).
-:- [dcg_parser].
-:- [shrdlite_grammar].
-:- style_check(-singleton).
+:- op(1200, xfx, '--->').
 
-main :-
-    json_read(user_input, json(Input)),
-    member(utterance=Utterance, Input),
-    member(world=WorldJson, Input),
-    member(holding=HoldingJson, Input),
-    member(objects=Objects, Input),
+%% Non-lexical grammar rules
 
-    %reverse each list in the list of lists representing the world
-    maplist(reverse,WorldJson,CurrentWorld),
+%%ask for something to do
+command : Cmd --->
+    opt_will_you, opt_please,
+    basic_command : Cmd,
+    opt_please.
 
-    %set the global variables
-    b_setval(world, CurrentWorld),
-    b_setval(holding, HoldingJson),
-
-    parse_all(command, Utterance, Trees),
-    ( Trees == [] ->
-      Goals = @(null),
-      Plan = @(null),
-      Output = 'Parse error!'
-    ;
-
-      b_getval(world,World),
-      b_getval(holding,Holding),
-
-      findall(Goal, (member(Tree, Trees),
-                     interpret(Tree, World, Holding, Objects, Goal)
-                    ), Goals),
-      ( %Goals == take(List) -> "Please specify which object from list"
-        Goals == [] ->
-        Plan = @(null),
-        Output = 'Interpretation error!'
-      ; Goals = [take([_,_|_])] -> 
-        Plan = @(null),
-		Output = 'I can only hold one object!'
-      ; 
-        %Goal is a list of goals i.e. "I can do this and this and this... Please specify what you want"
-        Goals = [_,_|_] ->
-        Plan = @(null),
-        Output = 'Ambiguity error!'
-      ; Goals = [Goal],
-        plan(Goal, World, Holding, Objects, PlanList),
-        solve(PlanList, Plan),
-        Output = 'Success!'
-      )
-    ),
-    findall(JT, (member(T, Trees),
-                 write_to_codes(T, Cs),
-                 atom_codes(JT, Cs)), JSONTrees),
-    findall(GT, (member(G, Goals),
-                 write_to_codes(G, Gs),
-                 atom_codes(GT, Gs)), JSONGoals),
-    Result = [utterance = Utterance,
-              trees = JSONTrees,
-              goals = JSONGoals,
-              plan = Plan,
-              output = Output],
-    json_write(user_output, json(Result)).
-
-getPlan([K,-1], Plan) :- Plan = ['I pick up the element at place . . . ', K, [pick, K]].
-getPlan([-1,K], Plan) :- Plan = ['I drop it down at place . . . ', K, [drop, K]].
-getPlan([K1,K2], Plan) :- Plan = ['I pick up the element at place . . . ', K1, [pick, K1], 'and I drop it down at place . . . ', K2, [drop, K2]].
-solve(PlanList, Plan) :- maplist(getPlan, PlanList, PlanAux),append(PlanAux, Plan).
-
-%Take the selected object if the arm does not hold something
-plan(_Goal, World, Holding, _Objects, Plan) :-
-      retrieveGoalElements(_Goal, ActionTake, Element),
-      Holding == @(null),
-      ActionTake == take,
-      whichListInTheWorld(Element,World,K),
-      nth0(K,World,LK),
-      checkHead(LK,Element),
-      pickAt(K,World,NewWorld),
-      nb_setval(world, NewWorld),
-      b_setval(holding, [Element]),
-      Plan = [[K,-1]].
-
-%Take the selected object if the arm holds something
-/*plan(_Goal, World, Holding, _Objects, Plan) :-
-      retrieveGoalElements(_Goal, ActionTake, ElementPick),
-      Holding == [ElementDrop],
-      ActionTake == take,
-      canbeAt(ElementDrop,World,_Objects,KDrop),
-      dropAt(ElementDrop,KDrop,World,WorldAux),
-      whichListInTheWorld(ElementPick,WorldAux,KPick),
-      nth0(KPick,WorldAux,LKPick),
-      checkHead(LKPick,ElementPick),
-      pickAt(KPick,WorldAux,NewWorld),
-      nb_setval(world, NewWorld),
-      nb_setval(holding, [ElementPick]),
-      Plan = ['I drop it down', [drop, KDrop], '. . . and I pick it up . . .',  [pick, KPick]].
-      Plan = ['I drop it down', [drop, 0], '. . . and I pick it up . . .',  [pick, 3]].*/
-
-%Move the selected object beside the relative object in one step if the arm does not hold something and the selected object can be on the relative object
-plan(_Goal, World, Holding, _Objects, Plan) :-
-      retrieveGoalElements(_Goal, ActionMoveBeside, Element1, Element2),
-      Holding == @(null),
-      ActionMoveBeside == movebeside,
-      whichListInTheWorld(Element1,World,K1),
-      nth0(K1,World,LK1),
-      checkHead(LK1,Element1),
-      whichListInTheWorld(Element2,World,K2Aux),
-      K2 is K2Aux - 1,
-      nth0(K2,World,LK2),
-      canbeon(Element1,LK2,_Objects),
-      pickAt(K1,World,WorldAux),
-      dropAt(Element1,K2,WorldAux,NewWorld),
-      b_setval(world, NewWorld),
-      Plan = [[K1,K2]].
-
-plan(_Goal, World, Holding, _Objects, Plan) :-
-      retrieveGoalElements(_Goal, ActionMoveBeside, Element1, Element2),
-      Holding == @(null),
-      ActionMoveBeside == movebeside,
-      whichListInTheWorld(Element1,World,K1),
-      nth0(K1,World,LK1),
-      checkHead(LK1,Element1),
-      whichListInTheWorld(Element2,World,K2Aux),
-      K2 is K2Aux + 1,
-      nth0(K2,World,LK2),
-      canbeon(Element1,LK2,_Objects),
-      pickAt(K1,World,WorldAux),
-      dropAt(Element1,K2,WorldAux,NewWorld),
-      b_setval(world, NewWorld),
-      Plan = [[K1,K2]].
-
-%Move the selected object to the left the relative object in one step if the arm does not hold something and the selected object can be on the relative object
-plan(_Goal, World, Holding, _Objects, Plan) :-
-      retrieveGoalElements(_Goal, ActionMoveLeft, Element1, Element2),
-      Holding == @(null),
-      ActionMoveLeft == moveleft,
-      whichListInTheWorld(Element1,World,K1),
-      nth0(K1,World,LK1),
-      checkHead(LK1,Element1),
-      whichListInTheWorld(Element2,World,K2Aux),
-      K2 is K2Aux - 1,
-      nth0(K2,World,LK2),
-      canbeon(Element1,LK2,_Objects),
-      pickAt(K1,World,WorldAux),
-      dropAt(Element1,K2,WorldAux,NewWorld),
-      b_setval(world, NewWorld),
-      Plan = [[K1,K2]].
-
-%Move the selected object to the right the relative object in one step if the arm does not hold something and the selected object can be on the relative object
-plan(_Goal, World, Holding, _Objects, Plan) :-
-      retrieveGoalElements(_Goal, ActionMoveRight, Element1, Element2),
-      Holding == @(null),
-      ActionMoveRight == moveright,
-      whichListInTheWorld(Element1,World,K1),
-      nth0(K1,World,LK1),
-      checkHead(LK1,Element1),
-      whichListInTheWorld(Element2,World,K2Aux),
-      K2 is K2Aux + 1,
-      nth0(K2,World,LK2),
-      canbeon(Element1,LK2,_Objects),
-      pickAt(K1,World,WorldAux),
-      dropAt(Element1,K2,WorldAux,NewWorld),
-      b_setval(world, NewWorld),
-      Plan = [[K1,K2]].
-
-%Move the selected object above the relative object in one step if the arm does not hold something and the selected object can be on the relative object
-plan(_Goal, World, Holding, _Objects, Plan) :-
-      retrieveGoalElements(_Goal, ActionMoveAbove, Element1, Element2),
-      Holding == @(null),
-      ActionMoveAbove == moveabove,
-      whichListInTheWorld(Element1,World,K1),
-      nth0(K1,World,LK1),
-      checkHead(LK1,Element1),
-      whichListInTheWorld(Element2,World,K2),
-      nth0(K2,World,LK2),
-      canbeon(Element1,LK2,_Objects),
-      pickAt(K1,World,WorldAux),
-      dropAt(Element1,K2,WorldAux,NewWorld),
-      b_setval(world, NewWorld),
-      Plan = [[K1,K2]].
-
-%Move the selected object on top of the relative object in one step if the arm does not hold something and the selected object can be on the relative object
-plan(_Goal, World, Holding, _Objects, Plan) :-
-      retrieveGoalElements(_Goal, ActionMoveOnTop, Element1, Element2),
-      Holding == @(null),
-      ActionMoveOnTop == moveontop,
-      getForm(Element2,_Objects,ObjectForm),
-      ObjectForm \== box,
-      whichListInTheWorld(Element1,World,K1),
-      nth0(K1,World,LK1),
-      checkHead(LK1,Element1),
-      whichListInTheWorld(Element2,World,K2),
-      nth0(K2,World,LK2),
-      checkHead(LK2,Element2),
-      canbeon(Element1,LK2,_Objects),
-      pickAt(K1,World,WorldAux),
-      dropAt(Element1,K2,WorldAux,NewWorld),
-      b_setval(world, NewWorld),
-      Plan = [[K1,K2]].
-
-%Move the selected object inside the relative object in one step if the arm does not hold something and the selected object can be on the relative object
-plan(_Goal, World, Holding, _Objects, Plan) :-
-      retrieveGoalElements(_Goal, ActionMoveInside, Element1, Element2),
-      Holding == @(null),
-      ActionMoveInside == moveinside,
-      getForm(Element2,_Objects,ObjectForm),
-      ObjectForm == box,
-      whichListInTheWorld(Element1,World,K1),
-      nth0(K1,World,LK1),
-      checkHead(LK1,Element1),
-      whichListInTheWorld(Element2,World,K2),
-      nth0(K2,World,LK2),
-      checkHead(LK2,Element2),
-      canbeon(Element1,LK2,_Objects),
-      pickAt(K1,World,WorldAux),
-      dropAt(Element1,K2,WorldAux,NewWorld),
-      b_setval(world, NewWorld),
-      Plan = [[K1,K2]].
-
-%Move the selected object inside the relative object in several steps if the arm does not hold something and the selected object can be on the relative object
-plan(_Goal, World, Holding, _Objects, Plan) :-
-      retrieveGoalElements(_Goal, ActionMoveInside, Element1, Element2),
-      Holding == @(null),
-      ActionMoveInside == moveinside,
-      getForm(Element2,_Objects,ObjectForm),
-      ObjectForm == box,
-      whichListInTheWorld(Element2,World,K2),
-      nth0(K2,World,LK2),
-      checkHead(LK2,HdLK2),
-      HdLK2 \== Element2,
-      canbeAt(HdLK2,World,_Objects,K3),
-      pickAt(K2,World,WorldAux),
-      dropAt(HdLK2,K3,WorldAux,NewWorld),
-      b_setval(world, NewWorld),
-      plan(_Goal, NewWorld, Holding, _Objects, PlanAux),
-      Plan = [[K2,K3]|PlanAux].
-
-%%--------------------------------------------------------------
-
-%tests if element is the head of the list
-checkHead([H|T],Element) :- H = Element.
-
-%tests if element is the tail of the list
-checkTail([H|T],Tail) :- T = Tail.
-
-%return the number K if X is in the Kth list of lists LL
-%findall(X,whichListInTheWorld(a,[[d,e,f],[a,b,c]],X),R).
-
-whichListInTheWorld(X,[L|_],0) :- member(X,L).
-whichListInTheWorld(X,[_|LL],N) :- whichListInTheWorld(X,LL,M), N is M + 1.
-
-%the third argument is the list of lists corresponding to the one given as second argument in which the head is removed in the list of number: first argument
-pickAt(0,[[H|T1]|T2],[T1|T2]).
-pickAt(N,[H|T1],[H|T2]) :- pickAt(M,T1,T2), N is M + 1.
-
-%the third argument is the list of lists corresponding to the one given as second argument in which the first argument is added at the head in the list of number: second argument
-dropAt(Element,0,[T1|T2],[[Element|T1]|T2]).
-dropAt(Element,N,[H|T1],[H|T2]) :- dropAt(Element,M,T1,T2), N is M + 1.
-
-%find a list in which an element can be added given the object, the world, the objects
-canbeAt(X,[H|L],Objects,0) :- canbeon(X,H,Objects).
-canbeAt(X,[H|L],Objects,N) :- canbeAt(X,L,Objects,M), N is M + 1.
-
-%%-------------------------- Retrieve Goal info
-
-retrieveGoalElements(Goal, Action, Parameter) :-
-        Goal = take([Parameter]),Action = take.
+%%ask for precision in case of ambiguity
+precision : Entity --->
+    opt_please,
+    entity:Entity,
+    opt_please.
 	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = movebeside([Parameter1],[Parameter2]),Action = movebeside.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = moveleft([Parameter1],[Parameter2]),Action = moveleft.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = moveright([Parameter1],[Parameter2]),Action = moveright.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = moveabove([Parameter1],[Parameter2]),Action = moveabove.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = moveontop([Parameter1],[Parameter2]),Action = moveontop.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = moveunder([Parameter1],[Parameter2]),Action = moveunder.
-	
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-	Goal = moveinside([Parameter1],[Parameter2]),Action = moveinside.
-	
-/*	
-test :-
-Goal = movebeside([e],[g]),
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2),write(Action),write(Parameter1),write(Parameter2).
+basic_command : take(Entity) ---> take, entity:Entity.
+basic_command : put(Location) ---> move, it, location:Location.
+basic_command : move(Entity, Location) ---> move, entity:Entity, location:Location.
+%% Improvements
+basic_command : where(Entity) ---> where, entity:Entity, opt_interrogation.
+basic_command : count(Entity, Location) ---> count, entity:Entity, opt_that_is(Num), location:Location, opt_interrogation.
+basic_command : what(Location) ---> what, opt_that_is(Num), location:Location, opt_interrogation.
+basic_command : what(Entity, Location) ---> what, opt_that_is(Num), entity:Entity, opt_that_is(Num), location:Location, opt_interrogation.
 
-test2 :-
-Goal = take([e]),
-retrieveGoalElements(Goal, Action, Parameter),write(Action),write(Parameter).
+location : absolute(Relation, Stack) ---> relation:Relation, stack:Stack.
+location : relative(Relation, Entity) ---> relation:Relation, entity:Entity.
+
+stack : world ---> the_world.
+
+stack : basic_stack(StackPos) --->
+    stack_key,nat:StackPos.
+
+entity : floor ---> the_floor.
+
+entity : basic_entity(Quant, Object) --->
+    quantifier(Num):Quant, object(Num):Object.
+
+entity : relative_entity(Quant, Object, Location) ---> 
+    quantifier(Num):Quant, object(Num):Object,
+    opt_that_is(Num),
+    location:Location.
+
+object(Num) : object(Form,Size,Color) ---> size:Size, color:Color, form(Num):Form.
+object(Num) : object(Form,Size,Color) ---> color:Color, size:Size, form(Num):Form.
+object(Num) : object(Form,'-', Color) ---> color:Color, form(Num):Form.
+object(Num) : object(Form,Size,'-')  ---> size:Size, form(Num):Form.
+object(Num) : object(Form,'-', '-')  ---> form(Num):Form.
+
+%% Lexical rules
+
+quantifier(sg) : the ---> [the].
+quantifier(sg) : any ---> [a] ; [an] ; [any].
+quantifier(sg) : all ---> [every].
+quantifier(pl) : all ---> [all].
+
+relation : beside ---> [beside].
+relation : leftof ---> [left,of] ; [to,the,left,of].
+relation : rightof ---> [right,of] ; [to,the,right,of].
+relation : above ---> [above].
+relation : ontop ---> [on,top,of] ; [on].
+relation : under ---> [under] ; [below].
+relation : inside ---> [inside] ; [in] ; [into].
+
+size : small ---> [small] ; [tiny].
+size : medium ---> [medium] ; [middle, sized].
+size : large ---> [large] ; [big].
+
+color : black ---> [black].
+color : white ---> [white].
+color : blue ---> [blue].
+color : green ---> [green].
+color : yellow ---> [yellow].
+color : red ---> [red].
+
+form(sg) : anyform ---> [object] ; [thing] ; [form] ; [one].
+form(pl) : anyform ---> [objects] ; [things] ; [forms] ; [ones].
+form(sg) : brick ---> [brick].
+form(pl) : brick ---> [bricks].
+form(sg) : plank ---> [plank].
+form(pl) : plank ---> [planks].
+form(sg) : ball ---> [ball].
+form(pl) : ball ---> [balls].
+form(sg) : pyramid ---> [pyramid].
+form(pl) : pyramid ---> [pyramids].
+form(sg) : box ---> [box].
+form(pl) : box ---> [boxes].
+form(sg) : table ---> [table].
+form(pl) : table ---> [tables].
+
+nat : N ---> [N], {integer(N), N >= 0}.
+
+%% Lexicon (without semantic content)
+
+the_world ---> [the,world].
+the_floor ---> [the,floor].
+stack_key ---> [stack].
+
+opt_that_is(_) ---> [].
+opt_that_is(sg) ---> [that,is].
+opt_that_is(pl) ---> [that,are].
+
+move ---> [move] ; [put] ; [drop].
+take ---> [take] ; [grasp] ; [pick,up].
+it ---> [it].
+%%Improvements
+where ---> [find] ; [where,is] ; [where,are].
+count ---> [count] ; [how,many].
+what ---> [what,is] ; [what,are,the,objects].
+
+opt_will_you ---> [] ; [will,you] ; [can,you] ; [could,you].
+opt_please ---> [] ; [please].
+opt_interrogation ---> [] ; [?].
+
+
+/*
+  This file is a recursive descent parser of DCG grammars
+  stored using the predicate '--->'/2.
+
+  Call like this:
+  ?- parse(command, [take, the, white, ball], Tree).
+  Tree = take(basic_entity(the, object(ball, -, white))) ;
+  no (more) solutions
+
+  ...or like this:
+  ?- parse_all(command, [take, the, white, ball], Trees).
+  Trees = [take(basic_entity(the, object(ball, -, white)))]
 */
+
+%% parse_all(+Startcat : atom, +Sentence : list(atom), -ParseTrees : list(term))
+parse_all(Cat, Tokens, Trees) :-
+    findall(T, parse(Cat, Tokens, T), Trees).
+
+%% parse_all(+Startcat : atom, +Sentence : list(atom), ?ParseTree : term)
+parse(Cat, Tokens, Tree) :-
+    parse_term(Cat:Tree, Tokens, []).
+
+%% parse_term(?ParsingGoal : term, +Sentence : list(atom), ?Remainder : list(atom))
+parse_term(LHS, Xs0, Xs) :-
+    '--->'(LHS, RHS),
+    parse_term(RHS, Xs0, Xs).
+parse_term([], Xs, Xs).
+parse_term([T|Ts], [T|Xs0], Xs) :-
+    parse_term(Ts, Xs0, Xs).
+parse_term((A, B), Xs0, Xs) :-
+    parse_term(A, Xs0, Xs1),
+    parse_term(B, Xs1, Xs).
+parse_term((A ; B), Xs0, Xs) :-
+    ( parse_term(A, Xs0, Xs)
+    ; parse_term(B, Xs0, Xs)
+    ).
+parse_term({Goal}, Xs, Xs) :-
+    call(Goal).
 
 %Finds object satisfying type size color by checking against a list of possible objects
 %if Holding is empty we only have possible objects in world
@@ -415,6 +270,7 @@ interpret(relative(inside,X), World, Holding, Objects, SelectedObject) :-
 	SelectedObject),SelectedObject \== [].
 	
 %%Stacks
+
 interpret(absolute(beside,basic_stack(N)), World, Holding, Objects, SelectedObject) :-
     %Check if the stack exists
 	iswithinbounds(N,World),
@@ -557,7 +413,7 @@ interpret(what(absolute(above,  basic_stack(N))), World, Holding, Objects, whata
 interpret(what(absolute(ontop,  basic_stack(N))), World, Holding, Objects, whatontopstack([N])).
 interpret(what(absolute(inside, world)), World, Holding, Objects, whatontopstack(N)) :-
 	length(World,LengthWorld),listFirstIndexes(LengthWorld, N).
-
+	
 %Will return the letter of the type/size/col which satisfies the object in PossibleObjects.
 %------------------------------------------------------------------------------------------------------------------------%
 getobj([Type,Size,Color],PossibleObjects,SelectedObject) :-
@@ -583,17 +439,13 @@ getobj([anyform,-,Color],PossibleObjects,SelectedObject) :-
 
 getobj([anyform,-,-],PossibleObjects,SelectedObject) :-
     member(SelectedObject=json([form=_,size=_,color=_]), PossibleObjects).
-%------------------------------------------------------------------------------------------------------------------------%
+%------------------------------------------------------------------------------------------------------------------------%	
 
 %---------------------------------------------------------------------------------------------------- Constraints management ----------------------------------------------------------------------------------------------------
 
 %Get the form and the size of an object knowing its name (one letter) and the possible objects. Output : ObjectFormSize=[form,size]
 getFormAndSize(ObjectLetter,PossibleObjects,ObjectFormSize) :-
-	PossibleObjects = json(PossibleObjectsJson),member(ObjectLetter = ObjectJson,PossibleObjectsJson),ObjectJson=json([form=FormObj,size=SizeObj,color=_]),ObjectFormSize=[FormObj,SizeObj].
-
-%Get the form of an object knowing its name (one letter) and the possible objects. Output : ObjectForm=form
-getForm(ObjectLetter,PossibleObjects,ObjectForm) :-
-	PossibleObjects = json(PossibleObjectsJson),member(ObjectLetter = ObjectJson,PossibleObjectsJson),ObjectJson=json([form=ObjectForm,size=_,color=_]).
+	member(ObjectLetter = ObjectJson,PossibleObjects),ObjectJson=json([form=FormObj,size=SizeObj,color=_]),ObjectFormSize=[FormObj,SizeObj].
 
 /*********************** getFormAndSize ***********************
 testFormSize :-
@@ -747,19 +599,389 @@ whichListInTheWorld([_|LL],X,N) :- whichListInTheWorld(LL,X,M), N is M + 1.
 
 listFirstIndexes(Length, List) :- HighValue is Length - 1, numlist(0,HighValue,List).
 
-/*
-%Put the element held at any place
+%%-----------------------------------------------------
 
-putanyplace(O1,LL,[O1|L],NLL,L) :- nth1(K,LL,LK), canbeon(O1,LK), consLL_at(O1,LL,K,NLL).
+%% Command test
+testBase :-
+Utterance = [put,the,white,ball,in,a,box,on,the,floor],
+parse_all(command, Utterance, Trees),write(Trees).
 
-%Put the element holded by the arm on top of the element O2 when O2 is not a topmost element
+%test where
+test :-
+Utterance = [find, the, white, ball],
+parse_all(command, Utterance, Trees),write(Trees).
 
-putontop(O1,O2,LL,[O1|L],NLL,L) :- canbeon(O1,[O2|-]), whichL(O2,LL,K2), nth1(K2,LL,LK2), hdtlL(LK2,H,T), moveanyplace(H,LL,[O1|L],LLaux1,Laux1), take(O1,LLaux1,Laux1,LLaux2,Laux2), putontop(O1,O2,LLaux2,Laux2,NLL,L).
+test2 :-
+Utterance = [where, is, the, white, ball, ?],
+parse_all(command, Utterance, Trees),write(Trees).
 
-%If the arm holds something and we want to take an object different from the one it holds we put it somewhere
+test3 :-
+Utterance = [where, are, all, white, balls],
+parse_all(command, Utterance, Trees),write(Trees).
 
-take(O,LL,[H|T],NLL,NL) :- putabove(H,Oaux,LL,Kaux,[H|T],LLaux,T), take(O,LLaux,T,NLL,NL).
+%test count
+test4 :-
+Utterance = [count, all, white, balls, in, the, world],
+parse_all(command, Utterance, Trees),write(Trees).
 
-%If the arm does not hold something but the head of the list in which there is the element we want to take is not this element we move the head somewhere else
+test5 :-
+Utterance = [count, all, white, balls, on, stack, 1],
+parse_all(command, Utterance, Trees),write(Trees).
 
-take(O,LL,[],NLL,L) :- whichL(O,LL,K), nth1(K,LL,LK), hdtlL(LK,H,_), move(H,Oaux,LL,[],LLaux,Laux), take(O,LLaux,Laux,NLL,L).*/
+test6 :-
+Utterance = [count, all, white, balls, that, are, left, of, the, blue, box],
+parse_all(command, Utterance, Trees),write(Trees).
+
+%test what
+test7 :-
+Utterance = [what, is, on, stack ,12],
+parse_all(command, Utterance, Trees),write(Trees).
+
+test8 :-
+Utterance = [what, are, the, objects, that, are, right, of, the, white, ball, on, the, floor, ?],
+parse_all(command, Utterance, Trees),write(Trees).
+
+%%ask for precision in case of ambiguity
+test9 :-
+Utterance = [the, small, blue, one],
+parse_all(precision, Utterance, Trees),write(Trees).
+
+test10 :-
+World = [[e],[l,g],[],[f,m,k],[]],
+Holding = @(null),
+Objects = json([
+	a=json([form=brick,size=large,color=green]),
+	b=json([form=brick,size=small,color=white]),
+	c=json([form=plank,size=large,color=red]),
+	d=json([form=plank,size=small,color=green]),
+	e=json([form=ball,size=large,color=white]),
+	f=json([form=ball,size=small,color=black]),
+	g=json([form=table,size=large,color=blue]),
+	h=json([form=table,size=small,color=red]),
+	i=json([form=pyramid,size=large,color=yellow]),
+	j=json([form=pyramid,size=small,color=red]),
+	k=json([form=box,size=large,color=yellow]),
+	l=json([form=box,size=large,color=red]),
+	m=json([form=box,size=small,color=blue])
+	]),
+Utterance = [take, the, white, ball],
+parse_all(command, Utterance, Trees),write(Trees),
+findall(Goal, (member(Tree, Trees),
+                     interpret(Tree, World, Holding, Objects, Goal)
+                    ), Goals),write(Goals).
+					
+test11 :-
+World = [[e],[l,g],[],[f,m,k],[]],
+Holding = @(null),
+Objects = json([
+	a=json([form=brick,size=large,color=green]),
+	b=json([form=brick,size=small,color=white]),
+	c=json([form=plank,size=large,color=red]),
+	d=json([form=plank,size=small,color=green]),
+	e=json([form=ball,size=large,color=white]),
+	f=json([form=ball,size=small,color=black]),
+	g=json([form=table,size=large,color=blue]),
+	h=json([form=table,size=small,color=red]),
+	i=json([form=pyramid,size=large,color=yellow]),
+	j=json([form=pyramid,size=small,color=red]),
+	k=json([form=box,size=large,color=yellow]),
+	l=json([form=box,size=large,color=red]),
+	m=json([form=box,size=small,color=blue])
+	]),
+Utterance = [where, is, the, white, ball, ?],
+parse_all(command, Utterance, Trees),write(Trees),
+findall(Goal, (member(Tree, Trees),
+                     interpret(Tree, World, Holding, Objects, Goal)
+                    ), Goals),write(Goals).
+/*					
+test12 :-
+	World = [[e],[l,g],[],[f,m,k],[]],
+	whichListInTheWorld(World,f,Idx),write(Idx).	
+
+maplistm(_C, [], [], []).
+maplistm( C, [X|Xs], [Y|Ys], [Z|Zs]) :-
+   call(C, X, Y, Z),
+   maplistm( C, Xs, Ys, Zs).
+   
+maplistn(_C, [], []).
+maplistn( C, [X|Xs], [Y|Ys]) :-
+   call(C, X, Y),
+   maplistn( C, Xs, Ys).
+   
+truc(N,R):- R is N*N.
+%listWhichListInTheWorld([X|_],LL,N):- whichListInTheWorld(X,LL,N).
+%listWhichListInTheWorld([_|L],LL,NewListNum):- call(whichListInTheWorld(L,LL,N))
+
+test13 :-
+	World = [[e],[l,g],[],[f,m,k],[]],
+	%maplist(maplist(truc),[[1,2],[3,4]],Rss),write(Rss).
+	%maplist(append(['soeur']),World,Rss),write(Rss).
+	maplist(whichListInTheWorld(World),[e,f],IdxList),write(IdxList).	
+*/
+
+test12 :-
+World = [[e],[l,g],[],[f,m,k],[]],
+Holding = @(null),
+Objects = json([
+	a=json([form=brick,size=large,color=green]),
+	b=json([form=brick,size=small,color=white]),
+	c=json([form=plank,size=large,color=red]),
+	d=json([form=plank,size=small,color=green]),
+	e=json([form=ball,size=large,color=white]),
+	f=json([form=ball,size=small,color=black]),
+	g=json([form=table,size=large,color=blue]),
+	h=json([form=table,size=small,color=red]),
+	i=json([form=pyramid,size=large,color=yellow]),
+	j=json([form=pyramid,size=small,color=red]),
+	k=json([form=box,size=large,color=yellow]),
+	l=json([form=box,size=large,color=red]),
+	m=json([form=box,size=small,color=blue])
+	]),
+Utterance = [where, are, all, balls],
+parse_all(command, Utterance, Trees),write(Trees),
+findall(Goal, (member(Tree, Trees),
+                     interpret(Tree, World, Holding, Objects, Goal)
+                    ), Goals),write(Goals).
+					
+test13 :-
+World = [[e],[l,g],[],[f,m,k],[]],
+Holding = @(null),
+Objects = json([
+	a=json([form=brick,size=large,color=green]),
+	b=json([form=brick,size=small,color=white]),
+	c=json([form=plank,size=large,color=red]),
+	d=json([form=plank,size=small,color=green]),
+	e=json([form=ball,size=large,color=white]),
+	f=json([form=ball,size=small,color=black]),
+	g=json([form=table,size=large,color=blue]),
+	h=json([form=table,size=small,color=red]),
+	i=json([form=pyramid,size=large,color=yellow]),
+	j=json([form=pyramid,size=small,color=red]),
+	k=json([form=box,size=large,color=yellow]),
+	l=json([form=box,size=large,color=red]),
+	m=json([form=box,size=small,color=blue])
+	]),
+Utterance = [move, the, white, ball, to, the, left, of, the, red, box, that, is, left, of, the, yellow, box],
+parse_all(command, Utterance, Trees),write(Trees),
+findall(Goal, (member(Tree, Trees),
+                     interpret(Tree, World, Holding, Objects, Goal)
+                    ), Goals),write(Goals).
+					
+test14 :-
+World = [[e],[l,g],[],[f,m,k],[]],
+Holding = @(null),
+Objects = json([
+	a=json([form=brick,size=large,color=green]),
+	b=json([form=brick,size=small,color=white]),
+	c=json([form=plank,size=large,color=red]),
+	d=json([form=plank,size=small,color=green]),
+	e=json([form=ball,size=large,color=white]),
+	f=json([form=ball,size=small,color=black]),
+	g=json([form=table,size=large,color=blue]),
+	h=json([form=table,size=small,color=red]),
+	i=json([form=pyramid,size=large,color=yellow]),
+	j=json([form=pyramid,size=small,color=red]),
+	k=json([form=box,size=large,color=yellow]),
+	l=json([form=box,size=large,color=red]),
+	m=json([form=box,size=small,color=blue])
+	]),
+Utterance = [count, all, balls, that, are, left, of, the, blue, box],
+parse_all(command, Utterance, Trees),write(Trees),
+findall(Goal, (member(Tree, Trees),
+                     interpret(Tree, World, Holding, Objects, Goal)
+                    ), Goals),write(Goals).
+					
+test15 :-
+World = [[e],[l,g],[],[f,m,k],[]],
+Holding = @(null),
+Objects = json([
+	a=json([form=brick,size=large,color=green]),
+	b=json([form=brick,size=small,color=white]),
+	c=json([form=plank,size=large,color=red]),
+	d=json([form=plank,size=small,color=green]),
+	e=json([form=ball,size=large,color=white]),
+	f=json([form=ball,size=small,color=black]),
+	g=json([form=table,size=large,color=blue]),
+	h=json([form=table,size=small,color=red]),
+	i=json([form=pyramid,size=large,color=yellow]),
+	j=json([form=pyramid,size=small,color=red]),
+	k=json([form=box,size=large,color=yellow]),
+	l=json([form=box,size=large,color=red]),
+	m=json([form=box,size=small,color=blue])
+	]),
+Utterance = [what, are, the, objects, that, are, right, of, the, white, ball, on, the, floor, ?],
+parse_all(command, Utterance, Trees),write(Trees),
+findall(Goal, (member(Tree, Trees),
+                     interpret(Tree, World, Holding, Objects, Goal)
+                    ), Goals),write(Goals).
+					
+test16 :-
+	World = [[e],[l,g],[],[f,m,k],[]],
+	flatten(World,PossibleObjects),write(PossibleObjects).
+	
+test17 :-
+World = [[e],[l,g],[],[f,m,k],[]],
+Holding = @(null),
+Objects = json([
+	a=json([form=brick,size=large,color=green]),
+	b=json([form=brick,size=small,color=white]),
+	c=json([form=plank,size=large,color=red]),
+	d=json([form=plank,size=small,color=green]),
+	e=json([form=ball,size=large,color=white]),
+	f=json([form=ball,size=small,color=black]),
+	g=json([form=table,size=large,color=blue]),
+	h=json([form=table,size=small,color=red]),
+	i=json([form=pyramid,size=large,color=yellow]),
+	j=json([form=pyramid,size=small,color=red]),
+	k=json([form=box,size=large,color=yellow]),
+	l=json([form=box,size=large,color=red]),
+	m=json([form=box,size=small,color=blue])
+	]),
+Utterance = [move, the, ball, that, is, on, stack, 0, on, the, yellow, box],
+parse_all(command, Utterance, Trees),write(Trees),
+findall(Goal, (member(Tree, Trees),
+                     interpret(Tree, World, Holding, Objects, Goal)
+                    ), Goals),write(Goals).
+					
+test18 :-
+World = [[e],[l,g],[],[f,m,k],[]],
+Holding = @(null),
+Objects = json([
+	a=json([form=brick,size=large,color=green]),
+	b=json([form=brick,size=small,color=white]),
+	c=json([form=plank,size=large,color=red]),
+	d=json([form=plank,size=small,color=green]),
+	e=json([form=ball,size=large,color=white]),
+	f=json([form=ball,size=small,color=black]),
+	g=json([form=table,size=large,color=blue]),
+	h=json([form=table,size=small,color=red]),
+	i=json([form=pyramid,size=large,color=yellow]),
+	j=json([form=pyramid,size=small,color=red]),
+	k=json([form=box,size=large,color=yellow]),
+	l=json([form=box,size=large,color=red]),
+	m=json([form=box,size=small,color=blue])
+	]),
+Utterance = [move, the, white, ball, on, the, floor],
+parse_all(command, Utterance, Trees),write(Trees),
+findall(Goal, (member(Tree, Trees),
+                     interpret(Tree, World, Holding, Objects, Goal)
+                    ), Goals),write(Goals).
+test19 :-
+World = [[e],[l,g],[],[f,m,k],[]],
+Holding = @(null),
+Objects = json([
+	a=json([form=brick,size=large,color=green]),
+	b=json([form=brick,size=small,color=white]),
+	c=json([form=plank,size=large,color=red]),
+	d=json([form=plank,size=small,color=green]),
+	e=json([form=ball,size=large,color=white]),
+	f=json([form=ball,size=small,color=black]),
+	g=json([form=table,size=large,color=blue]),
+	h=json([form=table,size=small,color=red]),
+	i=json([form=pyramid,size=large,color=yellow]),
+	j=json([form=pyramid,size=small,color=red]),
+	k=json([form=box,size=large,color=yellow]),
+	l=json([form=box,size=large,color=red]),
+	m=json([form=box,size=small,color=blue])
+	]),
+Utterance = [move, the, white, ball, on, stack, 0],
+parse_all(command, Utterance, Trees),write(Trees),
+findall(Goal, (member(Tree, Trees),
+                     interpret(Tree, World, Holding, Objects, Goal)
+                    ), Goals),write(Goals).
+					
+test20 :-
+World = [[e],[l,g],[],[f,m,k],[]],
+Holding = @(null),
+Objects = json([
+	a=json([form=brick,size=large,color=green]),
+	b=json([form=brick,size=small,color=white]),
+	c=json([form=plank,size=large,color=red]),
+	d=json([form=plank,size=small,color=green]),
+	e=json([form=ball,size=large,color=white]),
+	f=json([form=ball,size=small,color=black]),
+	g=json([form=table,size=large,color=blue]),
+	h=json([form=table,size=small,color=red]),
+	i=json([form=pyramid,size=large,color=yellow]),
+	j=json([form=pyramid,size=small,color=red]),
+	k=json([form=box,size=large,color=yellow]),
+	l=json([form=box,size=large,color=red]),
+	m=json([form=box,size=small,color=blue])
+	]),
+Utterance = [count, all, balls, on, stack, 0],
+parse_all(command, Utterance, Trees),write(Trees),
+findall(Goal, (member(Tree, Trees),
+                     interpret(Tree, World, Holding, Objects, Goal)
+                    ), Goals),write(Goals).
+					
+test21 :-
+World = [[e],[l,g],[],[f,m,k],[]],
+Holding = @(null),
+Objects = json([
+	a=json([form=brick,size=large,color=green]),
+	b=json([form=brick,size=small,color=white]),
+	c=json([form=plank,size=large,color=red]),
+	d=json([form=plank,size=small,color=green]),
+	e=json([form=ball,size=large,color=white]),
+	f=json([form=ball,size=small,color=black]),
+	g=json([form=table,size=large,color=blue]),
+	h=json([form=table,size=small,color=red]),
+	i=json([form=pyramid,size=large,color=yellow]),
+	j=json([form=pyramid,size=small,color=red]),
+	k=json([form=box,size=large,color=yellow]),
+	l=json([form=box,size=large,color=red]),
+	m=json([form=box,size=small,color=blue])
+	]),
+Utterance = [count, all, balls, in, the, world],
+parse_all(command, Utterance, Trees),write(Trees),
+findall(Goal, (member(Tree, Trees),
+                     interpret(Tree, World, Holding, Objects, Goal)
+                    ), Goals),write(Goals).
+					
+test22 :-
+World = [[e],[l,g],[],[f,m,k],[]],
+Holding = @(null),
+Objects = json([
+	a=json([form=brick,size=large,color=green]),
+	b=json([form=brick,size=small,color=white]),
+	c=json([form=plank,size=large,color=red]),
+	d=json([form=plank,size=small,color=green]),
+	e=json([form=ball,size=large,color=white]),
+	f=json([form=ball,size=small,color=black]),
+	g=json([form=table,size=large,color=blue]),
+	h=json([form=table,size=small,color=red]),
+	i=json([form=pyramid,size=large,color=yellow]),
+	j=json([form=pyramid,size=small,color=red]),
+	k=json([form=box,size=large,color=yellow]),
+	l=json([form=box,size=large,color=red]),
+	m=json([form=box,size=small,color=blue])
+	]),
+Utterance = [what, is, on, stack ,12],
+parse_all(command, Utterance, Trees),write(Trees),
+findall(Goal, (member(Tree, Trees),
+                     interpret(Tree, World, Holding, Objects, Goal)
+                    ), Goals),write(Goals).
+					
+test23 :-
+World = [[e],[l,g],[],[f,m,k],[]],
+Holding = @(null),
+Objects = json([
+	a=json([form=brick,size=large,color=green]),
+	b=json([form=brick,size=small,color=white]),
+	c=json([form=plank,size=large,color=red]),
+	d=json([form=plank,size=small,color=green]),
+	e=json([form=ball,size=large,color=white]),
+	f=json([form=ball,size=small,color=black]),
+	g=json([form=table,size=large,color=blue]),
+	h=json([form=table,size=small,color=red]),
+	i=json([form=pyramid,size=large,color=yellow]),
+	j=json([form=pyramid,size=small,color=red]),
+	k=json([form=box,size=large,color=yellow]),
+	l=json([form=box,size=large,color=red]),
+	m=json([form=box,size=small,color=blue])
+	]),
+Utterance = [the, small, blue, one],
+parse_all(precision, Utterance, Trees),write(Trees),
+findall(Goal, (member(Tree, Trees),
+                     interpret(Tree, World, Holding, Objects, Goal)
+                    ), Goals),write(Goals).

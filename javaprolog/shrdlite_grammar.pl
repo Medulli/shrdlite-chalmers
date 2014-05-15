@@ -3,16 +3,34 @@
 
 %% Non-lexical grammar rules
 
+%%ask for something to do
 command : Cmd --->
     opt_will_you, opt_please,
     basic_command : Cmd,
     opt_please.
 
+%%ask for precision in case of ambiguity
+precision : Entity --->
+    opt_please,
+    entity:Entity,
+    opt_please.
+	
 basic_command : take(Entity) ---> take, entity:Entity.
 basic_command : put(Location) ---> move, it, location:Location.
 basic_command : move(Entity, Location) ---> move, entity:Entity, location:Location.
+%% Improvements
+basic_command : where(Entity) ---> where, entity:Entity, opt_interrogation.
+basic_command : count(Entity, Location) ---> count, entity:Entity, opt_that_is(Num), location:Location, opt_interrogation.
+basic_command : what(Location) ---> what, opt_that_is(Num), location:Location, opt_interrogation.
+basic_command : what(Entity, Location) ---> what, opt_that_is(Num), entity:Entity, opt_that_is(Num), location:Location, opt_interrogation.
 
+location : absolute(Relation, Stack) ---> relation:Relation, stack:Stack.
 location : relative(Relation, Entity) ---> relation:Relation, entity:Entity.
+
+stack : world ---> the_world.
+
+stack : basic_stack(StackPos) --->
+    stack_key,nat:StackPos.
 
 entity : floor ---> the_floor.
 
@@ -46,6 +64,7 @@ relation : under ---> [under] ; [below].
 relation : inside ---> [inside] ; [in] ; [into].
 
 size : small ---> [small] ; [tiny].
+size : medium ---> [medium] ; [middle, sized].
 size : large ---> [large] ; [big].
 
 color : black ---> [black].
@@ -55,8 +74,8 @@ color : green ---> [green].
 color : yellow ---> [yellow].
 color : red ---> [red].
 
-form(sg) : anyform ---> [object] ; [thing] ; [form].
-form(pl) : anyform ---> [objects] ; [things] ; [forms].
+form(sg) : anyform ---> [object] ; [thing] ; [form] ; [one].
+form(pl) : anyform ---> [objects] ; [things] ; [forms] ; [ones].
 form(sg) : brick ---> [brick].
 form(pl) : brick ---> [bricks].
 form(sg) : plank ---> [plank].
@@ -70,9 +89,13 @@ form(pl) : box ---> [boxes].
 form(sg) : table ---> [table].
 form(pl) : table ---> [tables].
 
+nat : N ---> [N], {integer(N), N >= 0}.
+
 %% Lexicon (without semantic content)
 
+the_world ---> [the,world].
 the_floor ---> [the,floor].
+stack_key ---> [stack].
 
 opt_that_is(_) ---> [].
 opt_that_is(sg) ---> [that,is].
@@ -81,6 +104,11 @@ opt_that_is(pl) ---> [that,are].
 move ---> [move] ; [put] ; [drop].
 take ---> [take] ; [grasp] ; [pick,up].
 it ---> [it].
+%%Improvements
+where ---> [find] ; [where,is] ; [where,are].
+count ---> [count] ; [how,many].
+what ---> [what,is] ; [what,are,the,objects].
 
 opt_will_you ---> [] ; [will,you] ; [can,you] ; [could,you].
 opt_please ---> [] ; [please].
+opt_interrogation ---> [] ; [?].
