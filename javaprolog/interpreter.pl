@@ -1,3 +1,5 @@
+:- style_check(-singleton).
+
 %Finds object satisfying type size color by checking against a list of possible objects
 %if Holding is empty we only have possible objects in world
 interpret(object(Type,Size,Color), World, @(null), Objects, SelectedObject) :-
