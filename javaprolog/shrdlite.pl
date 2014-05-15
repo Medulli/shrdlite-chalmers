@@ -42,6 +42,7 @@ main :-
 		Output = 'I can only hold one object!'
       ; 
         %Goal is a list of goals i.e. "I can do this and this and this... Please specify what you want"
+		%%PROBLEM : when there is an ambiguity, Goals is an empty list []. It has to do with the lines 3 and 13 in interpreter.pl and getobj()
         Goals = [_,_|_] ->
         Plan = @(null),
         Output = 'Ambiguity error!'
@@ -64,9 +65,11 @@ main :-
               output = Output],
     json_write(user_output, json(Result)).
 
-getPlan([K,-1], Plan) :- Plan = ['I pick up the element at place . . . ', K, [pick, K]].
-getPlan([-1,K], Plan) :- Plan = ['I drop it down at place . . . ', K, [drop, K]].
-getPlan([K1,K2], Plan) :- Plan = ['I pick up the element at place . . . ', K1, [pick, K1], 'and I drop it down at place . . . ', K2, [drop, K2]].
+getPlan([K,-1,move], Plan) :- Plan = ['I pick up the element at place . . . ', K, [pick, K]].
+getPlan([-1,K,move], Plan) :- Plan = ['I drop it down at place . . . ', K, [drop, K]].
+getPlan([K1,K2,move], Plan) :- Plan = ['I pick up the element at place . . . ', K1, [pick, K1], 'and I drop it down at place . . . ', K2, [drop, K2]].
+%is it possible to not send a pick or drop ?
+getPlan([L,where], Plan) :- Plan = ['On place(s) . . . ', L].
 solve(PlanList, Plan) :- maplist(getPlan, PlanList, PlanAux),append(PlanAux, Plan).
 
 %Take the selected object if the arm does not hold something
@@ -79,7 +82,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       pickAt(K,World,NewWorld),
       nb_setval(world, NewWorld),
       b_setval(holding, [Element]),
-      Plan = [[K,-1]].
+      Plan = [[K,-1,move]].
 
 %Take the selected object if the arm holds something
 /*plan(_Goal, World, Holding, _Objects, Plan) :-
@@ -111,7 +114,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       pickAt(K1,World,WorldAux),
       dropAt(Element1,K2,WorldAux,NewWorld),
       b_setval(world, NewWorld),
-      Plan = [[K1,K2]].
+      Plan = [[K1,K2,move]].
 
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, movebeside, Element1, Element2),
@@ -126,7 +129,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       pickAt(K1,World,WorldAux),
       dropAt(Element1,K2,WorldAux,NewWorld),
       b_setval(world, NewWorld),
-      Plan = [[K1,K2]].
+      Plan = [[K1,K2,move]].
 
 %Move the selected object to the left the relative object in one step if the arm does not hold something and the selected object can be on the relative object
 plan(_Goal, World, Holding, _Objects, Plan) :-
@@ -142,7 +145,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       pickAt(K1,World,WorldAux),
       dropAt(Element1,K2,WorldAux,NewWorld),
       b_setval(world, NewWorld),
-      Plan = [[K1,K2]].
+      Plan = [[K1,K2,move]].
 
 %Move the selected object to the right the relative object in one step if the arm does not hold something and the selected object can be on the relative object
 plan(_Goal, World, Holding, _Objects, Plan) :-
@@ -158,7 +161,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       pickAt(K1,World,WorldAux),
       dropAt(Element1,K2,WorldAux,NewWorld),
       b_setval(world, NewWorld),
-      Plan = [[K1,K2]].
+      Plan = [[K1,K2,move]].
 
 %Move the selected object above the relative object in one step if the arm does not hold something and the selected object can be on the relative object
 plan(_Goal, World, Holding, _Objects, Plan) :-
@@ -173,7 +176,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       pickAt(K1,World,WorldAux),
       dropAt(Element1,K2,WorldAux,NewWorld),
       b_setval(world, NewWorld),
-      Plan = [[K1,K2]].
+      Plan = [[K1,K2,move]].
 
 %Move the selected object on top of the relative object in one step if the arm does not hold something and the selected object can be on the relative object
 plan(_Goal, World, Holding, _Objects, Plan) :-
@@ -191,7 +194,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       pickAt(K1,World,WorldAux),
       dropAt(Element1,K2,WorldAux,NewWorld),
       b_setval(world, NewWorld),
-      Plan = [[K1,K2]].
+      Plan = [[K1,K2,move]].
 
 %Move the selected object inside the relative object in one step if the arm does not hold something and the selected object can be on the relative object
 plan(_Goal, World, Holding, _Objects, Plan) :-
@@ -209,7 +212,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       pickAt(K1,World,WorldAux),
       dropAt(Element1,K2,WorldAux,NewWorld),
       b_setval(world, NewWorld),
-      Plan = [[K1,K2]].
+      Plan = [[K1,K2,move]].
 
 %Move the selected object inside the relative object in several steps if the arm does not hold something and the selected object can be on the relative object
 plan(_Goal, World, Holding, _Objects, Plan) :-
@@ -226,9 +229,13 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       dropAt(HdLK2,K3,WorldAux,NewWorld),
       b_setval(world, NewWorld),
       plan(_Goal, NewWorld, Holding, _Objects, PlanAux),
-      Plan = [[K2,K3]|PlanAux].
+      Plan = [[K2,K3,move]|PlanAux].
 
-
+%% Where : the list of positions (indexes) of the objects
+plan(_Goal, World, Holding, _Objects, Plan) :-
+      retrieveGoalElements(_Goal, where, Parameter),
+      maplist(whichListInTheWorld(World),Parameter,IdxList)
+      Plan = [IdxList,where].
 	  
 %%--------------------------------------------------------------
 

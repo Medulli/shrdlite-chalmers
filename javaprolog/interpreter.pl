@@ -194,9 +194,6 @@ interpret(move(X,absolute(ontop,  basic_stack(N))), World, Holding, Objects, mov
 interpret(where(X), World, Holding, Objects, where(SelectedObjects)) :-
 	interpret(X, World, Holding, Objects, SelectedObjects).
 	
-%%done with
-%maplist(whichListInTheWorld(World),SelectedObjects,IdxList).
-	
 %%Interpret Count
 interpret(count(X,relative(beside, Y)), World, Holding, Objects, countbeside(SelectedObject,RelativeObject)) :-
 	interpret(X, World, Holding, Objects, SelectedObject),

@@ -159,9 +159,9 @@ interpret(object(Type,Size,Color), World, @(null), Objects, SelectedObject) :-
     %get a list of (all) objects
 	json(AllPossibleObjects) = Objects,
 	%find all objects and that are in world, Col is a list of objects (letters) in world, X is "the letter" of the objects in AllPossibleObjects, which must be a member of the list we're currently checking...
-	findall(X=json([A,B,C]), (member(Col,World),member(X=json([A,B,C]),AllPossibleObjects),member(X,Col)), PossibleObjects),
+	findall(X=json([A,B,C]), (member(Col,World),member(X=json([A,B,C]),AllPossibleObjects),member(X,Col)), PossibleObjects),%nl,write(PossibleObjects),nl,
 	%get the actual letter of the object we desired from the pool PossibleObjects
-	getobj([Type,Size,Color], PossibleObjects, SelectedObject).
+	getobj([Type,Size,Color], PossibleObjects, SelectedObject).%,nl,write(SelectedObject),nl.
 
 
 %If we're holding something, add that to the possible objects
@@ -1074,3 +1074,27 @@ findall(Goal, (member(Tree, Trees),
                     ), Goals),write(Goals),
 Goals = [Goal],
 plan(_Goal, World, Holding, _Objects, Plan),write(Plan).
+
+test26 :-
+World = [[e],[l,g],[],[f,m,k],[]],
+Holding = @(null),
+Objects = json([
+	a=json([form=brick,size=large,color=green]),
+	b=json([form=brick,size=small,color=white]),
+	c=json([form=plank,size=large,color=red]),
+	d=json([form=plank,size=small,color=green]),
+	e=json([form=ball,size=large,color=white]),
+	f=json([form=ball,size=small,color=black]),
+	g=json([form=table,size=large,color=blue]),
+	h=json([form=table,size=small,color=red]),
+	i=json([form=pyramid,size=large,color=yellow]),
+	j=json([form=pyramid,size=small,color=red]),
+	k=json([form=box,size=large,color=yellow]),
+	l=json([form=box,size=large,color=red]),
+	m=json([form=box,size=small,color=blue])
+	]),
+Utterance = [take, the, ball],
+parse_all(command, Utterance, Trees),write(Trees),
+findall(Goal, (member(Tree, Trees),
+                     interpret(Tree, World, Holding, Objects, Goal)
+                    ), Goals),write(Goals).
