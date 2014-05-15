@@ -73,12 +73,12 @@ solve(_Goal, World, Holding, _Objects, Plan) :-
       pickAt(K,World,NewWorld),
       nb_setval(world, NewWorld),
       nb_setval(holding, [Element]),
-      Plan = ['I pick it up . . .',  [pick, K]].
+      Plan = ['I pick up the element at place . . . ', K, [pick, K]].
 
 %Take the selected object if the arm holds something
 solve(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, ActionTake, ElementPick),
-      Holding = [ElementDrop],
+      Holding == [ElementDrop],
       ActionTake == take,
 /*      canbeAt(ElementDrop,World,_Objects,KDrop),
       dropAt(ElementDrop,KDrop,World,WorldAux),
@@ -211,6 +211,23 @@ solve(_Goal, World, Holding, _Objects, Plan) :-
       dropAt(Element1,K2,WorldAux,NewWorld),
       nb_setval(world, NewWorld),
       Plan = ['I pick up the element at place . . . ', K1, [pick, K1], 'and I drop it down at place . . . ', K2, [drop, K2]].
+
+%Move the selected object inside the relative object in several steps if the arm does not hold something and the selected object can be on the relative object
+solve(_Goal, World, Holding, _Objects, Plan) :-
+      retrieveGoalElements(_Goal, ActionMoveInside, Element1, Element2),
+      Holding == @(null),
+      ActionMoveInside == moveinside,
+      getForm(Element2,_Objects,ObjectForm),
+      ObjectForm == box,
+      whichListInTheWorld(Element2,World,K2),
+      nth0(K2,World,LK2),
+      checkHead(LK2,HdLK2),
+      HdLK2 \== Element2,
+      canbeAt(HdLK2,World,_Objects,K3),
+      pickAt(K2,World,WorldAux),
+      dropAt(ElementDrop,K3,WorldAux,NewWorld),
+      nb_setval(world, NewWorld),
+      solve(_Goal, NewWorld, Holding, _Objects, Plan).
 
 %%--------------------------------------------------------------
 
