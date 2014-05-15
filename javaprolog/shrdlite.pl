@@ -97,13 +97,14 @@ interpret(object(Type,Size,Color), World, @(null), Objects, SelectedObject) :-
 
 
 %If we're holding something, add that to the possible objects
-interpret(object(Type,Size,Color), World, Holding \== @(null), Objects, SelectedObject) :-
+interpret(object(Type,Size,Color), World, Holding, Objects, SelectedObject) :-
 	json(AllPossibleObjects) = Objects,
 	findall(X=json([A,B,C]), (member(Col,World),member(X=json([A,B,C]),AllPossibleObjects),member(X,Col)), PossibleWorldObjects),
 	member(Holding = json([A1,A2,A3]),AllPossibleObjects),
-	append(PossibleWorldObjects,Holding = json([A1,A2,A3]),PossibleObjects),
+	append(PossibleWorldObjects,[Holding = json([A1,A2,A3])],PossibleObjects),
 	getobj([Type,Size,Color], PossibleObjects, SelectedObject).
 
+	% Use that for stacks
 %All these are basically "any" or "all" object, I guess we could do something along findall(...,...,[Obj]) for the and findall(...,...,[Obj|_]) for any
 interpret(basic_entity(any,X), World, Holding, Objects, [SelectedObject]) :-
     interpret(X, World, Holding, Objects, SelectedObject).
@@ -199,13 +200,47 @@ interpret(relative(inside,X), World, Holding, Objects, SelectedObject) :-
 	findall(SelectedObjectAux,
 	(member(RelativeObjectAux, RelativeObject), isinside(SelectedObjectAux,RelativeObjectAux,World)),
 	SelectedObject),SelectedObject \== [].
+	
+%%Stacks
 
+interpret(absolute(beside,basic_stack(N)), World, Holding, Objects, SelectedObject) :-
+    %Check if the stack exists
+	iswithinbounds(N,World),
+    %find all objects satisfying the relation
+	findall(SelectedObjectAux,
+	isbesidestack(SelectedObjectAux,N,World),
+	%Can result in an empty list, so add a condition to avoid that
+	SelectedObject),SelectedObject \== [].
 
+interpret(absolute(leftof,basic_stack(N)), World, Holding, Objects, SelectedObject) :-
+    iswithinbounds(N,World),
+	findall(SelectedObjectAux,
+	isleftofstack(SelectedObjectAux,N,World),
+	SelectedObject),SelectedObject \== [].
+
+interpret(absolute(rightof,basic_stack(N)), World, Holding, Objects, SelectedObject) :-
+    iswithinbounds(N,World),
+	findall(SelectedObjectAux,
+	isrightofstack(SelectedObjectAux,N,World),
+	SelectedObject),SelectedObject \== [].
+
+interpret(absolute(above,basic_stack(N)), World, Holding, Objects, SelectedObject) :-
+    iswithinbounds(N,World),
+	findall(SelectedObjectAux,
+	isabovestack(SelectedObjectAux,N,World),
+	SelectedObject),SelectedObject \== [].
+	
+interpret(absolute(ontop,basic_stack(N)), World, Holding, Objects, SelectedObject) :-
+    iswithinbounds(N,World),
+	findall(SelectedObjectAux,
+	isontopstack(SelectedObjectAux,N,World),
+	SelectedObject),SelectedObject \== [].
+
+interpret(absolute(inside,world), World, _Holding, _Objects, SelectedObject) :-
+    flatten(World,SelectedObject).
+	
 %Find object, and set goal accordingly.
-interpret(take(X), World, @(null), Objects, take(SelectedObject/*,World,[],_,_*/)) :-
-    interpret(X, World, @(null), Objects, SelectedObject).
-
-interpret(take(X), World, Holding \== @(null), Objects,  take(SelectedObject/*,World,Holding,_,_*/)) :-
+interpret(take(X), World, Holding, Objects,  take(SelectedObject)) :-
     interpret(X, World, Holding, Objects, SelectedObject).
 
 interpret(floor, _World, _Holding, _Objects, floor). %floor is floor... move this somewhere.. meh.
@@ -231,6 +266,85 @@ interpret(move(X,relative(under,  Y)), World, Holding, Objects, moveunder(Select
 interpret(move(X,relative(inside, Y)), World, Holding, Objects, moveinside(SelectedObject,RelativeObject)) :-
 	interpret(X, World, Holding, Objects, SelectedObject),
 	interpret(Y, World, Holding, Objects, RelativeObject).
+	
+interpret(move(X,absolute(beside, basic_stack(N))), World, Holding, Objects, movebesidestack(SelectedObject,[N])) :-
+	interpret(X, World, Holding, Objects, SelectedObject).
+interpret(move(X,absolute(leftof, basic_stack(N))), World, Holding, Objects, moveleftstack(SelectedObject,[N])) :-
+	interpret(X, World, Holding, Objects, SelectedObject).
+interpret(move(X,absolute(rightof,basic_stack(N))), World, Holding, Objects, moverightstack(SelectedObject,[N])) :-
+	interpret(X, World, Holding, Objects, SelectedObject).
+interpret(move(X,absolute(above,  basic_stack(N))), World, Holding, Objects, moveabovestack(SelectedObject,[N])) :-
+	interpret(X, World, Holding, Objects, SelectedObject).
+interpret(move(X,absolute(ontop,  basic_stack(N))), World, Holding, Objects, moveontopstack(SelectedObject,[N])) :-
+	interpret(X, World, Holding, Objects, SelectedObject).
+	
+%%Interpret Where
+interpret(where(X), World, Holding, Objects, where(SelectedObjects)) :-
+	interpret(X, World, Holding, Objects, SelectedObjects).
+	
+%%done with
+%maplist(whichListInTheWorld(World),SelectedObjects,IdxList).
+	
+%%Interpret Count
+interpret(count(X,relative(beside, Y)), World, Holding, Objects, countbeside(SelectedObject,RelativeObject)) :-
+	interpret(X, World, Holding, Objects, SelectedObject),
+	interpret(Y, World, Holding, Objects, RelativeObject).
+interpret(count(X,relative(leftof, Y)), World, Holding, Objects, countleft(SelectedObject,RelativeObject)) :-
+	interpret(X, World, Holding, Objects, SelectedObject),
+	interpret(Y, World, Holding, Objects, RelativeObject).
+interpret(count(X,relative(rightof,Y)), World, Holding, Objects, countright(SelectedObject,RelativeObject)) :-
+	interpret(X, World, Holding, Objects, SelectedObject),
+	interpret(Y, World, Holding, Objects, RelativeObject).
+interpret(count(X,relative(above,  Y)), World, Holding, Objects, countabove(SelectedObject,RelativeObject)) :-
+	interpret(X, World, Holding, Objects, SelectedObject),
+	interpret(Y, World, Holding, Objects, RelativeObject).
+interpret(count(X,relative(ontop,  Y)), World, Holding, Objects, countontop(SelectedObject,RelativeObject)) :-
+	interpret(X, World, Holding, Objects, SelectedObject),
+	interpret(Y, World, Holding, Objects, RelativeObject).
+interpret(count(X,relative(under,  Y)), World, Holding, Objects, countunder(SelectedObject,RelativeObject)) :-
+	interpret(X, World, Holding, Objects, SelectedObject),
+	interpret(Y, World, Holding, Objects, RelativeObject).
+interpret(count(X,relative(inside, Y)), World, Holding, Objects, countinside(SelectedObject,RelativeObject)) :-
+	interpret(X, World, Holding, Objects, SelectedObject),
+	interpret(Y, World, Holding, Objects, RelativeObject).
+	
+interpret(count(X,absolute(beside, basic_stack(N))), World, Holding, Objects, countbesidestack(SelectedObject,[N])) :-
+	interpret(X, World, Holding, Objects, SelectedObject).
+interpret(count(X,absolute(leftof, basic_stack(N))), World, Holding, Objects, countleftstack(SelectedObject,[N])) :-
+	interpret(X, World, Holding, Objects, SelectedObject).
+interpret(count(X,absolute(rightof,basic_stack(N))), World, Holding, Objects, countrightstack(SelectedObject,[N])) :-
+	interpret(X, World, Holding, Objects, SelectedObject).
+interpret(count(X,absolute(above,  basic_stack(N))), World, Holding, Objects, countabovestack(SelectedObject,[N])) :-
+	interpret(X, World, Holding, Objects, SelectedObject).
+interpret(count(X,absolute(ontop,  basic_stack(N))), World, Holding, Objects, countontopstack(SelectedObject,[N])) :-
+	interpret(X, World, Holding, Objects, SelectedObject).
+interpret(count(X,absolute(inside, world)), World, Holding, Objects, countontopstack(SelectedObject,N)) :-
+	interpret(X, World, Holding, Objects, SelectedObject),
+	length(World,LengthWorld),listFirstIndexes(LengthWorld, N).
+	
+%%Interpret What
+interpret(what(relative(beside, Y)), World, Holding, Objects, whatbeside(RelativeObject)) :-
+	interpret(Y, World, Holding, Objects, RelativeObject).
+interpret(what(relative(leftof, Y)), World, Holding, Objects, whatleft(RelativeObject)) :-
+	interpret(Y, World, Holding, Objects, RelativeObject).
+interpret(what(relative(rightof,Y)), World, Holding, Objects, whatright(RelativeObject)) :-
+	interpret(Y, World, Holding, Objects, RelativeObject).
+interpret(what(relative(above,Y)), World, Holding, Objects, whatabove(RelativeObject)) :-
+	interpret(Y, World, Holding, Objects, RelativeObject).
+interpret(what(relative(ontop,  Y)), World, Holding, Objects, whatontop(RelativeObject)) :-
+	interpret(Y, World, Holding, Objects, RelativeObject).
+interpret(what(relative(under,  Y)), World, Holding, Objects, whatunder(RelativeObject)) :-
+	interpret(Y, World, Holding, Objects, RelativeObject).
+interpret(what(relative(inside, Y)), World, Holding, Objects, whatinside(RelativeObject)) :-
+	interpret(Y, World, Holding, Objects, RelativeObject).
+
+interpret(what(absolute(beside, basic_stack(N))), World, Holding, Objects, whatbesidestack([N])).
+interpret(what(absolute(leftof, basic_stack(N))), World, Holding, Objects, whatleftstack([N])).
+interpret(what(absolute(rightof,basic_stack(N))), World, Holding, Objects, whatrightstack([N])).
+interpret(what(absolute(above,  basic_stack(N))), World, Holding, Objects, whatabovestack([N])).
+interpret(what(absolute(ontop,  basic_stack(N))), World, Holding, Objects, whatontopstack([N])).
+interpret(what(absolute(inside, world)), World, Holding, Objects, whatontopstack(N)) :-
+	length(World,LengthWorld),listFirstIndexes(LengthWorld, N).
 
 %interpret(move(_X,Y), World, Holding, Objects, move(SelectedObject)) :-
 %    interpret(Y, World, Holding, Objects, SelectedObject).	%for move we find desired object
@@ -400,9 +514,30 @@ isinside(X,Y,World) :-
     nth0(IdxS, Col, X),
     nth0(IdxR, Col, Y),
     (IdxS is IdxR+1).
+whatisonstack(Col,World,X) :-
+	nth0(Col,World,X).
+isabovestack(X,Col,World) :-
+	whatisonstack(Col,World,Stack),member(X,Stack).
+isontopstack(X,Col,World) :-
+	whatisonstack(Col,World,Stack),nth0(0,Stack,X).
+isbesidestack(X,N,World) :-
+    %find list id for relative object
+    member(ColS,World),member(X,ColS), nth0(IdxS,World,ColS),
+    %however they must satisfy this (to the left;or;to the right)
+    (IdxS is N-1;IdxS is N+1).
+isleftofstack(X,N,World) :-
+    member(ColS,World),member(X,ColS), nth0(IdxS,World,ColS),
+    (IdxS < N).
+isrightofstack(X,N,World) :-
+    member(ColS,World),member(X,ColS), nth0(IdxS,World,ColS),
+    (IdxS > N).
+iswithinbounds(N,World) :- integer(N), N >= 0, length(World,LengthWorld), N < LengthWorld.
 
+%%----------- some utilities for the interpreter
+whichListInTheWorld([L|_],X,0) :- member(X,L).
+whichListInTheWorld([_|LL],X,N) :- whichListInTheWorld(LL,X,M), N is M + 1.
 
-%Following LL will be the list of lists representing the world at the moment we want to execute an action, L the list representing the arm (it will be either [] or [o|[]] as we cannot take an object if we already hold one) at the moment we want to execute an action, NLL the list of lists representing the world after the execution of hte action, L the list representing the arm after the execution of the action
+listFirstIndexes(Length, List) :- HighValue is Length - 1, numlist(0,HighValue,List).
 
 %Put the element holded at any place
 
