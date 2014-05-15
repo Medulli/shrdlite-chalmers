@@ -204,10 +204,10 @@ function animateMotion(object, path, timeout, duration) {
 
 function moveObject(action, stackNr) {
     if (action == Pick && currentWorld.holding) {
-        alertError("ERROR", "I cannot pick an object from stack " + stackNr + ", I am already holding something!")
+        alertError("ERROR", "I cannot pick an object from stack " + stackNr + ", I am already holding something!");
         return 0;
     } else if (action == Drop && !currentWorld.holding) {
-        alertError("ERROR", "I cannot drop an object onto stack " + stackNr + ", I am not holding anything!")
+        alertError("ERROR", "I cannot drop an object onto stack " + stackNr + ", I am not holding anything!");
         return 0;
     }
     var stack = currentWorld.world[stackNr];
@@ -217,7 +217,7 @@ function moveObject(action, stackNr) {
 
     if (action == Pick) {
         if (!stack.length) {
-            alertError("ERROR", "I cannot pick an object from stack " + stackNr + ", it is empty!")
+            alertError("ERROR", "I cannot pick an object from stack " + stackNr + ", it is empty!");
             return 0;
         }
         currentWorld.holding = stack.pop();
@@ -237,10 +237,10 @@ function moveObject(action, stackNr) {
 
     if (action == Pick) {
         var path2b = ["M", xStack, yStack, "V", yStack-yArm];
-        animateMotion($("#"+currentWorld.holding), path2b, duration1 + AnimationPause, duration2)
+        animateMotion($("#"+currentWorld.holding), path2b, duration1 + AnimationPause, duration2);
     } else if (action == Drop) {
         var path1b = ["M", xArm, yStack-yArm, "H", xStack, "V", yStack];
-        animateMotion($("#"+currentWorld.holding), path1b, 0, duration1)
+        animateMotion($("#"+currentWorld.holding), path1b, 0, duration1);
     }
 
     if (action == Drop) {
@@ -286,7 +286,7 @@ function makeObject(svg, objectid, stacknr, timeout) {
     var ytop = ybottom - dim.height;
     var ycenter = (ybottom + ytop) / 2;
     var yradius = (ybottom - ytop) / 2;
-    var xleft = (stackWidth() - dim.width) / 2
+    var xleft = (stackWidth() - dim.width) / 2;
     var xright = xleft + dim.width;
     var xcenter = (xright + xleft) / 2;
     var xradius = (xright - xleft) / 2;
@@ -294,6 +294,7 @@ function makeObject(svg, objectid, stacknr, timeout) {
     var xmidright = (xcenter + xright) / 2;
 
     var object;
+    var points;
     switch (attrs.form) {
     case 'brick':
     case 'plank':
@@ -313,13 +314,13 @@ function makeObject(svg, objectid, stacknr, timeout) {
         });
         break;
     case 'pyramid':
-        var points = [xleft, ybottom, xmidleft, ytop, xmidright, ytop, xright, ybottom];
+        points = [xleft, ybottom, xmidleft, ytop, xmidright, ytop, xright, ybottom];
         object = $(SVG('polygon')).attr({
             points: points.join(" ")
         });
         break;
     case 'box':
-        var points = [xleft, ytop, xleft, ybottom, xright, ybottom, xright, ytop, 
+        points = [xleft, ytop, xleft, ybottom, xright, ybottom, xright, ytop,
                       xright-dim.thickness, ytop, xright-dim.thickness, ybottom-dim.thickness,
                       xleft+dim.thickness, ybottom-dim.thickness, xleft+dim.thickness, ytop];
         object = $(SVG('polygon')).attr({
@@ -327,8 +328,8 @@ function makeObject(svg, objectid, stacknr, timeout) {
         });
         break;
     case 'table':
-        var points = [xleft, ytop, xright, ytop, xright, ytop+dim.thickness, 
-                      xmidright, ytop+dim.thickness, xmidright, ybottom, 
+        points = [xleft, ytop, xright, ytop, xright, ytop+dim.thickness,
+                      xmidright, ytop+dim.thickness, xmidright, ybottom,
                       xmidright-dim.thickness, ybottom, xmidright-dim.thickness, ytop+dim.thickness,
                       xmidleft+dim.thickness, ytop+dim.thickness, xmidleft+dim.thickness, ybottom,
                       xmidleft, ybottom, xmidleft, ytop+dim.thickness, xleft, ytop+dim.thickness];
