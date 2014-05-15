@@ -71,11 +71,8 @@ solve(PlanList, Plan) :- maplist(getPlan, PlanList, PlanAux),append(PlanAux, Pla
 
 %Take the selected object if the arm does not hold something
 plan(_Goal, World, Holding, _Objects, Plan) :-
-%%Can be called : retrieveGoalElements(_Goal, take, Element) without the line ActionTake == take
-%%To be tested, but should work
-      retrieveGoalElements(_Goal, ActionTake, Element),
+      retrieveGoalElements(_Goal, take, Element),
       Holding == @(null),
-      ActionTake == take,
       whichListInTheWorld(Element,World,K),
       nth0(K,World,LK),
       checkHead(LK,Element),
@@ -102,9 +99,8 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
 
 %Move the selected object beside the relative object in one step if the arm does not hold something and the selected object can be on the relative object
 plan(_Goal, World, Holding, _Objects, Plan) :-
-      retrieveGoalElements(_Goal, ActionMoveBeside, Element1, Element2),
+      retrieveGoalElements(_Goal, movebeside, Element1, Element2),
       Holding == @(null),
-      ActionMoveBeside == movebeside,
       whichListInTheWorld(Element1,World,K1),
       nth0(K1,World,LK1),
       checkHead(LK1,Element1),
@@ -118,9 +114,8 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       Plan = [[K1,K2]].
 
 plan(_Goal, World, Holding, _Objects, Plan) :-
-      retrieveGoalElements(_Goal, ActionMoveBeside, Element1, Element2),
+      retrieveGoalElements(_Goal, movebeside, Element1, Element2),
       Holding == @(null),
-      ActionMoveBeside == movebeside,
       whichListInTheWorld(Element1,World,K1),
       nth0(K1,World,LK1),
       checkHead(LK1,Element1),
@@ -135,9 +130,8 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
 
 %Move the selected object to the left the relative object in one step if the arm does not hold something and the selected object can be on the relative object
 plan(_Goal, World, Holding, _Objects, Plan) :-
-      retrieveGoalElements(_Goal, ActionMoveLeft, Element1, Element2),
+      retrieveGoalElements(_Goal, moveleft, Element1, Element2),
       Holding == @(null),
-      ActionMoveLeft == moveleft,
       whichListInTheWorld(Element1,World,K1),
       nth0(K1,World,LK1),
       checkHead(LK1,Element1),
@@ -152,9 +146,8 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
 
 %Move the selected object to the right the relative object in one step if the arm does not hold something and the selected object can be on the relative object
 plan(_Goal, World, Holding, _Objects, Plan) :-
-      retrieveGoalElements(_Goal, ActionMoveRight, Element1, Element2),
+      retrieveGoalElements(_Goal, moveright, Element1, Element2),
       Holding == @(null),
-      ActionMoveRight == moveright,
       whichListInTheWorld(Element1,World,K1),
       nth0(K1,World,LK1),
       checkHead(LK1,Element1),
@@ -169,9 +162,8 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
 
 %Move the selected object above the relative object in one step if the arm does not hold something and the selected object can be on the relative object
 plan(_Goal, World, Holding, _Objects, Plan) :-
-      retrieveGoalElements(_Goal, ActionMoveAbove, Element1, Element2),
+      retrieveGoalElements(_Goal, moveabove, Element1, Element2),
       Holding == @(null),
-      ActionMoveAbove == moveabove,
       whichListInTheWorld(Element1,World,K1),
       nth0(K1,World,LK1),
       checkHead(LK1,Element1),
@@ -185,9 +177,8 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
 
 %Move the selected object on top of the relative object in one step if the arm does not hold something and the selected object can be on the relative object
 plan(_Goal, World, Holding, _Objects, Plan) :-
-      retrieveGoalElements(_Goal, ActionMoveOnTop, Element1, Element2),
+      retrieveGoalElements(_Goal, moveontop, Element1, Element2),
       Holding == @(null),
-      ActionMoveOnTop == moveontop,
       getForm(Element2,_Objects,ObjectForm),
       ObjectForm \== box,
       whichListInTheWorld(Element1,World,K1),
@@ -204,9 +195,8 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
 
 %Move the selected object inside the relative object in one step if the arm does not hold something and the selected object can be on the relative object
 plan(_Goal, World, Holding, _Objects, Plan) :-
-      retrieveGoalElements(_Goal, ActionMoveInside, Element1, Element2),
+      retrieveGoalElements(_Goal, moveinside, Element1, Element2),
       Holding == @(null),
-      ActionMoveInside == moveinside,
       getForm(Element2,_Objects,ObjectForm),
       ObjectForm == box,
       whichListInTheWorld(Element1,World,K1),
@@ -223,9 +213,8 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
 
 %Move the selected object inside the relative object in several steps if the arm does not hold something and the selected object can be on the relative object
 plan(_Goal, World, Holding, _Objects, Plan) :-
-      retrieveGoalElements(_Goal, ActionMoveInside, Element1, Element2),
+      retrieveGoalElements(_Goal, moveinside, Element1, Element2),
       Holding == @(null),
-      ActionMoveInside == moveinside,
       getForm(Element2,_Objects,ObjectForm),
       ObjectForm == box,
       whichListInTheWorld(Element2,World,K2),
