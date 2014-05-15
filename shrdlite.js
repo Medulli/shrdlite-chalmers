@@ -443,8 +443,6 @@ function userInput() {
                     'utterance': userinput.split(/\s+/)
                    };
 
-    console.log(ajaxdata);
-
     $.ajax({
         url: AjaxScript,
         type: 'POST',
