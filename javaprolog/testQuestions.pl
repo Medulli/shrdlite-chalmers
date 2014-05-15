@@ -159,9 +159,9 @@ interpret(object(Type,Size,Color), World, @(null), Objects, SelectedObject) :-
     %get a list of (all) objects
 	json(AllPossibleObjects) = Objects,
 	%find all objects and that are in world, Col is a list of objects (letters) in world, X is "the letter" of the objects in AllPossibleObjects, which must be a member of the list we're currently checking...
-	findall(X=json([A,B,C]), (member(Col,World),member(X=json([A,B,C]),AllPossibleObjects),member(X,Col)), PossibleObjects),%nl,write(PossibleObjects),nl,
+	findall(X=json([A,B,C]), (member(Col,World),member(X=json([A,B,C]),AllPossibleObjects),member(X,Col)), PossibleObjects),
 	%get the actual letter of the object we desired from the pool PossibleObjects
-	getobj([Type,Size,Color], PossibleObjects, SelectedObject).%,nl,write(SelectedObject),nl.
+	getobj([Type,Size,Color], PossibleObjects, SelectedObject).
 
 
 %If we're holding something, add that to the possible objects
@@ -172,13 +172,12 @@ interpret(object(Type,Size,Color), World, Holding, Objects, SelectedObject) :-
 	append(PossibleWorldObjects,[Holding = json([A1,A2,A3])],PossibleObjects),
 	getobj([Type,Size,Color], PossibleObjects, SelectedObject).
 
-	% Use that for stacks
 %All these are basically "any" or "all" object, I guess we could do something along findall(...,...,[Obj]) for the and findall(...,...,[Obj|_]) for any
 interpret(basic_entity(any,X), World, Holding, Objects, [SelectedObject]) :-
     interpret(X, World, Holding, Objects, SelectedObject).
 
 interpret(basic_entity(the,X), World, Holding, Objects, [SelectedObject]) :-
-    findall(SelectedObjectAux, interpret(X, World, Holding, Objects, SelectedObjectAux), [SelectedObject]).
+    interpret(X, World, Holding, Objects, SelectedObject).
 
 interpret(basic_entity(all,X), World, Holding, Objects, SelectedObject) :-
     findall(SelectedObjectAux, interpret(X, World, Holding, Objects, SelectedObjectAux), SelectedObject).
@@ -1111,7 +1110,24 @@ getFormSizeColorText(PossibleObjects,ObjectLetter,ObjectFormSizeColor) :-
 	string_concat(FinalStr2,ColorObjStr,FinalStr3),
 	string_concat(FinalStr3,' ',FinalStr4),
 	string_concat(FinalStr4,FormObjStr,FinalStr5),
-	ObjectFormSizeColor=FinalStr5.
+	string_concat(FinalStr5,'.',FinalStr6),
+	ObjectFormSizeColor=FinalStr6.
+
+/*
+%Get the form, the size and the color of an object knowing its name (one letter) and the possible objects. Output : ObjectFormSizeColor=[form,size,color]
+getFormSizeColor(PossibleObjects,ObjectLetter,ObjectFormSizeColor) :-
+	PossibleObjects = json(PossibleObjectsJson),member(ObjectLetter = ObjectJson,PossibleObjectsJson),ObjectJson=json([form=FormObj,size=SizeObj,color=ColorObj]),ObjectFormSizeColor=[SizeObj,ColorObj,FormObj].
+getFormSizeColorText(PossibleObjects,ObjectLetter,ObjectFormSizeColor) :-
+	PossibleObjects = json(PossibleObjectsJson),member(ObjectLetter = ObjectJson,PossibleObjectsJson),ObjectJson=json([form=FormObj,size=SizeObj,color=ColorObj]),
+	atom_string(SizeObj,SizeObjStr),atom_string(ColorObj,ColorObjStr),atom_string(FormObj,FormObjStr),
+	string_concat('\'a ',SizeObjStr,FinalStr1),
+	string_concat(FinalStr1,' ',FinalStr2),
+	string_concat(FinalStr2,ColorObjStr,FinalStr3),
+	string_concat(FinalStr3,' ',FinalStr4),
+	string_concat(FinalStr4,FormObjStr,FinalStr5),
+	string_concat(FinalStr5,'.\'',FinalStr6),
+	ObjectFormSizeColor=FinalStr6.
+*/
 					
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, whatrightstack, Parameter),
@@ -1126,15 +1142,39 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
 		; Plan = [[[],what]]
 	  ).
 	  
-getPlan([K,-1,move], Plan) :- Plan = ['I pick up the element at place . . . ', K, [pick, K]].
-getPlan([-1,K,move], Plan) :- Plan = ['I drop it down at place . . . ', K, [drop, K]].
-getPlan([K1,K2,move], Plan) :- Plan = ['I pick up the element at place . . . ', K1, [pick, K1], 'and I drop it down at place . . . ', K2, [drop, K2]].
-%is it possible to not send a pick or drop ?
-getPlan([L,where], Plan) :- Plan = ['On place(s) . . . ', L].
-getPlan([L,what], Plan) :- Plan = ['The list of relevant objects is . . . ', L].
-getPlan([N,count], Plan) :- Plan = ['There is/are . . . ', N ,'Object(s)'].
-solve(PlanList, Plan) :- maplist(getPlan, PlanList, PlanAux),append(PlanAux, Plan).
+getPlan([K,-1,move], Plan) :- Plan = ['I pick up the element at place . . . ', K, [pick, K]],nb_setval(output,'Success!').
+getPlan([-1,K,move], Plan) :- Plan = ['I drop it down at place . . . ', K, [drop, K]],nb_setval(output,'Success!').
+getPlan([K1,K2,move], Plan) :- Plan = ['I pick up the element at place . . . ', K1, [pick, K1], 'and I drop it down at place . . . ', K2, [drop, K2]],nb_setval(output,'Success!').
+getPlan([L,where], Plan) :- Plan=[],list_string(L,LStr),string_concat('On place(s) . . . ',LStr,SuccesStr),nb_setval(output,SuccesStr).
+getPlan([L,what], Plan) :- Plan=[],list_string(L,LStr),string_concat('The list of relevant object(s) is . . . ',LStr,SuccesStr),nb_setval(output,SuccesStr).
+getPlan([N,count], Plan) :- Plan=[],list_string([N],LStr),string_concat('There is/are . . . ',LStr,SuccesStr1),string_concat(SuccesStr1,' Object(s).',SuccesStr2),nb_setval(output,SuccesStr2).
+solve(PlanList, Plan) :- maplist(getPlan, PlanList, PlanAux),append(PlanAux, PlanAppend),
+(PlanAppend ==[] ->
+	Plan = @(null)
+	;Plan=PlanAppend
+).
+
+list_codes([], "").
+
+list_codes([Atom], Codes) :- atom_codes(Atom, Codes).
+
+list_codes([Atom|ListTail], Codes) :-
+        atom_codes(Atom, AtomCodes),
+    append(AtomCodes, ",", AtomCodesWithComma),
+    append(AtomCodesWithComma, ListTailCodes, Codes),
+    list_codes(ListTail, ListTailCodes).
+
+list_string(List, String) :-
+    ground(List),
+    list_codes(List, Codes),
+    atom_codes(String, Codes).
+
+list_string(List, String) :-
+    ground(String),
+    atom_codes(String, Codes),
+    list_codes(List, Codes).
 					
+
 test27 :-
 World = [[e],[l,g],[],[f,m,k],[]],
 Holding = @(null),
@@ -1159,8 +1199,8 @@ findall(Goal, (member(Tree, Trees),
                      interpret(Tree, World, Holding, Objects, Goal)
                     ), Goals),%write(Goals),
 Goals = [Goal],
-plan(Goal, World, Holding, Objects, PlanList),write(PlanList),
-solve(PlanList, Plan),write(Plan).
+plan(Goal, World, Holding, Objects, PlanList),%write(PlanList).
+solve(PlanList, Plan),write(Plan),nb_getval(output,OutputStr),nl,write(OutputStr).
 
 test28 :-
 	A = red,
@@ -1205,5 +1245,167 @@ findall(Goal, (member(Tree, Trees),
                     ), Goals),%write(Goals),
 Goals = [Goal],
 plan(Goal, World, Holding, Objects, PlanList),write(PlanList),
-solve(PlanList, Plan),write(Plan).	  
+solve(PlanList, Plan),write(Plan).	
 
+test30 :-
+	nb_setval(output,'Success!'),
+	%list_string(['a small black ball','a small blue box'],Str),write(Str).
+	%atom_string('a small black ball',LStr),write(LStr).
+	%etPlan([['a small black ball','a small blue box'],what], Plan),
+	%nb_getval(output,OutputStr),nl,write(OutputStr).
+	%PlanList=[[['a small black ball','a small blue box'],what]],
+	PlanList=[[[0,1],where]],
+	%PlanList=[[12,count]],
+	solve(PlanList, Plan),nb_getval(output,OutputStr),nl,write(OutputStr).%,Plan==@(null)
+
+%%Precision in case of ambiguity ---------------------------------------------------------------------------------------------------
+retrieveGoalElements(Goal, Action, Parameter) :-
+        Goal = [[Parameter]],Action = precision.
+		
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = moveontopstack([Parameter1],[Parameter2]),Action = moveontopstack.
+	
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = moveright([Parameter1],[Parameter2]),Action = moveright.
+	
+retrieveGoalElements(Goal, Action, Parameter) :-
+        Goal = take([Parameter]),Action = take.
+
+getCorrectGoal(Precision,PossibleGoal,Result) :- retrieveGoalElements(PossibleGoal, _, Parameter), 
+	(Precision = Parameter -> Result = [PossibleGoal]
+	;Result = []
+	).
+getCorrectGoal(Precision,PossibleGoal,Result) :- retrieveGoalElements(PossibleGoal, _, Parameter1,Parameter2),
+	((Precision = Parameter1;Precision = Parameter2) -> Result = [PossibleGoal]
+	;Result = []
+	).
+	
+getCorrectGoalList([X],PossibleGoalsList,FinalGoal) :- X = [Precision],maplist(getCorrectGoal(Precision),PossibleGoalsList,MatchingGoalsList),delete(MatchingGoalsList,[],FinalGoal).
+getCorrectGoalList([X|R],PossibleGoalsList,FinalGoal) :-  getCorrectGoalList([X],PossibleGoalsList,FinalGoalHead),
+	(FinalGoalHead = [] -> getCorrectGoalList(R,PossibleGoalsList,FinalGoal)
+	;FinalGoal = FinalGoalHead
+	).
+	
+handleAmbiguity(Goals,World,Holding,Objects,Plan,Output,FinalGoal) :-
+	%ask for a new input
+	%json_read(user_input, json(InputPrecision)),
+	%member(utterance=UtterancePrecision, InputPrecision),
+	UtterancePrecision = [the, small, red, one],
+	%Parse it and find the corresponding object
+	parse_all(precision, UtterancePrecision, TreesPrecision),
+	findall(Goal, (member(Tree, TreesPrecision),
+						 interpret(Tree, World, Holding, Objects, Goal)
+						), GoalsPrecision),
+	%if nothing found then raise error
+	(GoalsPrecision = [] -> 
+		Plan = @(null),
+		Output = 'Ambiguity error, this object does not exist!',
+		FinalGoal=[]
+		%else try to match the new object with the ones from the list of goals
+		;getCorrectGoalList(GoalsPrecision,Goals,FinalGoalList),
+		%nothing found, raise error
+		(FinalGoalList = [] -> 
+		Plan = @(null),
+		Output = 'Ambiguity error, this object does not exist!',
+		FinalGoal=[]
+		%else we have a goal !
+		;FinalGoalList = [FinalGoal]
+		)
+	).
+
+test31 :-
+World = [[e],[q,l,g],[n],[f,m,k],[p]],
+Holding = @(null),
+Objects = json([
+	a=json([form=brick,size=large,color=green]),
+	b=json([form=brick,size=small,color=white]),
+	c=json([form=plank,size=large,color=red]),
+	d=json([form=plank,size=small,color=green]),
+	e=json([form=ball,size=large,color=white]),
+	f=json([form=ball,size=small,color=black]),
+	g=json([form=table,size=large,color=blue]),
+	h=json([form=table,size=small,color=red]),
+	i=json([form=pyramid,size=large,color=yellow]),
+	j=json([form=pyramid,size=small,color=red]),
+	k=json([form=box,size=large,color=yellow]),
+	l=json([form=box,size=large,color=red]),
+	m=json([form=box,size=small,color=blue]),
+	n=json([form=ball,size=small,color=red]),
+	p=json([form=ball,size=large,color=blue]),
+	q=json([form=box,size=small,color=red])
+	]),
+%Utterance = [take, the, ball],
+Utterance = [move, the, box, on, stack, 0],
+parse_all(command, Utterance, Trees),write(Trees),
+findall(Goal, (member(Tree, Trees),
+                     interpret(Tree, World, Holding, Objects, Goal)
+                    ), Goals),write(Goals),nl,
+%UtterancePrecision = [the, small, one],
+UtterancePrecision = [the, small, red, one],
+%UtterancePrecision = [the, medium, red, one],
+parse_all(precision, UtterancePrecision, TreesPrecision),write(TreesPrecision),
+findall(Goal, (member(Tree, TreesPrecision),
+                     interpret(Tree, World, Holding, Objects, Goal)
+                    ), GoalsPrecision),write(GoalsPrecision),nl,		
+(GoalsPrecision = [] -> 
+	Plan = @(null),
+	Output = 'Ambiguity error, this object does not exist!',write(Output)
+	;%retrieveGoalElements(GoalsPrecision, precision, Precision),write(Precision),nl,	
+	%maplist(getCorrectGoal(Precision),Goals,MatchingGoalsList),write(MatchingGoalsList),delete(MatchingGoalsList,[],[FinalGoal]),write(FinalGoal)		
+	getCorrectGoalList(GoalsPrecision,Goals,FinalGoalList),
+	(FinalGoalList = [] -> 
+	Plan = @(null),
+	Output = 'Ambiguity error, this object does not exist!',write(Output)
+	;FinalGoalList = [FinalGoal],write(FinalGoal)
+	)
+).
+
+test32 :-
+%PossibleGoal=take([e]),
+PossibleGoal=moveontopstack([e],[0]),
+%Precision = e,
+Precision = n,
+getCorrectGoal(Precision,PossibleGoal,Result),write(Result).
+
+test33 :-
+%PossibleGoalsList = [take([e]),take([n]),take([f]),take([p])],
+PossibleGoalsList = [moveontopstack([e],[0]),moveontopstack([n],[0]),moveontopstack([f],[0]),moveontopstack([p],[0])],
+Precision = n,
+maplist(getCorrectGoal(Precision),PossibleGoalsList,MatchingGoalsList),write(MatchingGoalsList),delete(MatchingGoalsList,[],[FinalGoal]),write(FinalGoal).	
+
+test34 :-	
+PossibleGoalsList = [moveontopstack([e],[0]),moveontopstack([n],[0]),moveontopstack([f],[0]),moveontopstack([p],[0])],
+%Precision = [[q],[m],[n]],
+Precision = [[q],[m],[a]],
+%Precision = [[q]],
+getCorrectGoalList(Precision,PossibleGoalsList,FinalGoal),write(FinalGoal).
+
+test35 :-
+World = [[e],[q,l,g],[n],[f,m,k],[p]],
+Holding = @(null),
+Objects = json([
+	a=json([form=brick,size=large,color=green]),
+	b=json([form=brick,size=small,color=white]),
+	c=json([form=plank,size=large,color=red]),
+	d=json([form=plank,size=small,color=green]),
+	e=json([form=ball,size=large,color=white]),
+	f=json([form=ball,size=small,color=black]),
+	g=json([form=table,size=large,color=blue]),
+	h=json([form=table,size=small,color=red]),
+	i=json([form=pyramid,size=large,color=yellow]),
+	j=json([form=pyramid,size=small,color=red]),
+	k=json([form=box,size=large,color=yellow]),
+	l=json([form=box,size=large,color=red]),
+	m=json([form=box,size=small,color=blue]),
+	n=json([form=ball,size=small,color=red]),
+	p=json([form=ball,size=large,color=blue]),
+	q=json([form=box,size=small,color=red])
+	]),
+%Utterance = [take, the, ball],
+Utterance = [move, the, box, on, stack, 0],
+parse_all(command, Utterance, Trees),
+findall(Goal, (member(Tree, Trees),
+                     interpret(Tree, World, Holding, Objects, Goal)
+                    ), Goals),
+handleAmbiguity(Goals,World,Holding,Objects,Plan,Output,FinalGoal),
+write(FinalGoal),nl,write(Plan).

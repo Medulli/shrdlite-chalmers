@@ -19,13 +19,13 @@ interpret(object(Type,Size,Color), World, Holding, Objects, SelectedObject) :-
 	append(PossibleWorldObjects,[Holding = json([A1,A2,A3])],PossibleObjects),
 	getobj([Type,Size,Color], PossibleObjects, SelectedObject).
 
-	% Use that for stacks
 %All these are basically "any" or "all" object, I guess we could do something along findall(...,...,[Obj]) for the and findall(...,...,[Obj|_]) for any
+%to be modified
 interpret(basic_entity(any,X), World, Holding, Objects, [SelectedObject]) :-
     interpret(X, World, Holding, Objects, SelectedObject).
 
 interpret(basic_entity(the,X), World, Holding, Objects, [SelectedObject]) :-
-    findall(SelectedObjectAux, interpret(X, World, Holding, Objects, SelectedObjectAux), [SelectedObject]).
+    interpret(X, World, Holding, Objects, SelectedObject).
 
 interpret(basic_entity(all,X), World, Holding, Objects, SelectedObject) :-
     findall(SelectedObjectAux, interpret(X, World, Holding, Objects, SelectedObjectAux), SelectedObject).

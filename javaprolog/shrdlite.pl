@@ -42,14 +42,21 @@ main :-
 		Output = 'I can only hold one object!'
       ; 
         %Goal is a list of goals i.e. "I can do this and this and this... Please specify what you want"
-		%%PROBLEM : when there is an ambiguity, Goals is an empty list []. It has to do with the lines 3 and 13 in interpreter.pl and getobj()
         Goals = [_,_|_] ->
-        Plan = @(null),
-        Output = 'Ambiguity error!'
+		handleAmbiguity(Goals,World,Holding,Objects,PrecisionGoal),
+		%we could not get a goal
+		(FinalGoal = [] ->
+			Plan = @(null),
+			Output = 'Ambiguity error, this object does not exist!'
+			%we have a goal !
+			;plan(PrecisionGoal, World, Holding, Objects, PlanList),
+			solve(PlanList, Plan),
+			nb_getval(output,Output)
+		)
       ; Goals = [Goal],
         plan(Goal, World, Holding, Objects, PlanList),
         solve(PlanList, Plan),
-        Output = 'Success!'
+		nb_getval(output,Output)
       )
     ),
     findall(JT, (member(T, Trees),
@@ -65,14 +72,59 @@ main :-
               output = Output],
     json_write(user_output, json(Result)).
 
-getPlan([K,-1,move], Plan) :- Plan = ['I pick up the element at place . . . ', K, [pick, K]].
-getPlan([-1,K,move], Plan) :- Plan = ['I drop it down at place . . . ', K, [drop, K]].
-getPlan([K1,K2,move], Plan) :- Plan = ['I pick up the element at place . . . ', K1, [pick, K1], 'and I drop it down at place . . . ', K2, [drop, K2]].
-%is it possible to not send a pick or drop ?
-getPlan([L,where], Plan) :- Plan = ['On place(s) . . . ', L].
-getPlan([L,what], Plan) :- Plan = ['The list of relevant objects is . . . ', L].
-getPlan([N,count], Plan) :- Plan = ['There is/are . . . ', N ,'Object(s)'].
-solve(PlanList, Plan) :- maplist(getPlan, PlanList, PlanAux),append(PlanAux, Plan).
+%Solver
+getPlan([K,-1,move], Plan) :- Plan = ['I pick up the element at place . . . ', K, [pick, K]],nb_setval(output,'Success!').
+getPlan([-1,K,move], Plan) :- Plan = ['I drop it down at place . . . ', K, [drop, K]],nb_setval(output,'Success!').
+getPlan([K1,K2,move], Plan) :- Plan = ['I pick up the element at place . . . ', K1, [pick, K1], 'and I drop it down at place . . . ', K2, [drop, K2]],nb_setval(output,'Success!').
+getPlan([L,where], Plan) :- Plan=[],list_string(L,LStr),string_concat('On place(s) . . . ',LStr,SuccesStr),nb_setval(output,SuccesStr).
+getPlan([L,what], Plan) :- Plan=[],list_string(L,LStr),string_concat('The list of relevant object(s) is . . . ',LStr,SuccesStr),nb_setval(output,SuccesStr).
+getPlan([N,count], Plan) :- Plan=[],list_string([N],LStr),string_concat('There is/are . . . ',LStr,SuccesStr1),string_concat(SuccesStr1,' Object(s).',SuccesStr2),nb_setval(output,SuccesStr2).
+solve(PlanList, Plan) :- maplist(getPlan, PlanList, PlanAux),append(PlanAux, PlanAppend),
+(PlanAppend ==[] ->
+	%no plan sent, just infos display
+	Plan = @(null)
+	%move dem objects nub
+	;Plan=PlanAppend
+).
+
+%Used to get rid of ambiguities
+getCorrectGoal(Precision,PossibleGoal,Result) :- retrieveGoalElements(PossibleGoal, _, Parameter), 
+	(Precision = Parameter -> Result = [PossibleGoal]
+	;Result = []
+	).
+getCorrectGoal(Precision,PossibleGoal,Result) :- retrieveGoalElements(PossibleGoal, _, Parameter1,Parameter2),
+	((Precision = Parameter1;Precision = Parameter2) -> Result = [PossibleGoal]
+	;Result = []
+	).
+	
+getCorrectGoalList([X],PossibleGoalsList,FinalGoal) :- X = [Precision],maplist(getCorrectGoal(Precision),PossibleGoalsList,MatchingGoalsList),delete(MatchingGoalsList,[],FinalGoal).
+getCorrectGoalList([X|R],PossibleGoalsList,FinalGoal) :-  getCorrectGoalList([X],PossibleGoalsList,FinalGoalHead),
+	(FinalGoalHead = [] -> getCorrectGoalList(R,PossibleGoalsList,FinalGoal)
+	;FinalGoal = FinalGoalHead
+	).
+	
+handleAmbiguity(Goals,World,Holding,Objects,Plan,Output,FinalGoal) :-
+	%ask for a new input
+	%%TO BE CHECKED. Add a prompt message ?
+	json_read(user_input, json(InputPrecision)),
+	member(utterance=UtterancePrecision, InputPrecision),
+	%Parse it and find the corresponding object
+	parse_all(precision, UtterancePrecision, TreesPrecision),
+	findall(Goal, (member(Tree, TreesPrecision),
+						 interpret(Tree, World, Holding, Objects, Goal)
+						), GoalsPrecision),
+	%if nothing found then raise error
+	(GoalsPrecision = [] ->
+		FinalGoal=[]
+		%else try to match the new object with the ones from the list of goals
+		;getCorrectGoalList(GoalsPrecision,Goals,FinalGoalList),
+		%nothing found, raise error
+		(FinalGoalList = [] -> 
+		FinalGoal=[]
+		%else we have a goal !
+		;FinalGoalList = [FinalGoal]
+		)
+	).
 
 %Take the selected object if the arm does not hold something
 plan(_Goal, World, Holding, _Objects, Plan) :-
@@ -234,13 +286,13 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       Plan = [[K2,K3,move]|PlanAux].
 
 %% Where : the list of positions (indexes) of the objects
-plan(_Goal, World, Holding, _Objects, Plan) :-
+plan(_Goal, World, _, _, Plan) :-
       retrieveGoalElements(_Goal, where, Parameter),
       maplist(whichListInTheWorld(World),Parameter,IdxList),
       Plan = [[IdxList,where]].	
 	  
 %% Whatrightstack : the list of characteristics (form, size, color) of the objects
-plan(_Goal, World, Holding, _Objects, Plan) :-
+plan(_Goal, World, _, _Objects, Plan) :-
       retrieveGoalElements(_Goal, whatrightstack, Parameter),
 	  length(World, LengthWorld),LengthRest is Parameter + 1,
 	  %stack picked is within bounds
@@ -281,14 +333,21 @@ canbeAt(X,[H|L],Objects,0) :- canbeon(X,H,Objects).
 canbeAt(X,[H|L],Objects,N) :- canbeAt(X,L,Objects,M), N is M + 1.
 
 %%-------------------------- Retrieve Goal info
-%%Take ---------------------------------------------------------------------------------------------------
+	
+%% /!\ Parameter is a list of stack numbers !
 retrieveGoalElements(Goal, Action, Parameter) :-
-        Goal = take([Parameter]),Action = take.
-
-%%%%% NOT IN THE PLANNER BELOW THIS LINE !
+	Goal = countinsidestacks(Parameter),Action = countinsidestacks.
+	
+retrieveGoalElements(Goal, Action, Parameter1) :-
+	Goal = countontop([Parameter1],floor),Action = countontopfloor.
+	
 retrieveGoalElements(Goal, Action, Parameter1) :-
 	Goal = moveontop([Parameter1],floor),Action = moveontopfloor.
 
+%%Take ---------------------------------------------------------------------------------------------------
+retrieveGoalElements(Goal, Action, Parameter) :-
+        Goal = take([Parameter]),Action = take.
+	
 %%Where ---------------------------------------------------------------------------------------------------
 %done
 retrieveGoalElements(Goal, Action, Parameter) :-
@@ -316,8 +375,8 @@ retrieveGoalElements(Goal, Action, Parameter) :-
 retrieveGoalElements(Goal, Action, Parameter) :-
 	Goal = whatinside([Parameter]),Action = whatinside.
 	
-retrieveGoalElements(Goal, Action, Parameter1) :-
-	Goal = whatontop([Parameter1],floor),Action = whatontopfloor.	
+retrieveGoalElements(Goal, Action, Parameter) :-
+	Goal = whatontop([Parameter],floor),Action = whatontopfloor.	
 
 %% /!\ Parameter is a list of stack numbers !
 retrieveGoalElements(Goal, Action, Parameter) :-
@@ -355,6 +414,60 @@ retrieveGoalElements(Goal, Action, Parameter) :-
         Goal = [[Parameter]],Action = precision.
 	
 %---------------------------------------------------------------------------------------------------------------
+
+%%%%% NOT IN THE PLANNER BELOW THIS LINE !
+	
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = moveleftstack([Parameter1],[Parameter2]),Action = moveleftstack.
+	
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = moverightstack([Parameter1],[Parameter2]),Action = moverightstack.
+	
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = moveabovestack([Parameter1],[Parameter2]),Action = moveabovestack.
+	
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = moveontopstack([Parameter1],[Parameter2]),Action = moveontopstack.
+	
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = movebesidestack([Parameter1],[Parameter2]),Action = movebesidestack.
+	
+%%Count ---------------------------------------------------------------------------------------------------
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = countbeside([Parameter1],[Parameter2]),Action = countbeside.
+	
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = countleft([Parameter1],[Parameter2]),Action = countleft.
+	
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = countright([Parameter1],[Parameter2]),Action = countright.
+	
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = countabove([Parameter1],[Parameter2]),Action = countabove.
+	
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = countontop([Parameter1],[Parameter2]),Action = countontop.
+	
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = countunder([Parameter1],[Parameter2]),Action = countunder.
+	
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = countinside([Parameter1],[Parameter2]),Action = countinside.
+	
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = countleftstack([Parameter1],[Parameter2]),Action = countleftstack.
+	
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = countrightstack([Parameter1],[Parameter2]),Action = countrightstack.
+	
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = countabovestack([Parameter1],[Parameter2]),Action = countabovestack.
+	
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = countontopstack([Parameter1],[Parameter2]),Action = countontopstack.
+	
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = countbesidestack([Parameter1],[Parameter2]),Action = countbesidestack.
 		
 %%Move ---------------------------------------------------------------------------------------------------
 retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
@@ -430,7 +543,8 @@ retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
 	
 retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
 	Goal = countbesidestack([Parameter1],[Parameter2]),Action = countbesidestack.
-
+		
+%---------------------------------------------------------------------------------------------------------------
 /*	
 test :-
 Goal = movebeside([e],[g]),
@@ -440,14 +554,28 @@ test2 :-
 Goal = take([e]),
 retrieveGoalElements(Goal, Action, Parameter),write(Action),write(Parameter).
 */
+%----------------------------------------------------------------- Strings management
+list_codes([], "").
 
-%---------------------------------------------------------------------------------------------------- Constraints management ----------------------------------------------------------------------------------------------------
-%Get the form, the size and the color of an object knowing its name (one letter) and the possible objects. Output : ObjectFormSizeColor=[form,size,color]
-%Not used (yet)
-getFormSizeColor(ObjectLetter,PossibleObjects,ObjectFormSizeColor) :-
-	PossibleObjects = json(PossibleObjectsJson),member(ObjectLetter = ObjectJson,PossibleObjectsJson),ObjectJson=json([form=FormObj,size=SizeObj,color=ColorObj]),ObjectFormSizeColor=[FormObj,SizeObj,ColorObj].
+list_codes([Atom], Codes) :- atom_codes(Atom, Codes).
 
-%The same, in text form	
+list_codes([Atom|ListTail], Codes) :-
+        atom_codes(Atom, AtomCodes),
+    append(AtomCodes, ",", AtomCodesWithComma),
+    append(AtomCodesWithComma, ListTailCodes, Codes),
+    list_codes(ListTail, ListTailCodes).
+
+list_string(List, String) :-
+    ground(List),
+    list_codes(List, Codes),
+    atom_codes(String, Codes).
+
+list_string(List, String) :-
+    ground(String),
+    atom_codes(String, Codes),
+    list_codes(List, Codes).
+
+%The same than getFormSizeColor in text form	
 getFormSizeColorText(PossibleObjects,ObjectLetter,ObjectFormSizeColor) :-
 	PossibleObjects = json(PossibleObjectsJson),member(ObjectLetter = ObjectJson,PossibleObjectsJson),ObjectJson=json([form=FormObj,size=SizeObj,color=ColorObj]),
 	atom_string(SizeObj,SizeObjStr),atom_string(ColorObj,ColorObjStr),atom_string(FormObj,FormObjStr),
@@ -456,7 +584,14 @@ getFormSizeColorText(PossibleObjects,ObjectLetter,ObjectFormSizeColor) :-
 	string_concat(FinalStr2,ColorObjStr,FinalStr3),
 	string_concat(FinalStr3,' ',FinalStr4),
 	string_concat(FinalStr4,FormObjStr,FinalStr5),
-	ObjectFormSizeColor=FinalStr5.
+	string_concat(FinalStr5,'.',FinalStr6),
+	ObjectFormSizeColor=FinalStr6.
+
+%---------------------------------------------------------------------------------------------------- Constraints management ----------------------------------------------------------------------------------------------------
+%Get the form, the size and the color of an object knowing its name (one letter) and the possible objects. Output : ObjectFormSizeColor=[form,size,color]
+%Not used (yet)
+getFormSizeColor(ObjectLetter,PossibleObjects,ObjectFormSizeColor) :-
+	PossibleObjects = json(PossibleObjectsJson),member(ObjectLetter = ObjectJson,PossibleObjectsJson),ObjectJson=json([form=FormObj,size=SizeObj,color=ColorObj]),ObjectFormSizeColor=[FormObj,SizeObj,ColorObj].
 
 %Get the form and the size of an object knowing its name (one letter) and the possible objects. Output : ObjectFormSize=[form,size]
 getFormAndSize(ObjectLetter,PossibleObjects,ObjectFormSize) :-
