@@ -54,7 +54,7 @@ body {
     padding: 0;
 }
 
-#maincontent, #userinput, #inputexamples {
+#maincontent, #userinput, #inputexamples, #program {
     width: 100%;
 }
 
