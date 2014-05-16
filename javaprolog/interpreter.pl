@@ -203,26 +203,33 @@ interpret(X, World, Holding, Objects, SelectedObjects).
 
 %%Interpret Count
 interpret(count(X,relative(beside, Y)), World, Holding, Objects, countbeside(SelectedObject,RelativeObject)) :-
-interpret(X, World, Holding, Objects, SelectedObject),
-interpret(Y, World, Holding, Objects, RelativeObject).
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),
+	interpret(Y, World, Holding, Objects, RelativeObjectTAA),
+	handleQuantifiers(SelectedObjectTAA, RelativeObjectTAA, SelectedObject, RelativeObject).
 interpret(count(X,relative(leftof, Y)), World, Holding, Objects, countleft(SelectedObject,RelativeObject)) :-
-interpret(X, World, Holding, Objects, SelectedObject),
-interpret(Y, World, Holding, Objects, RelativeObject).
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),
+	interpret(Y, World, Holding, Objects, RelativeObjectTAA),
+	handleQuantifiers(SelectedObjectTAA, RelativeObjectTAA, SelectedObject, RelativeObject).
 interpret(count(X,relative(rightof,Y)), World, Holding, Objects, countright(SelectedObject,RelativeObject)) :-
-interpret(X, World, Holding, Objects, SelectedObject),
-interpret(Y, World, Holding, Objects, RelativeObject).
-interpret(count(X,relative(above, Y)), World, Holding, Objects, countabove(SelectedObject,RelativeObject)) :-
-interpret(X, World, Holding, Objects, SelectedObject),
-interpret(Y, World, Holding, Objects, RelativeObject).
-interpret(count(X,relative(ontop, Y)), World, Holding, Objects, countontop(SelectedObject,RelativeObject)) :-
-interpret(X, World, Holding, Objects, SelectedObject),
-interpret(Y, World, Holding, Objects, RelativeObject).
-interpret(count(X,relative(under, Y)), World, Holding, Objects, countunder(SelectedObject,RelativeObject)) :-
-interpret(X, World, Holding, Objects, SelectedObject),
-interpret(Y, World, Holding, Objects, RelativeObject).
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),
+	interpret(Y, World, Holding, Objects, RelativeObjectTAA),
+	handleQuantifiers(SelectedObjectTAA, RelativeObjectTAA, SelectedObject, RelativeObject).
+interpret(count(X,relative(above,  Y)), World, Holding, Objects, countabove(SelectedObject,RelativeObject)) :-
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),
+	interpret(Y, World, Holding, Objects, RelativeObjectTAA),
+	handleQuantifiers(SelectedObjectTAA, RelativeObjectTAA, SelectedObject, RelativeObject).
+interpret(count(X,relative(ontop,  Y)), World, Holding, Objects, countontop(SelectedObject,RelativeObject)) :-
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),
+	interpret(Y, World, Holding, Objects, RelativeObjectTAA),
+	handleQuantifiers(SelectedObjectTAA, RelativeObjectTAA, SelectedObject, RelativeObject).
+interpret(count(X,relative(under,  Y)), World, Holding, Objects, countunder(SelectedObject,RelativeObject)) :-
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),
+	interpret(Y, World, Holding, Objects, RelativeObjectTAA),
+	handleQuantifiers(SelectedObjectTAA, RelativeObjectTAA, SelectedObject, RelativeObject).
 interpret(count(X,relative(inside, Y)), World, Holding, Objects, countinside(SelectedObject,RelativeObject)) :-
-interpret(X, World, Holding, Objects, SelectedObject),
-interpret(Y, World, Holding, Objects, RelativeObject).
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),
+	interpret(Y, World, Holding, Objects, RelativeObjectTAA),
+	handleQuantifiers(SelectedObjectTAA, RelativeObjectTAA, SelectedObject, RelativeObject).
 
 interpret(count(X,absolute(beside, basic_stack(N))), World, Holding, Objects, countbesidestack(SelectedObject,[N])) :-
 interpret(X, World, Holding, Objects, SelectedObject).
