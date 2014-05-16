@@ -1,4 +1,4 @@
-
+:- style_check(-singleton).
 :- op(1200, xfx, '--->').
 
 %% Non-lexical grammar rules
@@ -1194,10 +1194,10 @@ Objects = json([
 	m=json([form=box,size=small,color=blue])
 	]),
 Utterance = [what, is, right, of, stack, 1],
-parse_all(command, Utterance, Trees),%write(Trees),
+parse_all(command, Utterance, Trees),write(Trees),nl,
 findall(Goal, (member(Tree, Trees),
                      interpret(Tree, World, Holding, Objects, Goal)
-                    ), Goals),%write(Goals),
+                    ), Goals),write(Goals),nl,
 Goals = [Goal],
 plan(Goal, World, Holding, Objects, PlanList),%write(PlanList).
 solve(PlanList, Plan),write(Plan),nb_getval(output,OutputStr),nl,write(OutputStr).

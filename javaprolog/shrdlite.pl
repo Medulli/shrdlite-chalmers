@@ -60,7 +60,7 @@ main :-
       ; Goals = [Goal],
         plan(Goal, World, Holding, Objects, PlanList),
         solve(PlanList, Plan),
-nb_getval(output,Output)
+		nb_getval(output,Output)
       )
     ),
     findall(JT, (member(T, Trees),
