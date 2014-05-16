@@ -372,10 +372,9 @@ function disableInput(timeout) {
         $("#inputexamples").prop('disabled', true); 
         $("#userinput").blur();
         $("#userinput").prop('disabled', true);
-        $("#userinputprecision").blur();
-        $("#userinputprecision").prop('disabled', true); 
     }
 }
+
 
 function systemPrompt(timeout) {
     if (timeout) {
@@ -386,12 +385,20 @@ function systemPrompt(timeout) {
     }
 }
 
+
+
 function enableInput() {
     $("#inputexamples").prop('disabled', false).val(''); 
     $("#inputexamples option:first").attr('selected','selected');
     $("#userinput").prop('disabled', false);
-    $("#userinputprecision").prop('disabled', false);
     $("#userinput").focus().select();
+}
+
+
+function enableInputPrecision(){
+  $("#userinputprecision").prop('disabled', false);
+  $("#userinputprecision").focus().select();
+  disableInput();
 }
 
 function performPlan() {
@@ -477,6 +484,10 @@ function userInput() {
         }
         currentPlan = result.plan;
         performPlan();
+        if(result.precisionmode=="Activated"){
+          enableInputPrecision();
+          disableInput();
+        }
     });
 }
 
@@ -506,7 +517,7 @@ function sayUtterance(participant, utterance, silent) {
 function userInputPrecision() {
     var userinput = $("#userinputprecision").val().trim();
     if (!userinput) {
-        enableInput();
+        enableInputPrecision();
         return;
     }
     var program = $('#program').val();
