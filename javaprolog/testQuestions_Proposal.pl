@@ -173,8 +173,8 @@ interpret(object(Type,Size,Color), World, Holding, Objects, SelectedObject) :-
 	getobj([Type,Size,Color], PossibleObjects, SelectedObject).
 
 %All these are basically "any" or "all" object, I guess we could do something along findall(...,...,[Obj]) for the and findall(...,...,[Obj|_]) for any
-interpret(basic_entity(any,X), World, Holding, Objects, [SelectedObject]) :-
-    interpret(X, World, Holding, Objects, SelectedObject).
+interpret(basic_entity(any,X), World, Holding, Objects, any(SelectedObject)) :-
+    findall(SelectedObjectAux, interpret(X, World, Holding, Objects, SelectedObjectAux), SelectedObject).
 
 interpret(basic_entity(the,X), World, Holding, Objects, [SelectedObject]) :-
     interpret(X, World, Holding, Objects, SelectedObject).
@@ -183,58 +183,72 @@ interpret(basic_entity(all,X), World, Holding, Objects, SelectedObject) :-
     findall(SelectedObjectAux, interpret(X, World, Holding, Objects, SelectedObjectAux), SelectedObject).
 
 
-interpret(relative_entity(the,X, Relation), World, Holding, Objects, [SelectedObject]) :-
-	interpret(Relation, World, Holding, Objects, SelectedObject),
-	interpret(X, World, Holding, Objects, SelectedObject).
+interpret(relative_entity(any,X, Relation), World, Holding, Objects, any(SelectedObject)) :-
+	findall(RelativeObjectAux, ( interpret(Relation, World, Holding, Objects, RelativeObjectListAuxAux),
+								 member(RelativeObjectAux, RelativeObjectListAuxAux)),
+								RelativeObjectListAux),
+	sort(RelativeObjectListAux,RelativeObjectList),
+	%Find all objects which supports the relation
+    findall(SelectedObjectAux,( member(SelectedObjectAux, RelativeObjectList),
+								interpret(X,        World, Holding, Objects, SelectedObjectAux)),
+								SelectedObject).
 
 
 interpret(relative_entity(all,X, Relation), World, Holding, Objects, SelectedObject) :-
-	interpret(Relation, World, Holding, Objects, RelativeObjectList),
+	findall(RelativeObjectAux, ( interpret(Relation, World, Holding, Objects, RelativeObjectListAuxAux),
+								 member(RelativeObjectAux, RelativeObjectListAuxAux)),
+								RelativeObjectListAux),
+	sort(RelativeObjectListAux,RelativeObjectList),
 	%Find all objects which supports the relation
-    findall(SelectedObjectAux,( interpret(X, World, Holding, Objects, SelectedObjectAux)),
+    findall(SelectedObjectAux,( member(SelectedObjectAux, RelativeObjectList),
+								interpret(X,        World, Holding, Objects, SelectedObjectAux)),
 								SelectedObject).
 
-interpret(relative_entity(any,X, Relation), World, Holding, Objects, [SelectedObject]) :-
-	interpret(X, World, Holding, Objects, SelectedObject),
-	interpret(Relation, World, Holding, Objects, SelectedObject),!.
+interpret(relative_entity(the,X, Relation), World, Holding, Objects, [SelectedObject]) :-
+    %Find all relative objects
+	findall(RelativeObjectAux, ( interpret(Relation, World, Holding, Objects, RelativeObjectListAuxAux),
+	member(RelativeObjectAux, RelativeObjectListAuxAux)),
+	RelativeObjectListAux),
 	%Remove duplicates from list
-    %sort(RelativeObjectListAux,RelativeObjectList),
+    sort(RelativeObjectListAux,RelativeObjectList),
     %Make one "instance" for every element
-	%member(SelectedObject, RelativeObjectList), write(SelectedObject).
+	member(SelectedObject, RelativeObjectList),
 	%Selected objects must also satisfy description
-	%interpret(X, World, Holding, Objects, SelectedObject).
+	interpret(X, World, Holding, Objects, SelectedObject).
 
 %find all objects satisfying relations
 interpret(relative(beside,X), World, Holding, Objects, SelectedObject) :-
     %find the relative object satisfying type/size/col
-    interpret(X, World, Holding, Objects, RelativeObject),
+    interpret(X, World, Holding, Objects, RelativeObjectTAA), (any(RelativeObject) = RelativeObjectTAA ; RelativeObject = RelativeObjectTAA),
     %find all objects satisfying the relation
-	isbeside(SelectedObject,RelativeObject,World),
+	findall(SelectedObjectAux,
+	(member(RelativeObjectAux, RelativeObject), isbeside(SelectedObjectAux,RelativeObjectAux,World)),
 	%Can result in an empty list, so add a condition to avoid that
-	SelectedObject \== [].
+	SelectedObject),SelectedObject \== [].
 
 interpret(relative(leftof,X), World, Holding, Objects, SelectedObject) :-
-    interpret(X, World, Holding, Objects, [RelativeObject]),
-	isleftof(SelectedObject,RelativeObject,World),
-	SelectedObject \== [].
+    interpret(X, World, Holding, Objects, RelativeObjectTAA), (any(RelativeObject) = RelativeObjectTAA ; RelativeObject = RelativeObjectTAA),
+	findall(SelectedObjectAux,
+	(member(RelativeObjectAux, RelativeObject), isleftof(SelectedObjectAux,RelativeObjectAux,World)),
+	SelectedObject),SelectedObject \== [].
 
 interpret(relative(rightof,X), World, Holding, Objects, SelectedObject) :-
-    interpret(X, World, Holding, Objects, [RelativeObject]),
-	isrightof(SelectedObject,RelativeObject,World),
-	SelectedObject \== [].
+    interpret(X, World, Holding, Objects, RelativeObjectTAA), (any(RelativeObject) = RelativeObjectTAA ; RelativeObject = RelativeObjectTAA),
+	findall(SelectedObjectAux,
+	(member(RelativeObjectAux, RelativeObject), isrightof(SelectedObjectAux,RelativeObjectAux,World)),
+	SelectedObject),SelectedObject \== [].
 
 interpret(relative(above,X), World, Holding, Objects, SelectedObject) :-
-    interpret(X, World, Holding, Objects, [RelativeObject]),
-	isabove(SelectedObject,RelativeObject,World),
-	SelectedObject \== [].
-	
-interpret(relative(above,floor), World, _Holding, _Objects, SelectedObject) :-
-    member(Col,World),member(SelectedObject,Col).
+    interpret(X, World, Holding, Objects, RelativeObjectTAA), (any(RelativeObject) = RelativeObjectTAA ; RelativeObject = RelativeObjectTAA),
+	findall(SelectedObjectAux,
+	(member(RelativeObjectAux, RelativeObject), isabove(SelectedObjectAux,RelativeObjectAux,World)),
+	SelectedObject),SelectedObject \== [].
 
 interpret(relative(ontop,X), World, Holding, Objects, SelectedObject) :-
-    interpret(X, World, Holding, Objects, [RelativeObject]),
-	isontop(SelectedObject,RelativeObject,World),
-	SelectedObject \== [].
+    interpret(X, World, Holding, Objects, RelativeObjectTAA), (any(RelativeObject) = RelativeObjectTAA ; RelativeObject = RelativeObjectTAA),
+	findall(SelectedObjectAux,
+	(member(RelativeObjectAux, RelativeObject), isontop(SelectedObjectAux,RelativeObjectAux,World)),
+	SelectedObject),SelectedObject \== [].
 
 interpret(relative(ontop,floor), World, _Holding, _Objects, SelectedObject) :-
     member(Col,World),member(SelectedObject,Col),
@@ -242,14 +256,16 @@ interpret(relative(ontop,floor), World, _Holding, _Objects, SelectedObject) :-
     (IdxS is 0).
 
 interpret(relative(under,X), World, Holding, Objects, SelectedObject) :-
-    interpret(X, World, Holding, Objects, [RelativeObject]),
-	isunder(SelectedObject,RelativeObject,World),
-	SelectedObject \== [].
+    interpret(X, World, Holding, Objects, RelativeObjectTAA), (any(RelativeObject) = RelativeObjectTAA ; RelativeObject = RelativeObjectTAA),
+	findall(SelectedObjectAux,
+	(member(RelativeObjectAux, RelativeObject), isunder(SelectedObjectAux,RelativeObjectAux,World)),
+	SelectedObject),SelectedObject \== [].
 
 interpret(relative(inside,X), World, Holding, Objects, SelectedObject) :-
-    interpret(X, World, Holding, Objects, [RelativeObject]),
-	isinside(SelectedObject,RelativeObject,World),
-	SelectedObject \== [].
+    interpret(X, World, Holding, Objects, RelativeObjectTAA), (any(RelativeObject) = RelativeObjectTAA ; RelativeObject = RelativeObjectTAA),
+	findall(SelectedObjectAux,
+	(member(RelativeObjectAux, RelativeObject), isinside(SelectedObjectAux,RelativeObjectAux,World)),
+	SelectedObject),SelectedObject \== [].
 	
 %%Stacks
 
@@ -291,102 +307,116 @@ interpret(absolute(inside,world), World, _Holding, _Objects, SelectedObject) :-
 	
 %Find object, and set goal accordingly.
 interpret(take(X), World, Holding, Objects,  take(SelectedObject)) :-
-    interpret(X, World, Holding, Objects, SelectedObject).
+    interpret(X, World, Holding, Objects, SelectedObjectTAA), ((any(SelectedObjectAux) = SelectedObjectTAA, member(SelectedObjectAuxAux,SelectedObjectAux),SelectedObject = [SelectedObjectAuxAux],!);SelectedObject = SelectedObjectTAA).
 
 interpret(floor, _World, _Holding, _Objects, floor). %floor is floor... move this somewhere.. meh.
 
 interpret(move(X,relative(beside, Y)), World, Holding, Objects, movebeside(SelectedObject,RelativeObject)) :-
-	interpret(X, World, Holding, Objects, SelectedObject),
-	interpret(Y, World, Holding, Objects, RelativeObject).
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),
+	interpret(Y, World, Holding, Objects, RelativeObjectTAA),
+	handleQuantifiers(SelectedObjectTAA, RelativeObjectTAA, SelectedObject, RelativeObject).
 interpret(move(X,relative(leftof, Y)), World, Holding, Objects, moveleft(SelectedObject,RelativeObject)) :-
-	interpret(X, World, Holding, Objects, SelectedObject),
-	interpret(Y, World, Holding, Objects, RelativeObject).
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),
+	interpret(Y, World, Holding, Objects, RelativeObjectTAA),
+	handleQuantifiers(SelectedObjectTAA, RelativeObjectTAA, SelectedObject, RelativeObject).
 interpret(move(X,relative(rightof,Y)), World, Holding, Objects, moveright(SelectedObject,RelativeObject)) :-
-	interpret(X, World, Holding, Objects, SelectedObject),
-	interpret(Y, World, Holding, Objects, RelativeObject).
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),
+	interpret(Y, World, Holding, Objects, RelativeObjectTAA),
+	handleQuantifiers(SelectedObjectTAA, RelativeObjectTAA, SelectedObject, RelativeObject).
 interpret(move(X,relative(above,  Y)), World, Holding, Objects, moveabove(SelectedObject,RelativeObject)) :-
-	interpret(X, World, Holding, Objects, SelectedObject),
-	interpret(Y, World, Holding, Objects, RelativeObject).
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),
+	interpret(Y, World, Holding, Objects, RelativeObjectTAA),
+	handleQuantifiers(SelectedObjectTAA, RelativeObjectTAA, SelectedObject, RelativeObject).
 interpret(move(X,relative(ontop,  Y)), World, Holding, Objects, moveontop(SelectedObject,RelativeObject)) :-
-	interpret(X, World, Holding, Objects, SelectedObject),
-	interpret(Y, World, Holding, Objects, RelativeObject).
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),
+	interpret(Y, World, Holding, Objects, RelativeObjectTAA),
+	handleQuantifiers(SelectedObjectTAA, RelativeObjectTAA, SelectedObject, RelativeObject).
 interpret(move(X,relative(under,  Y)), World, Holding, Objects, moveunder(SelectedObject,RelativeObject)) :-
-	interpret(X, World, Holding, Objects, SelectedObject),
-	interpret(Y, World, Holding, Objects, RelativeObject).
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),
+	interpret(Y, World, Holding, Objects, RelativeObjectTAA),
+	handleQuantifiers(SelectedObjectTAA, RelativeObjectTAA, SelectedObject, RelativeObject).
 interpret(move(X,relative(inside, Y)), World, Holding, Objects, moveinside(SelectedObject,RelativeObject)) :-
-	interpret(X, World, Holding, Objects, SelectedObject),
-	interpret(Y, World, Holding, Objects, RelativeObject).
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),
+	interpret(Y, World, Holding, Objects, RelativeObjectTAA),
+	handleQuantifiers(SelectedObjectTAA, RelativeObjectTAA, SelectedObject, RelativeObject).
 	
 interpret(move(X,absolute(beside, basic_stack(N))), World, Holding, Objects, movebesidestack(SelectedObject,[N])) :-
-	interpret(X, World, Holding, Objects, SelectedObject).
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),((any(SelectedObjectAux) = SelectedObjectTAA, member(SelectedObjectAuxAux,SelectedObjectAux),SelectedObject = [SelectedObjectAuxAux],!);SelectedObject = SelectedObjectTAA).
 interpret(move(X,absolute(leftof, basic_stack(N))), World, Holding, Objects, moveleftstack(SelectedObject,[N])) :-
-	interpret(X, World, Holding, Objects, SelectedObject).
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),((any(SelectedObjectAux) = SelectedObjectTAA, member(SelectedObjectAuxAux,SelectedObjectAux),SelectedObject = [SelectedObjectAuxAux],!);SelectedObject = SelectedObjectTAA).
 interpret(move(X,absolute(rightof,basic_stack(N))), World, Holding, Objects, moverightstack(SelectedObject,[N])) :-
-	interpret(X, World, Holding, Objects, SelectedObject).
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),((any(SelectedObjectAux) = SelectedObjectTAA, member(SelectedObjectAuxAux,SelectedObjectAux),SelectedObject = [SelectedObjectAuxAux],!);SelectedObject = SelectedObjectTAA).
 interpret(move(X,absolute(above,  basic_stack(N))), World, Holding, Objects, moveabovestack(SelectedObject,[N])) :-
-	interpret(X, World, Holding, Objects, SelectedObject).
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),((any(SelectedObjectAux) = SelectedObjectTAA, member(SelectedObjectAuxAux,SelectedObjectAux),SelectedObject = [SelectedObjectAuxAux],!);SelectedObject = SelectedObjectTAA).
 interpret(move(X,absolute(ontop,  basic_stack(N))), World, Holding, Objects, moveontopstack(SelectedObject,[N])) :-
-	interpret(X, World, Holding, Objects, SelectedObject).
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),((any(SelectedObjectAux) = SelectedObjectTAA, member(SelectedObjectAuxAux,SelectedObjectAux),SelectedObject = [SelectedObjectAuxAux],!);SelectedObject = SelectedObjectTAA).
 	
 %%Interpret Where
 interpret(where(X), World, Holding, Objects, where(SelectedObjects)) :-
-	interpret(X, World, Holding, Objects, SelectedObjects).
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),((any(SelectedObjectAux) = SelectedObjectTAA, member(SelectedObjectAuxAux,SelectedObjectAux),SelectedObject = [SelectedObjectAuxAux],!);SelectedObject = SelectedObjectTAA).
 	
 %%done with
 %maplist(whichListInTheWorld(World),SelectedObjects,IdxList).
 	
 %%Interpret Count
 interpret(count(X,relative(beside, Y)), World, Holding, Objects, countbeside(SelectedObject,RelativeObject)) :-
-	interpret(X, World, Holding, Objects, SelectedObject),
-	interpret(Y, World, Holding, Objects, RelativeObject).
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),
+	interpret(Y, World, Holding, Objects, RelativeObjectTAA),
+	handleQuantifiers(SelectedObjectTAA, RelativeObjectTAA, SelectedObject, RelativeObject).
 interpret(count(X,relative(leftof, Y)), World, Holding, Objects, countleft(SelectedObject,RelativeObject)) :-
-	interpret(X, World, Holding, Objects, SelectedObject),
-	interpret(Y, World, Holding, Objects, RelativeObject).
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),
+	interpret(Y, World, Holding, Objects, RelativeObjectTAA),
+	handleQuantifiers(SelectedObjectTAA, RelativeObjectTAA, SelectedObject, RelativeObject).
 interpret(count(X,relative(rightof,Y)), World, Holding, Objects, countright(SelectedObject,RelativeObject)) :-
-	interpret(X, World, Holding, Objects, SelectedObject),
-	interpret(Y, World, Holding, Objects, RelativeObject).
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),
+	interpret(Y, World, Holding, Objects, RelativeObjectTAA),
+	handleQuantifiers(SelectedObjectTAA, RelativeObjectTAA, SelectedObject, RelativeObject).
 interpret(count(X,relative(above,  Y)), World, Holding, Objects, countabove(SelectedObject,RelativeObject)) :-
-	interpret(X, World, Holding, Objects, SelectedObject),
-	interpret(Y, World, Holding, Objects, RelativeObject).
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),
+	interpret(Y, World, Holding, Objects, RelativeObjectTAA),
+	handleQuantifiers(SelectedObjectTAA, RelativeObjectTAA, SelectedObject, RelativeObject).
 interpret(count(X,relative(ontop,  Y)), World, Holding, Objects, countontop(SelectedObject,RelativeObject)) :-
-	interpret(X, World, Holding, Objects, SelectedObject),
-	interpret(Y, World, Holding, Objects, RelativeObject).
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),
+	interpret(Y, World, Holding, Objects, RelativeObjectTAA),
+	handleQuantifiers(SelectedObjectTAA, RelativeObjectTAA, SelectedObject, RelativeObject).
 interpret(count(X,relative(under,  Y)), World, Holding, Objects, countunder(SelectedObject,RelativeObject)) :-
-	interpret(X, World, Holding, Objects, SelectedObject),
-	interpret(Y, World, Holding, Objects, RelativeObject).
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),
+	interpret(Y, World, Holding, Objects, RelativeObjectTAA),
+	handleQuantifiers(SelectedObjectTAA, RelativeObjectTAA, SelectedObject, RelativeObject).
 interpret(count(X,relative(inside, Y)), World, Holding, Objects, countinside(SelectedObject,RelativeObject)) :-
-	interpret(X, World, Holding, Objects, SelectedObject),
-	interpret(Y, World, Holding, Objects, RelativeObject).
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),
+	interpret(Y, World, Holding, Objects, RelativeObjectTAA),
+	handleQuantifiers(SelectedObjectTAA, RelativeObjectTAA, SelectedObject, RelativeObject).
 	
 interpret(count(X,absolute(beside, basic_stack(N))), World, Holding, Objects, countbesidestack(SelectedObject,[N])) :-
-	interpret(X, World, Holding, Objects, SelectedObject).
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),((any(SelectedObjectAux) = SelectedObjectTAA, member(SelectedObjectAuxAux,SelectedObjectAux),SelectedObject = [SelectedObjectAuxAux],!);SelectedObject = SelectedObjectTAA).
 interpret(count(X,absolute(leftof, basic_stack(N))), World, Holding, Objects, countleftstack(SelectedObject,[N])) :-
-	interpret(X, World, Holding, Objects, SelectedObject).
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),((any(SelectedObjectAux) = SelectedObjectTAA, member(SelectedObjectAuxAux,SelectedObjectAux),SelectedObject = [SelectedObjectAuxAux],!);SelectedObject = SelectedObjectTAA).
 interpret(count(X,absolute(rightof,basic_stack(N))), World, Holding, Objects, countrightstack(SelectedObject,[N])) :-
-	interpret(X, World, Holding, Objects, SelectedObject).
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),((any(SelectedObjectAux) = SelectedObjectTAA, member(SelectedObjectAuxAux,SelectedObjectAux),SelectedObject = [SelectedObjectAuxAux],!);SelectedObject = SelectedObjectTAA).
 interpret(count(X,absolute(above,  basic_stack(N))), World, Holding, Objects, countabovestack(SelectedObject,[N])) :-
-	interpret(X, World, Holding, Objects, SelectedObject).
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),((any(SelectedObjectAux) = SelectedObjectTAA, member(SelectedObjectAuxAux,SelectedObjectAux),SelectedObject = [SelectedObjectAuxAux],!);SelectedObject = SelectedObjectTAA).
 interpret(count(X,absolute(ontop,  basic_stack(N))), World, Holding, Objects, countontopstack(SelectedObject,[N])) :-
-	interpret(X, World, Holding, Objects, SelectedObject).
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),((any(SelectedObjectAux) = SelectedObjectTAA, member(SelectedObjectAuxAux,SelectedObjectAux),SelectedObject = [SelectedObjectAuxAux],!);SelectedObject = SelectedObjectTAA).
 interpret(count(X,absolute(inside, world)), World, Holding, Objects, countinsidestacks(SelectedObject,N)) :-
-	interpret(X, World, Holding, Objects, SelectedObject),
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),((any(SelectedObjectAux) = SelectedObjectTAA, member(SelectedObjectAuxAux,SelectedObjectAux),SelectedObject = [SelectedObjectAuxAux],!);SelectedObject = SelectedObjectTAA),
 	length(World,LengthWorld),listFirstIndexes(LengthWorld, N).
 	
 %%Interpret What
 interpret(what(relative(beside, Y)), World, Holding, Objects, whatbeside(RelativeObject)) :-
-	interpret(Y, World, Holding, Objects, RelativeObject).
+	interpret(X, World, Holding, Objects, RelativeObjectTAA),((any(RelativeObjectAux) = RelativeObjectTAA, member(RelativeObjectAuxAux,RelativeObjectAux),RelativeObject = [RelativeObjectAuxAux],!);RelativeObject = RelativeObjectTAA).
 interpret(what(relative(leftof, Y)), World, Holding, Objects, whatleft(RelativeObject)) :-
-	interpret(Y, World, Holding, Objects, RelativeObject).
+	interpret(X, World, Holding, Objects, RelativeObjectTAA),((any(RelativeObjectAux) = RelativeObjectTAA, member(RelativeObjectAuxAux,RelativeObjectAux),RelativeObject = [RelativeObjectAuxAux],!);RelativeObject = RelativeObjectTAA).
 interpret(what(relative(rightof,Y)), World, Holding, Objects, whatright(RelativeObject)) :-
-	interpret(Y, World, Holding, Objects, RelativeObject).
+	interpret(X, World, Holding, Objects, RelativeObjectTAA),((any(RelativeObjectAux) = RelativeObjectTAA, member(RelativeObjectAuxAux,RelativeObjectAux),RelativeObject = [RelativeObjectAuxAux],!);RelativeObject = RelativeObjectTAA).
 interpret(what(relative(above,Y)), World, Holding, Objects, whatabove(RelativeObject)) :-
-	interpret(Y, World, Holding, Objects, RelativeObject).
+	interpret(X, World, Holding, Objects, RelativeObjectTAA),((any(RelativeObjectAux) = RelativeObjectTAA, member(RelativeObjectAuxAux,RelativeObjectAux),RelativeObject = [RelativeObjectAuxAux],!);RelativeObject = RelativeObjectTAA).
 interpret(what(relative(ontop,  Y)), World, Holding, Objects, whatontop(RelativeObject)) :-
-	interpret(Y, World, Holding, Objects, RelativeObject).
+	interpret(X, World, Holding, Objects, RelativeObjectTAA),((any(RelativeObjectAux) = RelativeObjectTAA, member(RelativeObjectAuxAux,RelativeObjectAux),RelativeObject = [RelativeObjectAuxAux],!);RelativeObject = RelativeObjectTAA).
 interpret(what(relative(under,  Y)), World, Holding, Objects, whatunder(RelativeObject)) :-
-	interpret(Y, World, Holding, Objects, RelativeObject).
+	interpret(X, World, Holding, Objects, RelativeObjectTAA),((any(RelativeObjectAux) = RelativeObjectTAA, member(RelativeObjectAuxAux,RelativeObjectAux),RelativeObject = [RelativeObjectAuxAux],!);RelativeObject = RelativeObjectTAA).
 interpret(what(relative(inside, Y)), World, Holding, Objects, whatinside(RelativeObject)) :-
-	interpret(Y, World, Holding, Objects, RelativeObject).
+	interpret(X, World, Holding, Objects, RelativeObjectTAA),((any(RelativeObjectAux) = RelativeObjectTAA, member(RelativeObjectAuxAux,RelativeObjectAux),RelativeObject = [RelativeObjectAuxAux],!);RelativeObject = RelativeObjectTAA).
 
 interpret(what(absolute(beside, basic_stack(N))), World, Holding, Objects, whatbesidestack([N])).
 interpret(what(absolute(leftof, basic_stack(N))), World, Holding, Objects, whatleftstack([N])).
@@ -395,6 +425,27 @@ interpret(what(absolute(above,  basic_stack(N))), World, Holding, Objects, whata
 interpret(what(absolute(ontop,  basic_stack(N))), World, Holding, Objects, whatontopstack([N])).
 interpret(what(absolute(inside, world)), World, Holding, Objects, whatinsidestacks(N)) :-
 	length(World,LengthWorld),listFirstIndexes(LengthWorld, N).
+	
+	
+%Handle alltheany
+handleQuantifiers(SelectedObjectTAA, RelativeObjectTAA, SelectedObject, RelativeObject):-
+(
+	 (any(SelectedObjectAux) = SelectedObjectTAA, member(SelectedObjectAuxAux,SelectedObjectAux),SelectedObject = [SelectedObjectAuxAux],
+	  any(RelativeObjectAux) = RelativeObjectTAA, member(RelativeObjectAuxAux,RelativeObjectAux),RelativeObject = [RelativeObjectAuxAux],
+	  not(SelectedObject = RelativeObject),!)%not(isleftof(SelectedObject,RelativeObject,World)),!); %If we don't want to move and object which is already to the left of
+	  ;
+	 (any(SelectedObjectAux) = SelectedObjectTAA, member(SelectedObjectAuxAux,SelectedObjectAux),SelectedObject = [SelectedObjectAuxAux],
+	  RelativeObject = RelativeObjectTAA,
+	  not(SelectedObject = RelativeObject),!)
+	  ;
+	 (SelectedObject = SelectedObjectTAA,
+	  any(RelativeObjectAux) = RelativeObjectTAA, member(RelativeObjectAuxAux,RelativeObjectAux),RelativeObject = [RelativeObjectAuxAux],
+	  not(SelectedObject = RelativeObject),!)
+	  ; 
+	  (SelectedObject = SelectedObjectTAA,
+	   RelativeObject = SelectedObjectTAA,
+	   not(SelectedObject = RelativeObject))
+).
 	
 %Will return the letter of the type/size/col which satisfies the object in PossibleObjects.
 %------------------------------------------------------------------------------------------------------------------------%
@@ -1244,9 +1295,60 @@ test30 :-
 %%Precision in case of ambiguity ---------------------------------------------------------------------------------------------------
 retrieveGoalElements(Goal, Action, Parameter) :-
         Goal = [[Parameter]],Action = precision.
+		
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = moveontopstack([Parameter1],[Parameter2]),Action = moveontopstack.
 	
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+	Goal = moveright([Parameter1],[Parameter2]),Action = moveright.
+	
+retrieveGoalElements(Goal, Action, Parameter) :-
+        Goal = take([Parameter]),Action = take.
+
+getCorrectGoal(Precision,PossibleGoal,Result) :- retrieveGoalElements(PossibleGoal, _, Parameter), 
+	(Precision = Parameter -> Result = [PossibleGoal]
+	;Result = []
+	).
+getCorrectGoal(Precision,PossibleGoal,Result) :- retrieveGoalElements(PossibleGoal, _, Parameter1,Parameter2),
+	((Precision = Parameter1;Precision = Parameter2) -> Result = [PossibleGoal]
+	;Result = []
+	).
+	
+getCorrectGoalList([X],PossibleGoalsList,FinalGoal) :- X = [Precision],maplist(getCorrectGoal(Precision),PossibleGoalsList,MatchingGoalsList),delete(MatchingGoalsList,[],FinalGoal).
+getCorrectGoalList([X|R],PossibleGoalsList,FinalGoal) :-  getCorrectGoalList([X],PossibleGoalsList,FinalGoalHead),
+	(FinalGoalHead = [] -> getCorrectGoalList(R,PossibleGoalsList,FinalGoal)
+	;FinalGoal = FinalGoalHead
+	).
+	
+handleAmbiguity(Goals,World,Holding,Objects,Plan,Output,FinalGoal) :-
+	%ask for a new input
+	%json_read(user_input, json(InputPrecision)),
+	%member(utterance=UtterancePrecision, InputPrecision),
+	UtterancePrecision = [the, small, red, one],
+	%Parse it and find the corresponding object
+	parse_all(precision, UtterancePrecision, TreesPrecision),
+	findall(Goal, (member(Tree, TreesPrecision),
+						 interpret(Tree, World, Holding, Objects, Goal)
+						), GoalsPrecision),
+	%if nothing found then raise error
+	(GoalsPrecision = [] -> 
+		Plan = @(null),
+		Output = 'Ambiguity error, this object does not exist!',
+		FinalGoal=[]
+		%else try to match the new object with the ones from the list of goals
+		;getCorrectGoalList(GoalsPrecision,Goals,FinalGoalList),
+		%nothing found, raise error
+		(FinalGoalList = [] -> 
+		Plan = @(null),
+		Output = 'Ambiguity error, this object does not exist!',
+		FinalGoal=[]
+		%else we have a goal !
+		;FinalGoalList = [FinalGoal]
+		)
+	).
+
 test31 :-
-World = [[e],[l,g],[n],[f,m,k],[p]],
+World = [[e],[q,l,g],[n],[f,m,k],[p]],
 Holding = @(null),
 Objects = json([
 	a=json([form=brick,size=large,color=green]),
@@ -1263,23 +1365,57 @@ Objects = json([
 	l=json([form=box,size=large,color=red]),
 	m=json([form=box,size=small,color=blue]),
 	n=json([form=ball,size=small,color=red]),
-	p=json([form=ball,size=large,color=blue])
+	p=json([form=ball,size=large,color=blue]),
+	q=json([form=box,size=small,color=red])
 	]),
-Utterance = [take, the, ball],
+%Utterance = [take, the, ball],
+Utterance = [move, the, box, on, stack, 0],
 parse_all(command, Utterance, Trees),write(Trees),
 findall(Goal, (member(Tree, Trees),
                      interpret(Tree, World, Holding, Objects, Goal)
                     ), Goals),write(Goals),nl,
-%[take([e]),take([n]),take([f]),take([p])]
+%UtterancePrecision = [the, small, one],
 UtterancePrecision = [the, small, red, one],
+%UtterancePrecision = [the, medium, red, one],
 parse_all(precision, UtterancePrecision, TreesPrecision),write(TreesPrecision),
 findall(Goal, (member(Tree, TreesPrecision),
                      interpret(Tree, World, Holding, Objects, Goal)
-                    ), GoalsPrecision),write(GoalsPrecision),nl.
+                    ), GoalsPrecision),write(GoalsPrecision),nl,		
+(GoalsPrecision = [] -> 
+	Plan = @(null),
+	Output = 'Ambiguity error, this object does not exist!',write(Output)
+	;%retrieveGoalElements(GoalsPrecision, precision, Precision),write(Precision),nl,	
+	%maplist(getCorrectGoal(Precision),Goals,MatchingGoalsList),write(MatchingGoalsList),delete(MatchingGoalsList,[],[FinalGoal]),write(FinalGoal)		
+	getCorrectGoalList(GoalsPrecision,Goals,FinalGoalList),
+	(FinalGoalList = [] -> 
+	Plan = @(null),
+	Output = 'Ambiguity error, this object does not exist!',write(Output)
+	;FinalGoalList = [FinalGoal],write(FinalGoal)
+	)
+).
 
-					
 test32 :-
-World = [[e],[l,g],[n],[f,m,k],[p]],
+%PossibleGoal=take([e]),
+PossibleGoal=moveontopstack([e],[0]),
+%Precision = e,
+Precision = n,
+getCorrectGoal(Precision,PossibleGoal,Result),write(Result).
+
+test33 :-
+%PossibleGoalsList = [take([e]),take([n]),take([f]),take([p])],
+PossibleGoalsList = [moveontopstack([e],[0]),moveontopstack([n],[0]),moveontopstack([f],[0]),moveontopstack([p],[0])],
+Precision = n,
+maplist(getCorrectGoal(Precision),PossibleGoalsList,MatchingGoalsList),write(MatchingGoalsList),delete(MatchingGoalsList,[],[FinalGoal]),write(FinalGoal).	
+
+test34 :-	
+PossibleGoalsList = [moveontopstack([e],[0]),moveontopstack([n],[0]),moveontopstack([f],[0]),moveontopstack([p],[0])],
+%Precision = [[q],[m],[n]],
+Precision = [[q],[m],[a]],
+%Precision = [[q]],
+getCorrectGoalList(Precision,PossibleGoalsList,FinalGoal),write(FinalGoal).
+
+test35 :-
+World = [[e],[q,l,g],[n],[f,m,k],[p]],
 Holding = @(null),
 Objects = json([
 	a=json([form=brick,size=large,color=green]),
@@ -1296,13 +1432,13 @@ Objects = json([
 	l=json([form=box,size=large,color=red]),
 	m=json([form=box,size=small,color=blue]),
 	n=json([form=ball,size=small,color=red]),
-	p=json([form=ball,size=large,color=blue])
+	p=json([form=ball,size=large,color=blue]),
+	q=json([form=box,size=small,color=red])
 	]),
-%Utterance = [put, any, object, above, the, large, yellow, box, on, the, floor],
-%Utterance = [take, the, small, object, to, the, left, of, any, object],
-Utterance = [take, any, object],
-parse_all(command, Utterance, Trees),write(Trees),
+%Utterance = [move, any, ball, to, the, left, of, all, boxes, on, any, object],
+Utterance = [count, any, object, above, the, floor],
+parse_all(command, Utterance, Trees),
 findall(Goal, (member(Tree, Trees),
                      interpret(Tree, World, Holding, Objects, Goal)
-                    ), Goals),sort(Goals,GoalsS),nl,nl,write(GoalsS),nl.
-%[take([e]),take([n]),take([f]),take([p])]
+                    ), Goals),
+					nl,write(Trees),nl,nl,write(Goals).
