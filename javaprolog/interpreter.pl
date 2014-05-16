@@ -152,8 +152,7 @@ interpret(absolute(inside,world), World, _Holding, _Objects, SelectedObject) :-
 
 %Find object, and set goal accordingly.
 interpret(take(X), World, Holding, Objects,  take(SelectedObject)) :-
-    interpret(X, World, Holding, Objects, SelectedObjectTAA),
-	((any(SelectedObjectAux) = SelectedObjectTAA, member(SelectedObjectAuxAux,SelectedObjectAux),SelectedObject = [SelectedObjectAuxAux],!);SelectedObject = SelectedObjectTAA).
+    interpret(X, World, Holding, Objects, SelectedObjectTAA), ((any(SelectedObjectAux) = SelectedObjectTAA, member(SelectedObjectAuxAux,SelectedObjectAux),SelectedObject = [SelectedObjectAuxAux],!);SelectedObject = SelectedObjectTAA).
 
 interpret(floor, _World, _Holding, _Objects, floor). %floor is floor... move this somewhere.. meh.
 
@@ -185,22 +184,25 @@ interpret(move(X,relative(inside, Y)), World, Holding, Objects, moveinside(Selec
 	interpret(X, World, Holding, Objects, SelectedObjectTAA),
 	interpret(Y, World, Holding, Objects, RelativeObjectTAA),
 	handleQuantifiers(SelectedObjectTAA, RelativeObjectTAA, SelectedObject, RelativeObject).
-
+	
 interpret(move(X,absolute(beside, basic_stack(N))), World, Holding, Objects, movebesidestack(SelectedObject,[N])) :-
-interpret(X, World, Holding, Objects, SelectedObject).
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),((any(SelectedObjectAux) = SelectedObjectTAA, member(SelectedObjectAuxAux,SelectedObjectAux),SelectedObject = [SelectedObjectAuxAux],!);SelectedObject = SelectedObjectTAA).
 interpret(move(X,absolute(leftof, basic_stack(N))), World, Holding, Objects, moveleftstack(SelectedObject,[N])) :-
-interpret(X, World, Holding, Objects, SelectedObject).
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),((any(SelectedObjectAux) = SelectedObjectTAA, member(SelectedObjectAuxAux,SelectedObjectAux),SelectedObject = [SelectedObjectAuxAux],!);SelectedObject = SelectedObjectTAA).
 interpret(move(X,absolute(rightof,basic_stack(N))), World, Holding, Objects, moverightstack(SelectedObject,[N])) :-
-interpret(X, World, Holding, Objects, SelectedObject).
-interpret(move(X,absolute(above, basic_stack(N))), World, Holding, Objects, moveabovestack(SelectedObject,[N])) :-
-interpret(X, World, Holding, Objects, SelectedObject).
-interpret(move(X,absolute(ontop, basic_stack(N))), World, Holding, Objects, moveontopstack(SelectedObject,[N])) :-
-interpret(X, World, Holding, Objects, SelectedObject).
-
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),((any(SelectedObjectAux) = SelectedObjectTAA, member(SelectedObjectAuxAux,SelectedObjectAux),SelectedObject = [SelectedObjectAuxAux],!);SelectedObject = SelectedObjectTAA).
+interpret(move(X,absolute(above,  basic_stack(N))), World, Holding, Objects, moveabovestack(SelectedObject,[N])) :-
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),((any(SelectedObjectAux) = SelectedObjectTAA, member(SelectedObjectAuxAux,SelectedObjectAux),SelectedObject = [SelectedObjectAuxAux],!);SelectedObject = SelectedObjectTAA).
+interpret(move(X,absolute(ontop,  basic_stack(N))), World, Holding, Objects, moveontopstack(SelectedObject,[N])) :-
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),((any(SelectedObjectAux) = SelectedObjectTAA, member(SelectedObjectAuxAux,SelectedObjectAux),SelectedObject = [SelectedObjectAuxAux],!);SelectedObject = SelectedObjectTAA).
+	
 %%Interpret Where
 interpret(where(X), World, Holding, Objects, where(SelectedObjects)) :-
-interpret(X, World, Holding, Objects, SelectedObjects).
-
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),((any(SelectedObjectAux) = SelectedObjectTAA, member(SelectedObjectAuxAux,SelectedObjectAux),SelectedObject = [SelectedObjectAuxAux],!);SelectedObject = SelectedObjectTAA).
+	
+%%done with
+%maplist(whichListInTheWorld(World),SelectedObjects,IdxList).
+	
 %%Interpret Count
 interpret(count(X,relative(beside, Y)), World, Holding, Objects, countbeside(SelectedObject,RelativeObject)) :-
 	interpret(X, World, Holding, Objects, SelectedObjectTAA),
@@ -230,36 +232,36 @@ interpret(count(X,relative(inside, Y)), World, Holding, Objects, countinside(Sel
 	interpret(X, World, Holding, Objects, SelectedObjectTAA),
 	interpret(Y, World, Holding, Objects, RelativeObjectTAA),
 	handleQuantifiers(SelectedObjectTAA, RelativeObjectTAA, SelectedObject, RelativeObject).
-
+	
 interpret(count(X,absolute(beside, basic_stack(N))), World, Holding, Objects, countbesidestack(SelectedObject,[N])) :-
-interpret(X, World, Holding, Objects, SelectedObject).
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),((any(SelectedObjectAux) = SelectedObjectTAA, member(SelectedObjectAuxAux,SelectedObjectAux),SelectedObject = [SelectedObjectAuxAux],!);SelectedObject = SelectedObjectTAA).
 interpret(count(X,absolute(leftof, basic_stack(N))), World, Holding, Objects, countleftstack(SelectedObject,[N])) :-
-interpret(X, World, Holding, Objects, SelectedObject).
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),((any(SelectedObjectAux) = SelectedObjectTAA, member(SelectedObjectAuxAux,SelectedObjectAux),SelectedObject = [SelectedObjectAuxAux],!);SelectedObject = SelectedObjectTAA).
 interpret(count(X,absolute(rightof,basic_stack(N))), World, Holding, Objects, countrightstack(SelectedObject,[N])) :-
-interpret(X, World, Holding, Objects, SelectedObject).
-interpret(count(X,absolute(above, basic_stack(N))), World, Holding, Objects, countabovestack(SelectedObject,[N])) :-
-interpret(X, World, Holding, Objects, SelectedObject).
-interpret(count(X,absolute(ontop, basic_stack(N))), World, Holding, Objects, countontopstack(SelectedObject,[N])) :-
-interpret(X, World, Holding, Objects, SelectedObject).
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),((any(SelectedObjectAux) = SelectedObjectTAA, member(SelectedObjectAuxAux,SelectedObjectAux),SelectedObject = [SelectedObjectAuxAux],!);SelectedObject = SelectedObjectTAA).
+interpret(count(X,absolute(above,  basic_stack(N))), World, Holding, Objects, countabovestack(SelectedObject,[N])) :-
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),((any(SelectedObjectAux) = SelectedObjectTAA, member(SelectedObjectAuxAux,SelectedObjectAux),SelectedObject = [SelectedObjectAuxAux],!);SelectedObject = SelectedObjectTAA).
+interpret(count(X,absolute(ontop,  basic_stack(N))), World, Holding, Objects, countontopstack(SelectedObject,[N])) :-
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),((any(SelectedObjectAux) = SelectedObjectTAA, member(SelectedObjectAuxAux,SelectedObjectAux),SelectedObject = [SelectedObjectAuxAux],!);SelectedObject = SelectedObjectTAA).
 interpret(count(X,absolute(inside, world)), World, Holding, Objects, countinsidestacks(SelectedObject,N)) :-
-interpret(X, World, Holding, Objects, SelectedObject),
-length(World,LengthWorld),listFirstIndexes(LengthWorld, N).
-
+	interpret(X, World, Holding, Objects, SelectedObjectTAA),((any(SelectedObjectAux) = SelectedObjectTAA, member(SelectedObjectAuxAux,SelectedObjectAux),SelectedObject = [SelectedObjectAuxAux],!);SelectedObject = SelectedObjectTAA),
+	length(World,LengthWorld),listFirstIndexes(LengthWorld, N).
+	
 %%Interpret What
 interpret(what(relative(beside, Y)), World, Holding, Objects, whatbeside(RelativeObject)) :-
-interpret(Y, World, Holding, Objects, RelativeObject).
+	interpret(X, World, Holding, Objects, RelativeObjectTAA),((any(RelativeObjectAux) = RelativeObjectTAA, member(RelativeObjectAuxAux,RelativeObjectAux),RelativeObject = [RelativeObjectAuxAux],!);RelativeObject = RelativeObjectTAA).
 interpret(what(relative(leftof, Y)), World, Holding, Objects, whatleft(RelativeObject)) :-
-interpret(Y, World, Holding, Objects, RelativeObject).
+	interpret(X, World, Holding, Objects, RelativeObjectTAA),((any(RelativeObjectAux) = RelativeObjectTAA, member(RelativeObjectAuxAux,RelativeObjectAux),RelativeObject = [RelativeObjectAuxAux],!);RelativeObject = RelativeObjectTAA).
 interpret(what(relative(rightof,Y)), World, Holding, Objects, whatright(RelativeObject)) :-
-interpret(Y, World, Holding, Objects, RelativeObject).
+	interpret(X, World, Holding, Objects, RelativeObjectTAA),((any(RelativeObjectAux) = RelativeObjectTAA, member(RelativeObjectAuxAux,RelativeObjectAux),RelativeObject = [RelativeObjectAuxAux],!);RelativeObject = RelativeObjectTAA).
 interpret(what(relative(above,Y)), World, Holding, Objects, whatabove(RelativeObject)) :-
-interpret(Y, World, Holding, Objects, RelativeObject).
-interpret(what(relative(ontop, Y)), World, Holding, Objects, whatontop(RelativeObject)) :-
-interpret(Y, World, Holding, Objects, RelativeObject).
-interpret(what(relative(under, Y)), World, Holding, Objects, whatunder(RelativeObject)) :-
-interpret(Y, World, Holding, Objects, RelativeObject).
+	interpret(X, World, Holding, Objects, RelativeObjectTAA),((any(RelativeObjectAux) = RelativeObjectTAA, member(RelativeObjectAuxAux,RelativeObjectAux),RelativeObject = [RelativeObjectAuxAux],!);RelativeObject = RelativeObjectTAA).
+interpret(what(relative(ontop,  Y)), World, Holding, Objects, whatontop(RelativeObject)) :-
+	interpret(X, World, Holding, Objects, RelativeObjectTAA),((any(RelativeObjectAux) = RelativeObjectTAA, member(RelativeObjectAuxAux,RelativeObjectAux),RelativeObject = [RelativeObjectAuxAux],!);RelativeObject = RelativeObjectTAA).
+interpret(what(relative(under,  Y)), World, Holding, Objects, whatunder(RelativeObject)) :-
+	interpret(X, World, Holding, Objects, RelativeObjectTAA),((any(RelativeObjectAux) = RelativeObjectTAA, member(RelativeObjectAuxAux,RelativeObjectAux),RelativeObject = [RelativeObjectAuxAux],!);RelativeObject = RelativeObjectTAA).
 interpret(what(relative(inside, Y)), World, Holding, Objects, whatinside(RelativeObject)) :-
-interpret(Y, World, Holding, Objects, RelativeObject).
+	interpret(X, World, Holding, Objects, RelativeObjectTAA),((any(RelativeObjectAux) = RelativeObjectTAA, member(RelativeObjectAuxAux,RelativeObjectAux),RelativeObject = [RelativeObjectAuxAux],!);RelativeObject = RelativeObjectTAA).
 
 interpret(what(absolute(beside, basic_stack(N))), World, Holding, Objects, whatbesidestack([N])).
 interpret(what(absolute(leftof, basic_stack(N))), World, Holding, Objects, whatleftstack([N])).
