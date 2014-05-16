@@ -1,4 +1,4 @@
-
+:- style_check(-singleton).
 :- op(1200, xfx, '--->').
 
 %% Non-lexical grammar rules
