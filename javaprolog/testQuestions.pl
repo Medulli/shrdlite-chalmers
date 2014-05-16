@@ -1109,9 +1109,7 @@ getFormSizeColorText(PossibleObjects,ObjectLetter,ObjectFormSizeColor) :-
 	string_concat(FinalStr1,' ',FinalStr2),
 	string_concat(FinalStr2,ColorObjStr,FinalStr3),
 	string_concat(FinalStr3,' ',FinalStr4),
-	string_concat(FinalStr4,FormObjStr,FinalStr5),
-	string_concat(FinalStr5,'.',FinalStr6),
-	ObjectFormSizeColor=FinalStr6.
+	string_concat(FinalStr4,FormObjStr,ObjectFormSizeColor).
 
 /*
 %Get the form, the size and the color of an object knowing its name (one letter) and the possible objects. Output : ObjectFormSizeColor=[form,size,color]
@@ -1159,7 +1157,7 @@ list_codes([], "").
 list_codes([Atom], Codes) :- atom_codes(Atom, Codes).
 
 list_codes([Atom|ListTail], Codes) :-
-        atom_codes(Atom, AtomCodes),
+	atom_codes(Atom, AtomCodes),
     append(AtomCodes, ",", AtomCodesWithComma),
     append(AtomCodesWithComma, ListTailCodes, Codes),
     list_codes(ListTail, ListTailCodes).
@@ -1468,30 +1466,41 @@ plan(_Goal, World, _, _Objects, Plan) :-
 		; Plan = [[[],what]]
 	).
 
-%What beside	
 plan(_Goal, World, _, _Objects, Plan) :-
-    retrieveGoalElements(_Goal, whatbeside, Parameter),
+	retrieveGoalElements(_Goal, whatbeside, Parameter),
 	whichListInTheWorld(World,Parameter,Position),
 	length(World, LengthWorld),LeftPos is Position - 1,RightPos is Position + 1,
 	%stack picked is within bounds
-	((LeftPos >= 0,RightPos < LengthWorld )->
-		%World is split into 2 parts : Rest with the left until the stack, RightStacks with everything we want to examine.
-		nth0(LeftPos,World,LeftStack),nth0(RightPos,World,RightStack),
-		flatten(LeftStack,ListObjLettersLeft),flatten(RightPos,ListObjLettersRight),
-		((ListObjLettersLeft = [],ObjectFormSizeColorListLeft = [])
-			;maplist(getFormSizeColorText(_Objects),ListObjLettersLeft,ObjectFormSizeColorListLeft)
-		),
-		((ListObjLettersRight = [],ObjectFormSizeColorListRight = [])
-			;maplist(getFormSizeColorText(_Objects),ListObjLettersRight,ObjectFormSizeColorListRight)
-		),
-		append(ObjectFormSizeColorListLeft,ObjectFormSizeColorListRight,ObjectFormSizeColorList),
-		Plan = [[ObjectFormSizeColorList,what]]
-		%or not
-		; Plan = [[[],what]]
-	).
-	
+	%World is split into 2 parts : Rest with the left until the stack, RightStacks with everything we want to examine.
+	(LeftPos >= 0 ->
+		nth0(LeftPos,World,LeftStack),write(LeftStack),
+		((LeftStack = [],ObjectFormSizeColorListLeft = [])
+			;flatten(LeftStack,ListObjLettersLeft),
+			maplist(getFormSizeColorText(_Objects),ListObjLettersLeft,ObjectFormSizeColorListLeft)
+		)
+		;ObjectFormSizeColorListLeft = []
+	),
+	(RightPos < LengthWorld ->
+		nth0(RightPos,World,RightStack),
+		((RightStack = [],ObjectFormSizeColorListRight = [])
+			;flatten(RightStack,ListObjLettersRight),
+			maplist(getFormSizeColorText(_Objects),ListObjLettersRight,ObjectFormSizeColorListRight)
+		)
+		;ObjectFormSizeColorListRight = []
+	),
+	%Plan = [[[],what]].
+	(ObjectFormSizeColorListLeft =[] ->
+		Str1 = ['nothing on the left']
+		;append(ObjectFormSizeColorListLeft,[' on the left'],Str1)
+	),
+	(ObjectFormSizeColorListRight =[] ->
+		append(Str1,[' nothing on the right.'],ObjectFormSizeColorList)
+		;append(Str1,ObjectFormSizeColorListRight,Str2),append(Str2,[' on the right.'],ObjectFormSizeColorList)
+	),
+	Plan = [[ObjectFormSizeColorList,what]].
+
 test36 :-
-World = [[e],[l,g],[],[f,m,k],[]],
+World = [[],[l,g],[e],[f,m,k],[]],
 Holding = @(null),
 Objects = json([
 	a=json([form=brick,size=large,color=green]),
@@ -1508,12 +1517,13 @@ Objects = json([
 	l=json([form=box,size=large,color=red]),
 	m=json([form=box,size=small,color=blue])
 	]),
-Utterance = [what, is, beside, the, black, ball],
+Utterance = [what, is, beside, the, red, box],
 parse_all(command, Utterance, Trees),write(Trees),nl,
 findall(Goal, (member(Tree, Trees),
                      interpret(Tree, World, Holding, Objects, Goal)
                     ), Goals),write(Goals),nl,
 Goals = [Goal],
-plan(Goal, World, Holding, Objects, PlanList),write(PlanList).
-%solve(PlanList, Plan),write(Plan),nb_getval(output,OutputStr),nl,write(OutputStr).
+plan(Goal, World, Holding, Objects, PlanList),nl,write(PlanList),nl,
+solve(PlanList, Plan),write(Plan),nb_getval(output,OutputStr),nl,write(OutputStr).
+
 	
