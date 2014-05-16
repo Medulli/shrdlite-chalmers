@@ -143,20 +143,15 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       Plan = [[K,-1,move]].
 
 %Take the selected object if the arm holds something
-/*plan(_Goal, World, Holding, _Objects, Plan) :-
-      retrieveGoalElements(_Goal, ActionTake, ElementPick),
-      Holding == [ElementDrop],
-      ActionTake == take,
-      canbeAt(ElementDrop,World,_Objects,KDrop),
-      dropAt(ElementDrop,KDrop,World,WorldAux),
-      whichListInTheWorld(WorldAux,ElementPick,KPick),
-      nth0(KPick,WorldAux,LKPick),
-      checkHead(LKPick,ElementPick),
-      pickAt(KPick,WorldAux,NewWorld),
-      nb_setval(world, NewWorld),
-      nb_setval(holding, [ElementPick]),
-      Plan = ['I drop it down', [drop, KDrop], '. . . and I pick it up . . .', [pick, KPick]].
-      Plan = ['I drop it down', [drop, 0], '. . . and I pick it up . . .', [pick, 3]].*/
+plan(_Goal, World, Holding, _Objects, Plan) :-
+      retrieveGoalElements(_Goal, take, ElementPick),
+      Holding \== @(null),
+      Holding = ElementHold,
+      canbeAt(ElementHold,World,_Objects,K),
+      dropAt(ElementHold,K,World,NewWorld),
+      b_setval(world, NewWorld),
+      plan(_Goal, NewWorld, @(null), _Objects, PlanAux),
+      Plan = [[-1,K,move]|PlanAux].
 
 %Move the selected object beside the relative object in one step if the arm does not hold something and the selected object can be on the relative object
 plan(_Goal, World, Holding, _Objects, Plan) :-
