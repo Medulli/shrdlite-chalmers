@@ -103,7 +103,7 @@ getCorrectGoalList([X|R],PossibleGoalsList,FinalGoal) :- getCorrectGoalList([X],
 ;FinalGoal = FinalGoalHead
 ).
 
-handleAmbiguity(Goals,World,Holding,Objects,Plan,Output,FinalGoal) :-
+handleAmbiguity(Goals,World,Holding,Objects,FinalGoal) :-
 %ask for a new input
 %%TO BE CHECKED. Add a prompt message ?
 json_read(user_input, json(InputPrecision)),
