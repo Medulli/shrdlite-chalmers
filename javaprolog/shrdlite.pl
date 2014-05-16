@@ -710,22 +710,3 @@ testFloor :-
 PossibleObjects = [a=json([form=ball,size=small,color=white]), b=json([form=box,size=small,color=black]), c=json([form=table,size=large,color=red]), d=json([form=box,size=large,color=blue]), e=json([form=box,size=medium,color=red])],
 canbeon(a,[],PossibleObjects).
 */
-
-
-
-/*
-%Put the element held at any place
-
-putanyplace(O1,LL,[O1|L],NLL,L) :- nth1(K,LL,LK), canbeon(O1,LK), consLL_at(O1,LL,K,NLL).
-
-%Put the element holded by the arm on top of the element O2 when O2 is not a topmost element
-
-putontop(O1,O2,LL,[O1|L],NLL,L) :- canbeon(O1,[O2|-]), whichL(O2,LL,K2), nth1(K2,LL,LK2), hdtlL(LK2,H,T), moveanyplace(H,LL,[O1|L],LLaux1,Laux1), take(O1,LLaux1,Laux1,LLaux2,Laux2), putontop(O1,O2,LLaux2,Laux2,NLL,L).
-
-%If the arm holds something and we want to take an object different from the one it holds we put it somewhere
-
-take(O,LL,[H|T],NLL,NL) :- putabove(H,Oaux,LL,Kaux,[H|T],LLaux,T), take(O,LLaux,T,NLL,NL).
-
-%If the arm does not hold something but the head of the list in which there is the element we want to take is not this element we move the head somewhere else
-
-take(O,LL,[],NLL,L) :- whichL(O,LL,K), nth1(K,LL,LK), hdtlL(LK,H,_), move(H,Oaux,LL,[],LLaux,Laux), take(O,LLaux,Laux,NLL,L).*/
