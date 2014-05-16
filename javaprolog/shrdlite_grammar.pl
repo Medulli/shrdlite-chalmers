@@ -89,7 +89,7 @@ form(pl) : box ---> [boxes].
 form(sg) : table ---> [table].
 form(pl) : table ---> [tables].
 
-nat : N ---> [X], {atom_integer(N,X),integer(X), X >= 0}.
+nat : N ---> [X], {atom_number(N,X),integer(X), X >= 0}.
 
 %% Lexicon (without semantic content)
 
