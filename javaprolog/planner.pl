@@ -64,6 +64,20 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       b_setval(world, NewWorld),
       Plan = [[K1,K2,move]].
 
+%Move the selected object beside the relative object in one step if the arm holds it and the selected object can be on the relative object
+plan(_Goal, World, Holding, _Objects, Plan) :-
+      retrieveGoalElements(_Goal, movebeside, Element1, Element2),
+      Holding \== @(null),
+      Holding = ElementHold,
+      ElementHold = Element1,
+      whichListInTheWorld(World,Element2,K2Aux),
+      K2 is K2Aux - 1,
+      nth0(K2,World,LK2),
+      canbeon(Element1,LK2,_Objects),
+      dropAt(Element1,K2,World,NewWorld),
+      b_setval(world, NewWorld),
+      Plan = [[-1,K2,move]].
+
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, movebeside, Element1, Element2),
       Holding == @(null),
@@ -78,6 +92,20 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       dropAt(Element1,K2,WorldAux,NewWorld),
       b_setval(world, NewWorld),
       Plan = [[K1,K2,move]].
+
+%Move the selected object beside the relative object in one step if the arm holds it and the selected object can be on the relative object
+plan(_Goal, World, Holding, _Objects, Plan) :-
+      retrieveGoalElements(_Goal, movebeside, Element1, Element2),
+      Holding \== @(null),
+      Holding = ElementHold,
+      ElementHold = Element1,
+      whichListInTheWorld(World,Element2,K2Aux),
+      K2 is K2Aux + 1,
+      nth0(K2,World,LK2),
+      canbeon(Element1,LK2,_Objects),
+      dropAt(Element1,K2,World,NewWorld),
+      b_setval(world, NewWorld),
+      Plan = [[-1,K2,move]].
 
 %Does nothing when asked to move the selected object to the left of the relative object in one step if it is already the case
 plan(_Goal, World, Holding, _Objects, Plan) :-
@@ -104,6 +132,20 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       b_setval(world, NewWorld),
       Plan = [[K1,K2,move]].
 
+%Move the selected object to the left the relative object in one step if the arm holds it and the selected object can be on the relative object
+plan(_Goal, World, Holding, _Objects, Plan) :-
+      retrieveGoalElements(_Goal, moveleft, Element1, Element2),
+      Holding \== @(null),
+      Holding = ElementHold,
+      ElementHold = Element1,
+      whichListInTheWorld(World,Element2,K2Aux),
+      K2 is K2Aux - 1,
+      nth0(K2,World,LK2),
+      canbeon(Element1,LK2,_Objects),
+      dropAt(Element1,K2,World,NewWorld),
+      b_setval(world, NewWorld),
+      Plan = [[-1,K2,move]].
+
 %Does nothing when asked to move the selected object to the right of the relative object in one step if it is already the case
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, moveright, Element1, Element2),
@@ -129,6 +171,20 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       b_setval(world, NewWorld),
       Plan = [[K1,K2,move]].
 
+%Move the selected object to the right the relative object in one step if the arm holds it and the selected object can be on the relative object
+plan(_Goal, World, Holding, _Objects, Plan) :-
+      retrieveGoalElements(_Goal, moveright, Element1, Element2),
+      Holding \== @(null),
+      Holding = ElementHold,
+      ElementHold = Element1,
+      whichListInTheWorld(World,Element2,K2Aux),
+      K2 is K2Aux + 1,
+      nth0(K2,World,LK2),
+      canbeon(Element1,LK2,_Objects),
+      dropAt(Element1,K2,World,NewWorld),
+      b_setval(world, NewWorld),
+      Plan = [[-1,K2,move]].
+
 %Does nothing when asked to move the selected object above the relative object in one step if it is already the case
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, moveabove, Element1, Element2),
@@ -151,6 +207,19 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       dropAt(Element1,K2,WorldAux,NewWorld),
       b_setval(world, NewWorld),
       Plan = [[K1,K2,move]].
+
+%Move the selected object above the relative object in one step if the arm holds it and the selected object can be on the relative object
+plan(_Goal, World, Holding, _Objects, Plan) :-
+      retrieveGoalElements(_Goal, moveabove, Element1, Element2),
+      Holding \== @(null),
+      Holding = ElementHold,
+      ElementHold = Element1,
+      whichListInTheWorld(World,Element2,K2),
+      nth0(K2,World,LK2),
+      canbeon(Element1,LK2,_Objects),
+      dropAt(Element1,K2,World,NewWorld),
+      b_setval(world, NewWorld),
+      Plan = [[-1,K2,move]].
 
 %Does nothing when asked to move the selected object on top of the relative object in one step if it is already the case
 plan(_Goal, World, Holding, _Objects, Plan) :-
@@ -185,6 +254,22 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       b_setval(world, NewWorld),
       Plan = [[K1,K2,move]].
 
+%Move the selected object on top of the relative object in one step if the arm holds it and the selected object can be on the relative object
+plan(_Goal, World, Holding, _Objects, Plan) :-
+      retrieveGoalElements(_Goal, moveontop, Element1, Element2),
+      Holding \== @(null),
+      Holding = ElementHold,
+      ElementHold = Element1,
+      getForm(Element2,_Objects,ObjectForm),
+      ObjectForm \== box,
+      whichListInTheWorld(World,Element2,K2),
+      nth0(K2,World,LK2),
+      checkHead(LK2,Element2),
+      canbeon(Element1,LK2,_Objects),
+      dropAt(Element1,K2,World,NewWorld),
+      b_setval(world, NewWorld),
+      Plan = [[-1,K2,move]].
+
 %Does nothing when asked to move the selected object inside the relative object in one step if it is already the case
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, moveinside, Element1, Element2),
@@ -217,6 +302,22 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       dropAt(Element1,K2,WorldAux,NewWorld),
       b_setval(world, NewWorld),
       Plan = [[K1,K2,move]].
+
+%Move the selected object inside the relative object in one step if the arm holds it and the selected object can be on the relative object
+plan(_Goal, World, Holding, _Objects, Plan) :-
+      retrieveGoalElements(_Goal, moveinside, Element1, Element2),
+      Holding \== @(null),
+      Holding = ElementHold,
+      ElementHold = Element1,
+      getForm(Element2,_Objects,ObjectForm),
+      ObjectForm == box,
+      whichListInTheWorld(World,Element2,K2),
+      nth0(K2,World,LK2),
+      checkHead(LK2,Element2),
+      canbeon(Element1,LK2,_Objects),
+      dropAt(Element1,K2,World,NewWorld),
+      b_setval(world, NewWorld),
+      Plan = [[-1,K2,move]].
 
 %Move the selected object inside the relative object in several steps if the arm does not hold something and the selected object can be on the relative object
 plan(_Goal, World, Holding, _Objects, Plan) :-
