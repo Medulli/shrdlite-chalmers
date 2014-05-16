@@ -39,20 +39,20 @@ main :-
         Output = 'Interpretation error!'
       ; Goals = [take([_,_|_])] ->
         Plan = @(null),
-Output = 'I can only hold one object!'
+		Output = 'I can only hold one object!'
       ;
         %Goal is a list of goals i.e. "I can do this and this and this... Please specify what you want"
         Goals = [_,_|_] ->
-handleAmbiguity(Goals,World,Holding,Objects,PrecisionGoal),
-%we could not get a goal
-(FinalGoal = [] ->
-Plan = @(null),
-Output = 'Ambiguity error, this object does not exist!'
-%we have a goal !
-;plan(PrecisionGoal, World, Holding, Objects, PlanList),
-solve(PlanList, Plan),
-nb_getval(output,Output)
-)
+		handleAmbiguity(Goals,World,Holding,Objects,PrecisionGoal),
+		%we could not get a goal
+		(FinalGoal = [] ->
+			Plan = @(null),
+			Output = 'Ambiguity error, this object does not exist!'
+			%we have a goal !
+			;plan(PrecisionGoal, World, Holding, Objects, PlanList),
+			solve(PlanList, Plan),
+			nb_getval(output,Output)
+		)
       ; Goals = [Goal],
         plan(Goal, World, Holding, Objects, PlanList),
         solve(PlanList, Plan),
@@ -81,10 +81,10 @@ getPlan([L,what], Plan) :- Plan=[],list_string(L,LStr),string_concat('The list o
 getPlan([N,count], Plan) :- Plan=[],list_string([N],LStr),string_concat('There is/are . . . ',LStr,SuccesStr1),string_concat(SuccesStr1,' Object(s).',SuccesStr2),nb_setval(output,SuccesStr2).
 solve(PlanList, Plan) :- maplist(getPlan, PlanList, PlanAux),append(PlanAux, PlanAppend),
 (PlanAppend ==[] ->
-%no plan sent, just infos display
-Plan = @(null)
-%move dem objects nub
-;Plan=PlanAppend
+	%no plan sent, just infos display
+	Plan = @(null)
+	%move dem objects nub
+	;Plan=PlanAppend
 ).
 
 %Used to get rid of ambiguities
@@ -111,19 +111,19 @@ member(utterance=UtterancePrecision, InputPrecision),
 %Parse it and find the corresponding object
 parse_all(precision, UtterancePrecision, TreesPrecision),
 findall(Goal, (member(Tree, TreesPrecision),
-interpret(Tree, World, Holding, Objects, Goal)
-), GoalsPrecision),
+	interpret(Tree, World, Holding, Objects, Goal)
+	), GoalsPrecision),
 %if nothing found then raise error
 (GoalsPrecision = [] ->
-FinalGoal=[]
-%else try to match the new object with the ones from the list of goals
-;getCorrectGoalList(GoalsPrecision,Goals,FinalGoalList),
-%nothing found, raise error
-(FinalGoalList = [] ->
-FinalGoal=[]
-%else we have a goal !
-;FinalGoalList = [FinalGoal]
-)
+	FinalGoal=[]
+	%else try to match the new object with the ones from the list of goals
+	;getCorrectGoalList(GoalsPrecision,Goals,FinalGoalList),
+	%nothing found, raise error
+	(FinalGoalList = [] ->
+		FinalGoal=[]
+		%else we have a goal !
+		;FinalGoalList = [FinalGoal]
+	)
 ).
 
 %Take the selected object if the arm does not hold something
@@ -294,17 +294,17 @@ plan(_Goal, World, _, _, Plan) :-
 %% Whatrightstack : the list of characteristics (form, size, color) of the objects
 plan(_Goal, World, _, _Objects, Plan) :-
       retrieveGoalElements(_Goal, whatrightstack, Parameter),
-length(World, LengthWorld),LengthRest is Parameter + 1,
-%stack picked is within bounds
-(LengthRest < LengthWorld ->
-%World is split into 2 parts : Rest with the left until the stack, RightStacks with everything we want to examine.
-length(Rest, LengthRest), append(Rest, RightStacks, World),
-flatten(RightStacks,ListObjLetters),
-maplist(getFormSizeColorText(_Objects),ListObjLetters,ObjectFormSizeColorList),
-Plan = [[ObjectFormSizeColorList,what]]
-%or not
-; Plan = [[[],what]]
-).
+	length(World, LengthWorld),LengthRest is Parameter + 1,
+	%stack picked is within bounds
+	(LengthRest < LengthWorld ->
+		%World is split into 2 parts : Rest with the left until the stack, RightStacks with everything we want to examine.
+		length(Rest, LengthRest), append(Rest, RightStacks, World),
+		flatten(RightStacks,ListObjLetters),
+		maplist(getFormSizeColorText(_Objects),ListObjLetters,ObjectFormSizeColorList),
+		Plan = [[ObjectFormSizeColorList,what]]
+		%or not
+		; Plan = [[[],what]]
+	).
 
 %%--------------------------------------------------------------
 
@@ -510,15 +510,15 @@ list_string(List, String) :-
 
 %The same than getFormSizeColor in text form	
 getFormSizeColorText(PossibleObjects,ObjectLetter,ObjectFormSizeColor) :-
-PossibleObjects = json(PossibleObjectsJson),member(ObjectLetter = ObjectJson,PossibleObjectsJson),ObjectJson=json([form=FormObj,size=SizeObj,color=ColorObj]),
-atom_string(SizeObj,SizeObjStr),atom_string(ColorObj,ColorObjStr),atom_string(FormObj,FormObjStr),
-string_concat('a ',SizeObjStr,FinalStr1),
-string_concat(FinalStr1,' ',FinalStr2),
-string_concat(FinalStr2,ColorObjStr,FinalStr3),
-string_concat(FinalStr3,' ',FinalStr4),
-string_concat(FinalStr4,FormObjStr,FinalStr5),
-string_concat(FinalStr5,'.',FinalStr6),
-ObjectFormSizeColor=FinalStr6.
+	PossibleObjects = json(PossibleObjectsJson),member(ObjectLetter = ObjectJson,PossibleObjectsJson),ObjectJson=json([form=FormObj,size=SizeObj,color=ColorObj]),
+	atom_string(SizeObj,SizeObjStr),atom_string(ColorObj,ColorObjStr),atom_string(FormObj,FormObjStr),
+	string_concat('a ',SizeObjStr,FinalStr1),
+	string_concat(FinalStr1,' ',FinalStr2),
+	string_concat(FinalStr2,ColorObjStr,FinalStr3),
+	string_concat(FinalStr3,' ',FinalStr4),
+	string_concat(FinalStr4,FormObjStr,FinalStr5),
+	string_concat(FinalStr5,'.',FinalStr6),
+	ObjectFormSizeColor=FinalStr6.
 
 %---------------------------------------------------------------------------------------------------- Constraints management ----------------------------------------------------------------------------------------------------
 %Get the form, the size and the color of an object knowing its name (one letter) and the possible objects. Output : ObjectFormSizeColor=[form,size,color]
