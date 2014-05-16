@@ -55,13 +55,21 @@ main :-
 			Output = 'Ambiguity error, this object does not exist!'
 			%we have a goal !
 			;plan(PrecisionGoal, World, Holding, Objects, PlanList),
-			solve(PlanList, Plan),
-			nb_getval(output,Output)
+                        ( PlanList == [-1] ->
+                          Plan = @(null),
+                          Output = 'Nothing to do!'
+                        ; solve(PlanList, Plan),
+			  nb_getval(output,Output)
+                        )
 		)
       ; Goals = [Goal],
         plan(Goal, World, Holding, Objects, PlanList),
-        solve(PlanList, Plan),
-		nb_getval(output,Output)
+        ( PlanList == [-1] ->
+          Plan = @(null),
+          Output = 'Nothing to do!'
+        ; solve(PlanList, Plan),
+          nb_getval(output,Output)
+        )
       )
     ),
     findall(JT, (member(T, Trees),
@@ -142,6 +150,13 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       nb_setval(world, NewWorld),
       b_setval(holding, [Element]),
       Plan = [[K,-1,move]].
+
+%Take the selected object if the arm already holds it
+plan(_Goal, World, Holding, _Objects, Plan) :-
+      retrieveGoalElements(_Goal, take, ElementPick),
+      Holding \== @(null),
+      Holding = ElementPick,
+      Plan = [-1].
 
 %Take the selected object if the arm holds something
 plan(_Goal, World, Holding, _Objects, Plan) :-
