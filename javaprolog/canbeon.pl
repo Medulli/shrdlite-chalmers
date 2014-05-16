@@ -1,11 +1,6 @@
 :- style_check(-singleton).
 
 %---------------------------------------------------------------------------------------------------- Constraints management ----------------------------------------------------------------------------------------------------
-%Get the form, the size and the color of an object knowing its name (one letter) and the possible objects. Output : ObjectFormSizeColor=[form,size,color]
-%Not used (yet)
-getFormSizeColor(ObjectLetter,PossibleObjects,ObjectFormSizeColor) :-
-PossibleObjects = json(PossibleObjectsJson),member(ObjectLetter = ObjectJson,PossibleObjectsJson),ObjectJson=json([form=FormObj,size=SizeObj,color=ColorObj]),ObjectFormSizeColor=[FormObj,SizeObj,ColorObj].
-
 %Get the form and the size of an object knowing its name (one letter) and the possible objects. Output : ObjectFormSize=[form,size]
 getFormAndSize(ObjectLetter,PossibleObjects,ObjectFormSize) :-
 PossibleObjects = json(PossibleObjectsJson),member(ObjectLetter = ObjectJson,PossibleObjectsJson),ObjectJson=json([form=FormObj,size=SizeObj,color=_]),ObjectFormSize=[FormObj,SizeObj].
