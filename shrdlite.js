@@ -84,6 +84,14 @@ $(function() {
         userInput();
         return false;
     });
+    $('#preciseform').submit(function(){
+        userInputPrecision();
+        return false;
+    });
+    $('#userinputprecision').on('webkitspeechchange',function(){
+        userInputPrecision();
+        return false;
+    })
     $('#userinput').on('webkitspeechchange', function() {
         userInput();
         return false;
@@ -363,7 +371,9 @@ function disableInput(timeout) {
         $("#inputexamples").blur();
         $("#inputexamples").prop('disabled', true); 
         $("#userinput").blur();
-        $("#userinput").prop('disabled', true); 
+        $("#userinput").prop('disabled', true);
+        $("#userinputprecision").blur();
+        $("#userinputprecision").prop('disabled', true); 
     }
 }
 
@@ -379,7 +389,8 @@ function systemPrompt(timeout) {
 function enableInput() {
     $("#inputexamples").prop('disabled', false).val(''); 
     $("#inputexamples option:first").attr('selected','selected');
-    $("#userinput").prop('disabled', false); 
+    $("#userinput").prop('disabled', false);
+    $("#userinputprecision").prop('disabled', false);
     $("#userinput").focus().select();
 }
 
@@ -491,6 +502,51 @@ function sayUtterance(participant, utterance, silent) {
         }
     }
 }
+
+function userInputPrecision() {
+    var userinput = $("#userinputprecision").val().trim();
+    if (!userinput) {
+        enableInput();
+        return;
+    }
+    var program = $('#program').val();
+    disableInput();
+
+    sayUtterance("user", userinput);
+
+    var ajaxdata = {'world': currentWorld.world,
+                    'objects': currentWorld.objects,
+                    'holding': currentWorld.holding,
+                    'state': currentWorld.state,
+                    'utterance': userinput.split(/\s+/)
+                   };
+
+    $.ajax({
+        url: AjaxScript,
+        type: 'POST',
+        dataType: "text",
+        cache: false,
+        timeout: 1000 * AjaxTimeout,
+        data: {'data': JSON.stringify(ajaxdata), 'program': program }
+    }).fail(function(jqxhr, status, error) {
+        alertError("Internal error: " + status, error);
+        systemPrompt();
+    }).done(function(result) {
+        try {
+            result = JSON.parse(result);
+        } catch(err) {
+            alertError("JSON error:" + err, result);
+        }
+        debugResult(result);
+        sayUtterance("system", result.output);
+        if (result.state) {
+            currentWorld.state = result.state;
+        }
+        currentPlan = result.plan;
+        performPlan();
+    });
+}
+
 
 function debugWorld() {
     $("#debugworld").html("<table><tr><td>&nbsp;" + currentWorld.world.join("&nbsp;<td>&nbsp;") + "&nbsp;</tr></table>");
