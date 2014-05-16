@@ -77,9 +77,9 @@ main :-
     json_write(user_output, json(Result)).
 
 %Solver
-getPlan([K,-1,move], Plan) :- Plan = ['I pick up the element at place . . . ', K, [pick, K]],nb_setval(output,'Success!').
-getPlan([-1,K,move], Plan) :- Plan = ['I drop it down at place . . . ', K, [drop, K]],nb_setval(output,'Success!').
-getPlan([K1,K2,move], Plan) :- Plan = ['I pick up the element at place . . . ', K1, [pick, K1], 'and I drop it down at place . . . ', K2, [drop, K2]],nb_setval(output,'Success!').
+getPlan([K,-1,move], Plan) :- Plan=[],list_string([K],LStr),string_concat('I pick up the element at place . . . ',LStr,SuccesStr1),string_concat(SuccesStr1,'.',SuccesStr2),nb_setval(output,SuccesStr2).
+getPlan([-1,K,move], Plan) :- Plan=[],list_string([K],LStr),string_concat('I drop it down at place . . . ',LStr,SuccesStr1),string_concat(SuccesStr1,'.',SuccesStr2),nb_setval(output,SuccesStr2).
+getPlan([K1,K2,move], Plan) :- Plan=[],list_string([K1],LStr1),string_concat('I pick up the element at place . . . ',LStr1,SuccesStr1),list_string([K2],LStr2),string_concat(SuccesStr1,' . . . and I drop it down at place . . . ',SuccesStr2),string_concat(SuccesStr2,LStr2,SuccesStr3),string_concat(SuccesStr3,'.',SuccesStr4),nb_setval(output,SuccesStr4).
 getPlan([L,where], Plan) :- Plan=[],list_string(L,LStr),string_concat('On place(s) . . . ',LStr,SuccesStr),nb_setval(output,SuccesStr).
 getPlan([L,what], Plan) :- Plan=[],list_string(L,LStr),string_concat('The list of relevant object(s) is . . . ',LStr,SuccesStr),nb_setval(output,SuccesStr).
 getPlan([N,count], Plan) :- Plan=[],list_string([N],LStr),string_concat('There is/are . . . ',LStr,SuccesStr1),string_concat(SuccesStr1,' Object(s).',SuccesStr2),nb_setval(output,SuccesStr2).
