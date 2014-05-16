@@ -1193,7 +1193,7 @@ Objects = json([
 	l=json([form=box,size=large,color=red]),
 	m=json([form=box,size=small,color=blue])
 	]),
-Utterance = [what, is, right, of, stack, 1],
+Utterance = [what, is, right, of, stack, 0],
 parse_all(command, Utterance, Trees),write(Trees),nl,
 findall(Goal, (member(Tree, Trees),
                      interpret(Tree, World, Holding, Objects, Goal)
@@ -1411,7 +1411,7 @@ handleAmbiguity(Goals,World,Holding,Objects,Plan,Output,FinalGoal),
 write(FinalGoal),nl,write(Plan).
 
 %% What ----------------------------------------------------------------------------------------------------------------------------
-/*
+
 retrieveGoalElements(Goal, Action, Parameter) :-
 Goal = whatbeside([Parameter]),Action = whatbeside.
 
@@ -1434,8 +1434,9 @@ retrieveGoalElements(Goal, Action, Parameter) :-
 Goal = whatinside([Parameter]),Action = whatinside.
 
 retrieveGoalElements(Goal, Action, Parameter) :-
-Goal = whatontop([Parameter],floor),Action = whatontopfloor.	*/
+Goal = whatontop([Parameter],floor),Action = whatontopfloor.
 
+%What right (every stacks on the right)
 plan(_Goal, World, _, _Objects, Plan) :-
     retrieveGoalElements(_Goal, whatright, Parameter),
 	whichListInTheWorld(World,Parameter,Position),
@@ -1450,3 +1451,69 @@ plan(_Goal, World, _, _Objects, Plan) :-
 		%or not
 		; Plan = [[[],what]]
 	).
+
+%What left (every stacks on the left)
+plan(_Goal, World, _, _Objects, Plan) :-
+    retrieveGoalElements(_Goal, whatleft, Parameter),
+	whichListInTheWorld(World,Parameter,Position),
+	length(World, LengthWorld),LengthLeft is Position - 1,
+	%stack picked is within bounds
+	((LengthLeft >= 0,LengthLeft < LengthWorld )->
+		%World is split into 2 parts : Left with the left until the stack, RightStacks with everything we want to examine.
+		length(Left, LengthLeft), append(Left, RightStacks, World),
+		flatten(Left,ListObjLetters),
+		maplist(getFormSizeColorText(_Objects),ListObjLetters,ObjectFormSizeColorList),
+		Plan = [[ObjectFormSizeColorList,what]]
+		%or not
+		; Plan = [[[],what]]
+	).
+
+%What beside	
+plan(_Goal, World, _, _Objects, Plan) :-
+    retrieveGoalElements(_Goal, whatbeside, Parameter),
+	whichListInTheWorld(World,Parameter,Position),
+	length(World, LengthWorld),LeftPos is Position - 1,RightPos is Position + 1,
+	%stack picked is within bounds
+	((LeftPos >= 0,RightPos < LengthWorld )->
+		%World is split into 2 parts : Rest with the left until the stack, RightStacks with everything we want to examine.
+		nth0(LeftPos,World,LeftStack),nth0(RightPos,World,RightStack),
+		flatten(LeftStack,ListObjLettersLeft),flatten(RightPos,ListObjLettersRight),
+		((ListObjLettersLeft = [],ObjectFormSizeColorListLeft = [])
+			;maplist(getFormSizeColorText(_Objects),ListObjLettersLeft,ObjectFormSizeColorListLeft)
+		),
+		((ListObjLettersRight = [],ObjectFormSizeColorListRight = [])
+			;maplist(getFormSizeColorText(_Objects),ListObjLettersRight,ObjectFormSizeColorListRight)
+		),
+		append(ObjectFormSizeColorListLeft,ObjectFormSizeColorListRight,ObjectFormSizeColorList),
+		Plan = [[ObjectFormSizeColorList,what]]
+		%or not
+		; Plan = [[[],what]]
+	).
+	
+test36 :-
+World = [[e],[l,g],[],[f,m,k],[]],
+Holding = @(null),
+Objects = json([
+	a=json([form=brick,size=large,color=green]),
+	b=json([form=brick,size=small,color=white]),
+	c=json([form=plank,size=large,color=red]),
+	d=json([form=plank,size=small,color=green]),
+	e=json([form=ball,size=large,color=white]),
+	f=json([form=ball,size=small,color=black]),
+	g=json([form=table,size=large,color=blue]),
+	h=json([form=table,size=small,color=red]),
+	i=json([form=pyramid,size=large,color=yellow]),
+	j=json([form=pyramid,size=small,color=red]),
+	k=json([form=box,size=large,color=yellow]),
+	l=json([form=box,size=large,color=red]),
+	m=json([form=box,size=small,color=blue])
+	]),
+Utterance = [what, is, beside, the, black, ball],
+parse_all(command, Utterance, Trees),write(Trees),nl,
+findall(Goal, (member(Tree, Trees),
+                     interpret(Tree, World, Holding, Objects, Goal)
+                    ), Goals),write(Goals),nl,
+Goals = [Goal],
+plan(Goal, World, Holding, Objects, PlanList),write(PlanList).
+%solve(PlanList, Plan),write(Plan),nb_getval(output,OutputStr),nl,write(OutputStr).
+	
