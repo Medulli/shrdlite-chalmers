@@ -261,9 +261,6 @@ plan(_Goal, World, _, _Objects, Plan) :-
 %tests if element is the head of the list
 checkHead([H|T],Element) :- H = Element.
 
-%tests if element is the tail of the list
-checkTail([H|T],Tail) :- T = Tail.
-
 %return the number K if X is in the Kth list of lists LL
 %findall(X,whichListInTheWorld(a,[[d,e,f],[a,b,c]],X),R).
 
