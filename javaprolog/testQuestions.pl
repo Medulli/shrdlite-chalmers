@@ -1409,3 +1409,44 @@ findall(Goal, (member(Tree, Trees),
                     ), Goals),
 handleAmbiguity(Goals,World,Holding,Objects,Plan,Output,FinalGoal),
 write(FinalGoal),nl,write(Plan).
+
+%% What ----------------------------------------------------------------------------------------------------------------------------
+/*
+retrieveGoalElements(Goal, Action, Parameter) :-
+Goal = whatbeside([Parameter]),Action = whatbeside.
+
+retrieveGoalElements(Goal, Action, Parameter) :-
+Goal = whatleft([Parameter]),Action = whatleft.
+
+retrieveGoalElements(Goal, Action, Parameter) :-
+Goal = whatright([Parameter]),Action = whatright.
+
+retrieveGoalElements(Goal, Action, Parameter) :-
+Goal = whatabove([Parameter]),Action = whatabove.
+
+retrieveGoalElements(Goal, Action, Parameter) :-
+Goal = whatontop([Parameter]),Action = whatontop.
+
+retrieveGoalElements(Goal, Action, Parameter) :-
+Goal = whatunder([Parameter]),Action = whatunder.
+
+retrieveGoalElements(Goal, Action, Parameter) :-
+Goal = whatinside([Parameter]),Action = whatinside.
+
+retrieveGoalElements(Goal, Action, Parameter) :-
+Goal = whatontop([Parameter],floor),Action = whatontopfloor.	*/
+
+plan(_Goal, World, _, _Objects, Plan) :-
+    retrieveGoalElements(_Goal, whatright, Parameter),
+	whichListInTheWorld(World,Parameter,Position),
+	length(World, LengthWorld),LengthRest is Position + 1,
+	%stack picked is within bounds
+	(LengthRest < LengthWorld ->
+		%World is split into 2 parts : Rest with the left until the stack, RightStacks with everything we want to examine.
+		length(Rest, LengthRest), append(Rest, RightStacks, World),
+		flatten(RightStacks,ListObjLetters),
+		maplist(getFormSizeColorText(_Objects),ListObjLetters,ObjectFormSizeColorList),
+		Plan = [[ObjectFormSizeColorList,what]]
+		%or not
+		; Plan = [[[],what]]
+	).
