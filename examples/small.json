@@ -17,7 +17,7 @@
         "m": { "form":"box",     "size":"small",  "color":"blue"  }
     },
     "utterance": 
-        ["take","the","white","ball"],
+        ["1"],
     "examples": [
         ["put","the","white","ball","in","a","box","on","the","floor"],
         ["put","the","black","ball","in","a","box","on","the","floor"],
@@ -25,6 +25,8 @@
         ["take","the","white","ball"],
         ["put","all","boxes","on","the","floor"],
         ["move","all","balls","inside","a","large","box"],
-	["move","the","black","ball","inside","the","red","box"]
+	["move","the","black","ball","inside","the","red","box"],
+        ["what","is","right","of","stack","1"],
+        ["where","is","white","ball"]
     ]
 }

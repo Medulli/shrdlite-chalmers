@@ -21,6 +21,10 @@ main :-
     b_setval(holding, HoldingJson),
 
     parse_all(command, Utterance, Trees),
+/*    checkHead(Utterance,N),
+    atom_number(N,X),
+    integer(X),
+    nl, write('Emeric est une petite salope'), nl,*/
     ( Trees == [] ->
       Goals = @(null),
       Plan = @(null),
