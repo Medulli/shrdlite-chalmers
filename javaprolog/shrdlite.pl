@@ -41,7 +41,7 @@ main :-
         Output = 'Interpretation error!'
       ; Goals = [take([_,_|_])] ->
         Plan = @(null),
-		Output = 'I can only hold one object!'
+		    Output = 'I can only hold one object!'
       ;
         %Goal is a list of goals i.e. "I can do this and this and this... Please specify what you want"
         Goals = [_,_|_] ->
