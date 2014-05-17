@@ -3,6 +3,62 @@
 :- [planner_tools].
 :- style_check(-singleton).
 
+plan(_Goal, World, Holding, _Objects, Plan) :-
+      retrieveGoalElements(_Goal, take, ElementPick),
+      ( Holding \== @(null) ->
+
+        Holding = ElementHold,
+        ( ElementHold == ElementPick ->
+          Plan = [-1]
+
+        ; canbeAt(ElementHold,World,_Objects,K),
+          dropAt(ElementHold,K,World,NewWorld),
+          nb_getval(listOfVisitedWorlds,Tail),
+          not(member(NewWorld,Tail)),
+          b_setval(world, NewWorld),
+          nb_setval(listOfVisitedWorlds,[NewWorld|Tail]),
+          plan(_Goal, NewWorld, @(null), _Objects, PlanAux),
+          Plan = [[-1,K,move]|PlanAux]
+        )
+
+      ; whichListInTheWorld(World,ElementPick,KPick),
+        nth0(KPick,World,LK),
+        checkHead(LK,ElementTop),
+
+        ( ElementTop == ElementPick ->
+
+          pickAt(KPick,World,NewWorld),
+          nb_setval(world, NewWorld),
+          b_setval(holding, [ElementPick]),
+          Plan = [[KPick,-1,move]]
+
+        ; ( canbeAt(ElementTop,World,_Objects,KDrop) ->
+
+            pickAt(KPick,World,WorldAux),
+            dropAt(ElementTop,KDrop,WorldAux,NewWorld),
+            nb_getval(listOfVisitedWorlds,Tail),
+            not(member(NewWorld,Tail)),
+            b_setval(world, NewWorld),
+            nb_setval(listOfVisitedWorlds,[NewWorld|Tail]),
+            plan(_Goal, NewWorld, Holding, _Objects, PlanAux),
+            Plan = [[KPick,KDrop,move]|PlanAux]
+
+          ; member(World,Stack),
+            checkHead(Stack,ElementPickAux),
+            whichListInTheWorld(World,ElementPickAux,KPickAux),
+            canbeAt(ElementPickAux,World,_Objects,KDropAux),
+            pickAt(KPickAux,World,WorldAux),
+            dropAt(ElementPickAux,KDropAux,WorldAux,NewWorld),
+            nb_getval(listOfVisitedWorlds,Tail),
+            not(member(NewWorld,Tail)),
+            b_setval(world, NewWorld),
+            nb_setval(listOfVisitedWorlds,[NewWorld|Tail]),
+            plan(_Goal, NewWorld, Holding, _Objects, PlanAux),
+            Plan = [[KPickAux,KDropAux,move]|PlanAux]
+          )
+        )
+      ).
+/*
 %Take the selected object if the arm does not hold something
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, take, Element),
@@ -27,6 +83,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, take, ElementPick),
       Holding \== @(null),
       Holding = ElementHold,
+      ElementHold \== ElementPick,
       canbeAt(ElementHold,World,_Objects,K),
       dropAt(ElementHold,K,World,NewWorld),
       b_setval(world, NewWorld),
@@ -34,6 +91,23 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       b_setval(holding, [ElementPick]),
       Plan = [[-1,K,move]|PlanAux].
 
+%Move the selected object inside the relative object in several steps if the arm does not hold something and the selected object can be on the relative object
+plan(_Goal, World, Holding, _Objects, Plan) :-
+      retrieveGoalElements(_Goal, take, Element),
+      Holding == @(null),
+      member(World,Stack),
+      checkHead(Stack,ElementPick),
+      whichListInTheWorld(World,ElementPick,KPick),
+      canbeAt(ElementPick,World,_Objects,KDrop),
+      pickAt(KPick,World,WorldAux),
+      dropAt(ElementPick,KDrop,WorldAux,NewWorld),
+      nb_getval(listOfVisitedWorlds,Tail),
+      not(member(NewWorld,Tail)),
+      b_setval(world, NewWorld),
+      nb_setval(listOfVisitedWorlds,[NewWorld|Tail]),
+      plan(_Goal, NewWorld, Holding, _Objects, PlanAux),
+      Plan = [[KPick,KDrop,move]|PlanAux].
+*/
 %Does nothing when asked to move the selected object beside the relative object in one step if it is already the case
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, movebeside, Element1, Element2),
@@ -466,22 +540,6 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       plan(_Goal, NewWorld, @(null), _Objects, PlanAux),
       Plan = [[-1,K,move]|PlanAux].
 */
-%Move the selected object inside the relative object in several steps if the arm does not hold something and the selected object can be on the relative object
-plan(_Goal, World, Holding, _Objects, Plan) :-
-      retrieveGoalElements(_Goal, take, Element),
-      Holding == @(null),
-      member(World,Stack),
-      checkHead(Stack,ElementPick),
-      whichListInTheWorld(World,ElementPick,KPick),
-      canbeAt(ElementPick,World,_Objects,KDrop),
-      pickAt(KPick,World,WorldAux),
-      dropAt(ElementPick,KDrop,WorldAux,NewWorld),
-      nb_getval(listOfVisitedWorlds,Tail),
-      not(member(NewWorld,Tail)),
-      b_setval(world, NewWorld),
-      nb_setval(listOfVisitedWorlds,[NewWorld|Tail]),
-      plan(_Goal, NewWorld, Holding, _Objects, PlanAux),
-      Plan = [[KPick,KDrop,move]|PlanAux].
 
 %Move the selected object inside the relative object in several steps if the arm does not hold something and the selected object can be on the relative object
 plan(_Goal, World, Holding, _Objects, Plan) :-
