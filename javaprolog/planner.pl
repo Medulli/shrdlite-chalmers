@@ -876,7 +876,7 @@ plan(_Goal, World, _, _Objects, Plan) :-
 	
 %What inside
 plan(_Goal, World, _, _Objects, Plan) :-
-    retrieveGoalElements(_Goal, whatabovestack, Position),
+    retrieveGoalElements(_Goal, whatinsidestacks, Position),
 	%get the whole stack
 	nth0(Position,World,Stack),
 	maplist(getFormSizeColorText(_Objects),Stack,ObjectFormSizeColorList),
@@ -976,10 +976,8 @@ plan(_Goal, World, _, _Objects, Plan) :-
     retrieveGoalElements(_Goal, countinside, Parameter1,Parameter2),
 	% list everything inside all param2
 	maplist(insideOfObjectLetter(World),Parameter2,ListObjInside),
-	%intersect to get the rightmost
-	intersectLL(ListObjInside,ListObjInsideInter),
 	%match with param1
-	intersection(ListObjInsideInter,Parameter1,Intersection),
+	intersection(ListObjInside,Parameter1,Intersection),
 	length(Intersection,Count),
 	Plan = [[Count,count]].
 
@@ -1063,8 +1061,8 @@ plan(_Goal, World, _, _Objects, Plan) :-
 	
 %count inside
 plan(_Goal, World, _, _Objects, Plan) :-
-    retrieveGoalElements(_Goal, countinsidestack, Parameter),
-	% list everything inside all param
+    retrieveGoalElements(_Goal, countinsidestacks, Parameter1,IdxList),
+	% list everything inside all IdxList
 	makeStackList(World,IdxList,StackList),
 	flatten(StackList,ListObjInside),
 	%intersect to get the rightmost
