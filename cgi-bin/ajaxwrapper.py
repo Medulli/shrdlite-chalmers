@@ -45,12 +45,6 @@ try:
     print(out)
     if err:
         raise Exception(err)
-        processtokill = subprocess.Popen(['ps', '-A'], stdout=subprocess.PIPE)
-        out, err = processtokill.communicate()
-        for line in out.splitlines():
-          if 'swipl' in line:
-            pid = int(line.split(None, 1)[0])
-            os.kill(pid, signal.SIGKILL)
 
 except:
     import sys, traceback

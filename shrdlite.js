@@ -381,7 +381,7 @@ function disableInput(timeout) {
 function systemPrompt(timeout) {
     if (timeout) {
         setTimeout(systemPrompt, 1000*timeout);
-    } else {
+   } else {
         sayUtterance("system", SystemPromptText);
         enableInput();
     }
@@ -465,6 +465,14 @@ function checkUserInput(){
 
 }
 
+function killfn(){
+  $.ajax({
+            url: "cgi-bin/killer.py",
+            type: 'GET'
+            });
+
+}
+
 function userInput() {
     /*var userinput = $("#inputexamples").val();
     if (userinput) {
@@ -514,6 +522,7 @@ function userInput() {
         try {
             result = JSON.parse(result);
         } catch(err) {
+            killfn()
             alertError("JSON error:" + err, result);
         }
         debugResult(result);
