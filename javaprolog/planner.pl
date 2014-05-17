@@ -2,7 +2,7 @@
 :- [retrievegoal].
 :- [planner_tools].
 :- style_check(-singleton).
-
+/*
 %Take the selected object if the arm does not hold something
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, take, Element),
@@ -343,22 +343,81 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       b_setval(holding, @(null)),
       plan(_Goal, NewWorld, @(null), _Objects, PlanAux),
       Plan = [[-1,K,move]|PlanAux].
-
+*/
 %Does nothing when asked to move the selected object inside the relative object in one step if it is already the case
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, moveinside, Element1, Element2),
-      getForm(Element2,_Objects,ObjectForm),
-      ObjectForm == box,
-      whichListInTheWorld(World,Element1,K1),
-      whichListInTheWorld(World,Element2,K2),
-      nth0(K1,World,LK1),
-      checkHead(LK1,Element1),
-      pickAt(K1,World,WorldAux),
-      nth0(K2,WorldAux,LK2),
-      checkHead(LK2,Element2),
-      K1 == K2,
-      Plan = [-1].
+      getForm(Element2,_Objects,box),
+      ( Holding == @(null) ->
 
+        whichListInTheWorld(World,Element1,K1),
+        whichListInTheWorld(World,Element2,K2),
+
+        ( K1 == K2 ->
+
+          nth0(K1,World,LK1),
+          checkHead(LK1,Element1),
+          pickAt(K1,World,WorldAux),
+          nth0(K2,WorldAux,LK2),
+          checkHead(LK2,Element2),
+          Plan = [-1]
+          %We probably need to handle the possibility of having the selected object above the relative object but not inside
+
+        ; nth0(K1,World,LK1),
+          nth0(K2,World,LK2),
+
+          ( checkHead(LK1,Element1) ->
+
+            ( checkHead(LK2,Element2) ->
+
+              ( canbeon(Element1,LK2,_Objects) ->
+                pickAt(K1,World,WorldAux),
+                dropAt(Element1,K2,WorldAux,NewWorld),
+                b_setval(world, NewWorld),
+                Plan = [[K1,K2,move]]
+
+              ; member(World,Stack),
+                checkHead(Stack,ElementPick),
+                whichListInTheWorld(World,ElementPick,KPick),
+                canbeAt(ElementPick,World,_Objects,KDrop),
+                pickAt(KPick,World,WorldAux),
+                dropAt(ElementPick,KDrop,WorldAux,NewWorld),
+                nb_getval(listOfVisitedWorlds,Tail),
+                not(member(NewWorld,Tail)),
+                b_setval(world, NewWorld),
+                nb_setval(listOfVisitedWorlds,[NewWorld|Tail]),
+                plan(_Goal, NewWorld, Holding, _Objects, PlanAux),
+                Plan = [[KPick,KDrop,move]|PlanAux]
+              )
+            ; member(World,Stack),
+              checkHead(Stack,ElementPick),
+              whichListInTheWorld(World,ElementPick,KPick),
+              canbeAt(ElementPick,World,_Objects,KDrop),
+              pickAt(KPick,World,WorldAux),
+              dropAt(ElementPick,KDrop,WorldAux,NewWorld),
+              nb_getval(listOfVisitedWorlds,Tail),
+              not(member(NewWorld,Tail)),
+              b_setval(world, NewWorld),
+              nb_setval(listOfVisitedWorlds,[NewWorld|Tail]),
+              plan(_Goal, NewWorld, Holding, _Objects, PlanAux),
+              Plan = [[KPick,KDrop,move]|PlanAux]
+            )
+          ; member(World,Stack),
+            checkHead(Stack,ElementPick),
+            whichListInTheWorld(World,ElementPick,KPick),
+            canbeAt(ElementPick,World,_Objects,KDrop),
+            pickAt(KPick,World,WorldAux),
+            dropAt(ElementPick,KDrop,WorldAux,NewWorld),
+            nb_getval(listOfVisitedWorlds,Tail),
+            not(member(NewWorld,Tail)),
+            b_setval(world, NewWorld),
+            nb_setval(listOfVisitedWorlds,[NewWorld|Tail]),
+            plan(_Goal, NewWorld, Holding, _Objects, PlanAux),
+            Plan = [[KPick,KDrop,move]|PlanAux]
+          )
+        )
+      ).
+/*
 %Move the selected object inside the relative object in one step if the arm does not hold something and the selected object can be on the relative object
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, moveinside, Element1, Element2),
@@ -440,7 +499,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       b_setval(world, NewWorld),
       plan(_Goal, NewWorld, Holding, _Objects, PlanAux),
       Plan = [[K2,K3,move]|PlanAux].
-/*
+
 %Move the selected object inside the relative object in several steps if the arm does not hold something and the selected object can be on the relative object
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, AnyMove, Element1, Element2),
@@ -457,7 +516,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       nb_setval(listOfVisitedWorlds,[NewWorld|Tail]),
       plan(_Goal, NewWorld, Holding, _Objects, PlanAux),
       Plan = [[KPick,KDrop,move]|PlanAux].
-*/
+
 %% Where : the list of positions (indexes) of the objects
 plan(_Goal, World, _, _, Plan) :-
       retrieveGoalElements(_Goal, where, Parameter),
@@ -559,8 +618,7 @@ plan(_Goal, World, _, _Objects, Plan) :-
 		%or not
 		; Plan = [[[],what]]
 	).
-
-	
+*/	
 %----------------------------------------------------------------- Strings management
 
 %The same than getFormSizeColor in text form
