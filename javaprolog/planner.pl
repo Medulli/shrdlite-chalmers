@@ -1058,7 +1058,22 @@ plan(_Goal, World, _, _Objects, Plan) :-
 	intersection([ObjectTop],Parameter1,Intersection),
 	length(Intersection,Count),
 	Plan = [[Count,count]].
-	
+
+%%%%%%%%--------------------------------- FOR TIME OUT
+%%%% PUT THIS VERSION THAT WORKS WHEN TESTING IS DONE
+/*
+%count inside
+plan(_Goal, World, _, _Objects, Plan) :-
+    retrieveGoalElements(_Goal, countinsidestacks, Parameter1,IdxList),
+	% list everything inside all IdxList
+	makeStackList(World,IdxList,StackList),
+	flatten(StackList,ListObjInside),
+	%match with param1
+	intersection(ListObjInside,Parameter1,Intersection),
+	length(Intersection,Count),
+	Plan = [[Count,count]].
+*/
+
 %count inside
 plan(_Goal, World, _, _Objects, Plan) :-
     retrieveGoalElements(_Goal, countinsidestacks, Parameter1,IdxList),
