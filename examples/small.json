@@ -17,7 +17,7 @@
         "m": { "form":"box",     "size":"small",  "color":"blue"  }
     },
     "utterance": 
-	["move","the","black","ball","inside","the","red","box"],
+        ["what","is","beside","the","white","ball"],
     "examples": [
         ["put","the","white","ball","in","a","box","on","the","floor"],
         ["put","the","black","ball","in","a","box","on","the","floor"],
@@ -27,6 +27,7 @@
         ["move","all","balls","inside","a","large","box"],
 	["move","the","black","ball","inside","the","red","box"],
         ["what","is","right","of","stack","1"],
-        ["where","is","white","ball"]
+        ["where","is","white","ball"],
+        ["what","is","beside","the","white","ball"]
     ]
 }
