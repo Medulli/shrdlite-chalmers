@@ -4,8 +4,6 @@
 :- [dcg_parser].
 :- [shrdlite_grammar].
 :- [interpreter].
-:- [retrievegoal].
-:- [canbeon].
 :- [solver].
 :- [planner].
 :- style_check(-singleton).
@@ -63,6 +61,7 @@ main :-
                         )
 		)
       ; Goals = [Goal],
+        nb_setval(listOfVisitedWorlds,[World]),
         plan(Goal, World, Holding, Objects, PlanList),
         ( PlanList == [-1] ->
           Plan = @(null),

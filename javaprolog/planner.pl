@@ -409,6 +409,23 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
 
 %Move the selected object inside the relative object in several steps if the arm does not hold something and the selected object can be on the relative object
 plan(_Goal, World, Holding, _Objects, Plan) :-
+      retrieveGoalElements(_Goal, take, Element),
+      Holding == @(null),
+      member(World,Stack),
+      checkHead(Stack,ElementPick),
+      whichListInTheWorld(World,ElementPick,KPick),
+      canbeAt(ElementPick,World,_Objects,KDrop),
+      pickAt(KPick,World,WorldAux),
+      dropAt(ElementPick,KDrop,WorldAux,NewWorld),
+      nb_getval(listOfVisitedWorlds,Tail),
+      not(member(NewWorld,Tail)),
+      b_setval(world, NewWorld),
+      nb_setval(listOfVisitedWorlds,[NewWorld|Tail]),
+      plan(_Goal, NewWorld, Holding, _Objects, PlanAux),
+      Plan = [[KPick,KDrop,move]|PlanAux].
+
+%Move the selected object inside the relative object in several steps if the arm does not hold something and the selected object can be on the relative object
+plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, moveinside, Element1, Element2),
       Holding == @(null),
       getForm(Element2,_Objects,ObjectForm),
@@ -423,6 +440,23 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       b_setval(world, NewWorld),
       plan(_Goal, NewWorld, Holding, _Objects, PlanAux),
       Plan = [[K2,K3,move]|PlanAux].
+
+%Move the selected object inside the relative object in several steps if the arm does not hold something and the selected object can be on the relative object
+plan(_Goal, World, Holding, _Objects, Plan) :-
+      retrieveGoalElements(_Goal, anyMove, Element1, Element2),
+      Holding == @(null),
+      member(World,Stack),
+      checkHead(Stack,ElementPick),
+      whichListInTheWorld(World,ElementPick,KPick),
+      canbeAt(ElementPick,World,_Objects,KDrop),
+      pickAt(KPick,World,WorldAux),
+      dropAt(ElementPick,KDrop,WorldAux,NewWorld),
+      nb_getval(listOfVisitedWorlds,Tail),
+      not(member(NewWorld,Tail)),
+      b_setval(world, NewWorld),
+      nb_setval(listOfVisitedWorlds,[NewWorld|Tail]),
+      plan(_Goal, NewWorld, Holding, _Objects, PlanAux),
+      Plan = [[KPick,KDrop,move]|PlanAux].
 
 %% Where : the list of positions (indexes) of the objects
 plan(_Goal, World, _, _, Plan) :-
