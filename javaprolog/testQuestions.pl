@@ -1903,8 +1903,8 @@ retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
 Goal = countbesidestack(Parameter1,[Parameter2]),Action = countbesidestack.
 
 %% /!\ Parameter is a list of stack numbers !
-retrieveGoalElements(Goal, Action, Parameter) :-
-Goal = countinsidestacks(Parameter),Action = countinsidestacks.
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
+Goal = countinsidestacks(Parameter1, Parameter2),Action = countinsidestacks.
 
 retrieveGoalElements(Goal, Action, Parameter1) :-
 Goal = countontop([Parameter1],floor),Action = countontopfloor.
@@ -2291,5 +2291,16 @@ plan(_Goal, World, _, _Objects, Plan) :-
 	nth0(Position,World,Stack),
 	maplist(getFormSizeColorText(_Objects),Stack,ObjectFormSizeColorList),
 	Plan = [[ObjectFormSizeColorList,what]].
+	
+%count inside
+plan(_Goal, World, _, _Objects, Plan) :-
+    retrieveGoalElements(_Goal, countinsidestacks, Parameter1,IdxList),
+	% list everything inside all IdxList
+	makeStackList(World,IdxList,StackList),
+	flatten(StackList,ListObjInside),
+	%match with param1
+	intersection(ListObjInside,Parameter1,Intersection),
+	length(Intersection,Count),
+	Plan = [[Count,count]].
 	
 
