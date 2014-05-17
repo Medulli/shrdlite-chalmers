@@ -524,7 +524,7 @@ plan(_Goal, World, _, _, Plan) :-
 	Plan = [[IdxList,where]].
 	
 %% What ----------------------------------------------------------------------
-
+/* can delete if it works
 %What right (every stacks on the right)
 plan(_Goal, World, _, _Objects, Plan) :-
     retrieveGoalElements(_Goal, whatright, Parameter),
@@ -556,39 +556,7 @@ plan(_Goal, World, _, _Objects, Plan) :-
 		%or not
 		; Plan = [[[],what]]
 	).
-
-plan(_Goal, World, _, _Objects, Plan) :-
-	retrieveGoalElements(_Goal, whatbeside, Parameter),
-	whichListInTheWorld(World,Parameter,Position),
-	length(World, LengthWorld),LeftPos is Position - 1,RightPos is Position + 1,
-	%stack picked is within bounds
-	%World is split into 2 parts : Rest with the left until the stack, RightStacks with everything we want to examine.
-	(LeftPos >= 0 ->
-		nth0(LeftPos,World,LeftStack),
-		((LeftStack = [],ObjectFormSizeColorListLeft = [])
-			;flatten(LeftStack,ListObjLettersLeft),
-			maplist(getFormSizeColorText(_Objects),ListObjLettersLeft,ObjectFormSizeColorListLeft)
-		)
-		;ObjectFormSizeColorListLeft = []
-	),
-	(RightPos < LengthWorld ->
-		nth0(RightPos,World,RightStack),
-		((RightStack = [],ObjectFormSizeColorListRight = [])
-			;flatten(RightStack,ListObjLettersRight),
-			maplist(getFormSizeColorText(_Objects),ListObjLettersRight,ObjectFormSizeColorListRight)
-		)
-		;ObjectFormSizeColorListRight = []
-	),
-	(ObjectFormSizeColorListLeft =[] ->
-		Str1 = ['nothing on the left']
-		;append(ObjectFormSizeColorListLeft,[' on the left'],Str1)
-	),
-	(ObjectFormSizeColorListRight =[] ->
-		append(Str1,[' nothing on the right.'],ObjectFormSizeColorList)
-		;append(Str1,ObjectFormSizeColorListRight,Str2),append(Str2,[' on the right.'],ObjectFormSizeColorList)
-	),
-	Plan = [[ObjectFormSizeColorList,what]].
-
+	
 %What above (everything above)
 plan(_Goal, World, _, _Objects, Plan) :-
     retrieveGoalElements(_Goal, whatabove, Parameter),
@@ -641,13 +609,6 @@ plan(_Goal, World, _, _Objects, Plan) :-
 		;Plan = [[[],what]]
 	).
 	
-%What on the floor (all objects)
-plan(_Goal, World, _, _Objects, Plan) :-
-    retrieveGoalElements(_Goal, whatontopfloor),
-	getObjectsOnFloor(World,ObjectsList),
-	maplist(getFormSizeColorText(_Objects),ObjectsList,ObjectFormSizeColorList),
-	Plan = [[ObjectFormSizeColorList,what]].
-	
 %What inside (one object)
 plan(_Goal, World, _, _Objects, Plan) :-
     retrieveGoalElements(_Goal, whatinside, Parameter),
@@ -664,10 +625,122 @@ plan(_Goal, World, _, _Objects, Plan) :-
 		Plan = [[[ObjectFormSizeColor],what]]
 		;Plan = [[[],what]]
 	).
+*/
+%What right (every stacks on the right)
+plan(_Goal, World, _, _Objects, Plan) :-
+    retrieveGoalElements(_Goal, whatright, Parameter),
+	% list everything right of all param
+	maplist(rightOfObjectLetter(World),Parameter,ListObjRight),
+	%intersect to get the rightmost
+	intersectLL(ListObjRight,ListObjRightInter),
+	(ListObjRightInter = [] -> Plan = [[[],what]]
+		;maplist(getFormSizeColorText(_Objects),ListObjRightInter,ObjectFormSizeColorList),
+		Plan = [[ObjectFormSizeColorList,what]]
+	).
+
+%What left (every stacks on the left)
+plan(_Goal, World, _, _Objects, Plan) :-
+    retrieveGoalElements(_Goal, whatleft, Parameter),	
+	% list everything left of all param
+	maplist(leftOfObjectLetter(World),Parameter,ListObjLeft),
+	%intersect to get the leftmost
+	intersectLL(ListObjLeft,ListObjLeftInter),
+	(ListObjLeftInter = [] -> Plan = [[[],what]]
+		;maplist(getFormSizeColorText(_Objects),ListObjLeftInter,ObjectFormSizeColorList),
+		Plan = [[ObjectFormSizeColorList,what]]
+	).
+	
+%what beside
+plan(_Goal, World, _, _Objects, Plan) :-
+	retrieveGoalElements(_Goal, whatbeside, Parameter),
+	whichListInTheWorld(World,Parameter,Position),
+	length(World, LengthWorld),LeftPos is Position - 1,RightPos is Position + 1,
+	%stack picked is within bounds
+	%World is split into 2 parts : Rest with the left until the stack, RightStacks with everything we want to examine.
+	(LeftPos >= 0 ->
+		nth0(LeftPos,World,LeftStack),
+		((LeftStack = [],ObjectFormSizeColorListLeft = [])
+			;flatten(LeftStack,ListObjLettersLeft),
+			maplist(getFormSizeColorText(_Objects),ListObjLettersLeft,ObjectFormSizeColorListLeft)
+		)
+		;ObjectFormSizeColorListLeft = []
+	),
+	(RightPos < LengthWorld ->
+		nth0(RightPos,World,RightStack),
+		((RightStack = [],ObjectFormSizeColorListRight = [])
+			;flatten(RightStack,ListObjLettersRight),
+			maplist(getFormSizeColorText(_Objects),ListObjLettersRight,ObjectFormSizeColorListRight)
+		)
+		;ObjectFormSizeColorListRight = []
+	),
+	(ObjectFormSizeColorListLeft =[] ->
+		Str1 = ['nothing on the left']
+		;append(ObjectFormSizeColorListLeft,[' on the left'],Str1)
+	),
+	(ObjectFormSizeColorListRight =[] ->
+		append(Str1,[' nothing on the right.'],ObjectFormSizeColorList)
+		;append(Str1,ObjectFormSizeColorListRight,Str2),append(Str2,[' on the right.'],ObjectFormSizeColorList)
+	),
+	Plan = [[ObjectFormSizeColorList,what]].
+
+%What above (everything above)
+plan(_Goal, World, _, _Objects, Plan) :-
+    retrieveGoalElements(_Goal, whatabove, Parameter),	
+	% list everything above all param
+	maplist(aboveOfObjectLetter(World),Parameter,ListObjAbove),
+	%intersect to get the rightmost
+	intersectLL(ListObjAbove,ListObjAboveInter),
+	(ListObjAboveInter = [] -> Plan = [[[],what]]
+		;maplist(getFormSizeColorText(_Objects),ListObjAboveInter,ObjectFormSizeColorList),
+		Plan = [[ObjectFormSizeColorList,what]]
+	).
+	
+%What on top (one object)
+plan(_Goal, World, _, _Objects, Plan) :-
+    retrieveGoalElements(_Goal, whatontop, Parameter),
+	% list everything ontop all param2
+	maplist(ontopOfObjectLetter(World),Parameter,ListObjOntop),
+	%intersect to get the rightmost
+	intersectLL(ListObjOntop,ListObjOntopInter),
+	(ListObjOntopInter = [] -> Plan = [[[],what]]
+		;maplist(getFormSizeColorText(_Objects),ListObjOntopInter,ObjectFormSizeColorList),
+		Plan = [[ObjectFormSizeColorList,what]]
+	).
+	
+%What under (all objects)
+plan(_Goal, World, _, _Objects, Plan) :-
+    retrieveGoalElements(_Goal, whatunder, Parameter),
+	% list everything under all param
+	maplist(underOfObjectLetter(World),Parameter,ListObjUnder),
+	%intersect to get the rightmost
+	intersectLL(ListObjUnder,ListObjUnderInter),
+	(ListObjUnderInter = [] -> Plan = [[[],what]]
+		;maplist(getFormSizeColorText(_Objects),ListObjUnderInter,ObjectFormSizeColorList),
+		Plan = [[ObjectFormSizeColorList,what]]
+	).
+
+%What inside (one object)
+plan(_Goal, World, _, _Objects, Plan) :-
+    retrieveGoalElements(_Goal, whatinside, Parameter),
+	% list everything inside all param
+	maplist(insideOfObjectLetter(World),Parameter,ListObjInside),
+	%intersect to get the rightmost
+	intersectLL(ListObjInside,ListObjInsideInter),
+	(ListObjInsideInter = [] -> Plan = [[[],what]]
+		;maplist(getFormSizeColorText(_Objects),ListObjInsideInter,ObjectFormSizeColorList),
+		Plan = [[ObjectFormSizeColorList,what]]
+	).
+	
+%What on the floor (all objects)
+plan(_Goal, World, _, _Objects, Plan) :-
+    retrieveGoalElements(_Goal, whatontopfloor),
+	getObjectsOnFloor(World,ObjectsList),
+	maplist(getFormSizeColorText(_Objects),ObjectsList,ObjectFormSizeColorList),
+	Plan = [[ObjectFormSizeColorList,what]].
 	
 %% Whatrightstack : the list of characteristics (form, size, color) of the objects
 plan(_Goal, World, _, _Objects, Plan) :-
-      retrieveGoalElements(_Goal, whatrightstack, Parameter),
+    retrieveGoalElements(_Goal, whatrightstack, Parameter),
 	length(World, LengthWorld),LengthRest is Parameter + 1,
 	%stack picked is within bounds
 	(LengthRest < LengthWorld ->
@@ -750,6 +823,208 @@ plan(_Goal, World, _, _Objects, Plan) :-
 	nth0(Position,World,Stack),
 	maplist(getFormSizeColorText(_Objects),Stack,ObjectFormSizeColorList),
 	Plan = [[ObjectFormSizeColorList,what]].
+	
+%% Count ----------------------------------------------------------------------
+
+%Count right (every stacks on the right)
+plan(_Goal, World, _, _Objects, Plan) :-
+    retrieveGoalElements(_Goal, countright, Parameter1,Parameter2),
+	% list everything left of all param2
+	maplist(rightOfObjectLetter(World),Parameter2,ListObjRight),
+	%intersect to get the rightmost
+	intersectLL(ListObjRight,ListObjRightInter),
+	%match with param1
+	intersection(ListObjRightInter,Parameter1,Intersection),
+	length(Intersection,Count),
+	Plan = [[Count,count]].
+	
+%Count left (every stacks on the left)
+plan(_Goal, World, _, _Objects, Plan) :-
+    retrieveGoalElements(_Goal, countleft, Parameter1,Parameter2),
+	% list everything left of all param2
+	maplist(leftOfObjectLetter(World),Parameter2,ListObjLeft),
+	%intersect to get the leftmost
+	intersectLL(ListObjLeft,ListObjLeftInter),
+	%match with param1
+	intersection(ListObjLeftInter,Parameter1,Intersection),
+	length(Intersection,Count),
+	Plan = [[Count,count]].
+	
+%Count beside
+plan(_Goal, World, _, _Objects, Plan) :-
+    retrieveGoalElements(_Goal, countbeside, Parameter1,Parameter2),	
+	whichListInTheWorld(World,Parameter2,Position),
+	length(World, LengthWorld),LeftPos is Position - 1,RightPos is Position + 1,
+	%stack picked is within bounds
+	%World is split into 2 parts : Rest with the left until the stack, RightStacks with everything we want to examine.
+	(LeftPos >= 0 ->
+		nth0(LeftPos,World,LeftStack),
+		((LeftStack = [],MatchingObjLeft = [])
+			;flatten(LeftStack,ListObjLettersLeft),
+			intersection(Parameter1,ListObjLettersLeft,MatchingObjLeft)
+		)
+		;MatchingObjLeft = []
+	),
+	(RightPos < LengthWorld ->
+		nth0(RightPos,World,RightStack),
+		((RightStack = [],MatchingObjRight = [])
+			;flatten(RightStack,ListObjLettersRight),
+			intersection(Parameter1,ListObjLettersRight,MatchingObjRight)
+		)
+		;MatchingObjRight = []
+	),
+	length(MatchingObjLeft,CountLeft),length(MatchingObjRight,CountRight),
+	append([CountLeft],['object(s) on the left'],Str1),append(Str1,[CountRight],Str2),append(Str2,['object(s) on the right.'],Count),
+	Plan = [[Count,countbeside]].
+	
+%count above
+plan(_Goal, World, _, _Objects, Plan) :-
+    retrieveGoalElements(_Goal, countabove, Parameter1,Parameter2),
+	% list everything above all param2
+	maplist(aboveOfObjectLetter(World),Parameter2,ListObjAbove),
+	%intersect to get the rightmost
+	intersectLL(ListObjAbove,ListObjAboveInter),
+	%match with param1
+	intersection(ListObjAboveInter,Parameter1,Intersection),
+	length(Intersection,Count),
+	Plan = [[Count,count]].
+	
+%count under
+plan(_Goal, World, _, _Objects, Plan) :-
+    retrieveGoalElements(_Goal, countunder, Parameter1,Parameter2),
+	% list everything under all param2
+	maplist(underOfObjectLetter(World),Parameter2,ListObjUnder),
+	%intersect to get the rightmost
+	intersectLL(ListObjUnder,ListObjUnderInter),
+	%match with param1
+	intersection(ListObjUnderInter,Parameter1,Intersection),
+	length(Intersection,Count),
+	Plan = [[Count,count]].
+	
+%count ontop
+plan(_Goal, World, _, _Objects, Plan) :-
+    retrieveGoalElements(_Goal, countontop, Parameter1,Parameter2),
+	% list everything ontop all param2
+	maplist(ontopOfObjectLetter(World),Parameter2,ListObjOntop),
+	%intersect to get the rightmost
+	intersectLL(ListObjOntop,ListObjOntopInter),
+	%match with param1
+	intersection(ListObjOntopInter,Parameter1,Intersection),
+	length(Intersection,Count),
+	Plan = [[Count,count]].
+	
+%count inside
+plan(_Goal, World, _, _Objects, Plan) :-
+    retrieveGoalElements(_Goal, countinside, Parameter1,Parameter2),
+	% list everything inside all param2
+	maplist(insideOfObjectLetter(World),Parameter2,ListObjInside),
+	%intersect to get the rightmost
+	intersectLL(ListObjInside,ListObjInsideInter),
+	%match with param1
+	intersection(ListObjInsideInter,Parameter1,Intersection),
+	length(Intersection,Count),
+	Plan = [[Count,count]].
+
+%Count right (every stacks on the right)
+plan(_Goal, World, _, _Objects, Plan) :-
+    retrieveGoalElements(_Goal, countrightstack, Parameter1,Parameter2),	
+	length(World, LengthWorld),LengthRest is Parameter2 + 1,
+	%stack picked is within bounds
+	(LengthRest < LengthWorld ->
+		%World is split into 2 parts : Rest with the left until the stack, RightStacks with everything we want to examine.
+		length(Rest, LengthRest), append(Rest, RightStacks, World),
+		flatten(RightStacks,ListObjLetters),
+		intersection(ListObjLetters,Parameter1,Intersection),
+		length(Intersection,Count)
+	; Count = 0
+	),
+	Plan = [[Count,count]].
+	
+%Count left (every stacks on the right)
+plan(_Goal, World, _, _Objects, Plan) :-
+    retrieveGoalElements(_Goal, countleftstack, Parameter1,Parameter2),
+	length(World, LengthWorld),
+	%stack picked is within bounds
+	((Parameter2 >= 0,Parameter2 < LengthWorld )->
+		%World is split into 2 parts : Left with the left until the stack, RightStacks with everything we want to examine.
+		length(Left, Parameter2), append(Left, RightStacks, World),
+		flatten(Left,ListObjLetters),
+		intersection(ListObjLetters,Parameter1,Intersection),
+		length(Intersection,Count)
+		%or not
+		;Count = 0
+	),
+	Plan = [[Count,count]].
+	
+%Count beside
+plan(_Goal, World, _, _Objects, Plan) :-
+    retrieveGoalElements(_Goal, countbesidestack, Parameter1,Position),
+	length(World, LengthWorld),LeftPos is Position - 1,RightPos is Position + 1,
+	%stack picked is within bounds
+	%World is split into 2 parts : Rest with the left until the stack, RightStacks with everything we want to examine.
+	(LeftPos >= 0 ->
+		nth0(LeftPos,World,LeftStack),
+		((LeftStack = [],MatchingObjLeft = [])
+			;flatten(LeftStack,ListObjLettersLeft),
+			intersection(Parameter1,ListObjLettersLeft,MatchingObjLeft)
+		)
+		;MatchingObjLeft = []
+	),
+	(RightPos < LengthWorld ->
+		nth0(RightPos,World,RightStack),
+		((RightStack = [],MatchingObjRight = [])
+			;flatten(RightStack,ListObjLettersRight),
+			intersection(Parameter1,ListObjLettersRight,MatchingObjRight)
+		)
+		;MatchingObjRight = []
+	),
+	length(MatchingObjLeft,CountLeft),length(MatchingObjRight,CountRight),
+	append([CountLeft],['object(s) on the left'],Str1),append(Str1,[CountRight],Str2),append(Str2,['object(s) on the right.'],Count),
+	Plan = [[Count,countbeside]].
+	
+%count above
+plan(_Goal, World, _, _Objects, Plan) :-
+    retrieveGoalElements(_Goal, countabovestack, Parameter1,Position),
+	% list everything above all param2
+	nth0(Position,World,Stack),
+	%match with param1
+	intersection(Stack,Parameter1,Intersection),
+	length(Intersection,Count),
+	Plan = [[Count,count]].
+	
+%count ontop
+plan(_Goal, World, _, _Objects, Plan) :-
+    retrieveGoalElements(_Goal, countontopstack, Parameter1,Position),
+	% list everything ontop all param2	
+	nth0(Position,World,Stack),
+	nth0(0, Stack, ObjectTop),
+	%match with param1
+	intersection([ObjectTop],Parameter1,Intersection),
+	length(Intersection,Count),
+	Plan = [[Count,count]].
+	
+%count inside
+plan(_Goal, World, _, _Objects, Plan) :-
+    retrieveGoalElements(_Goal, countinsidestack, Parameter),
+	% list everything inside all param
+	makeStackList(World,IdxList,StackList),
+	flatten(StackList,ListObjInside),
+	%intersect to get the rightmost
+	intersectLL(ListObjInside,ListObjInsideInter),
+	%match with param1
+	intersection(ListObjInsideInter,Parameter1,Intersection),
+	length(Intersection,Count),
+	Plan = [[Count,count]].
+	
+%count ontop floor
+plan(_Goal, World, _, _Objects, Plan) :-
+    retrieveGoalElements(_Goal, countontopfloor, Parameter),
+	% list everything ontop floor
+	getObjectsOnFloor(World,ObjectsList),	
+	%match with param1
+	intersection(ObjectsList,Parameter,Intersection),
+	length(Intersection,Count),
+	Plan = [[Count,count]].
 
 %----------------------------------------------------------------- Strings management
 
@@ -771,4 +1046,93 @@ getObjectsOnFloorAux(L,Object) :- is_list(L),(L = [] ->
 	nth0(Pos,L,Object)
 ).
 getObjectsOnFloor(World,ObjectsList) :- maplist(getObjectsOnFloorAux,World,MatchingObjectsList),flatten(MatchingObjectsList,ObjectsList).
+
+intersectLL([X],X).	
+intersectLL([L1,L2],Intersection) :- is_list(L1),is_list(L2),intersection(L1,L2,Intersection).
+intersectLL([L1,L2|R],Intersection) :- intersectLL([L1,L2],L3),intersectLL([L3|R],Intersection).
+
+makeStackListAux(World,Idx,Stack) :- nth0(Idx,World,Stack);Stack = [].
+makeStackList(World,IdxList,StackList) :- maplist(makeStackListAux(World),IdxList,StackList).
+
+matchObjectOnStack(Stack,Object,MatchObject) :- (member(Object,Stack),MatchObject = [Object]);MatchObject = [].
+matchObjectsListOnStack(ObjectsList,Stack,MatchingObjects) :- maplist(matchObjectOnStack(Stack),ObjectsList,MatchingObjectsList),flatten(MatchingObjectsList,MatchingObjects).
+matchObjectsListOnStackList(ObjectsList,StackList,MatchingObjects) :- maplist(matchObjectsListOnStack(ObjectsList),StackList,MatchingObjectsList),flatten(MatchingObjectsList,MatchingObjects).
+
+rightOfObjectLetter(World,ObjectLetter,ListObjLetters) :-
+	whichListInTheWorld(World,ObjectLetter,Position),
+	length(World, LengthWorld),LengthRest is Position + 1,
+	%stack picked is within bounds
+	(LengthRest < LengthWorld ->
+		%World is split into 2 parts : Rest with the left until the stack, RightStacks with everything we want to examine.
+		length(Rest, LengthRest), append(Rest, RightStacks, World),
+		flatten(RightStacks,ListObjLetters)
+		%or not
+		;ListObjLetters = []
+	).
 	
+leftOfObjectLetter(World,ObjectLetter,ListObjLetters) :-
+	whichListInTheWorld(World,ObjectLetter,Position),
+	length(World, LengthWorld),
+	%stack picked is within bounds
+	((Position >= 0,Position < LengthWorld )->
+		%World is split into 2 parts : Left with the left until the stack, RightStacks with everything we want to examine.
+		length(Left, Position), append(Left, RightStacks, World),
+		flatten(Left,ListObjLetters)
+		%or not
+		;ListObjLetters = []
+	).
+
+aboveOfObjectLetter(World,ObjectLetter,ListObjLetters) :-
+	whichListInTheWorld(World,ObjectLetter,Position),	
+	%get the whole stack
+	nth0(Position,World,Stack),
+	%get position of the object in the stack
+	nth0(StackPosition, Stack, ObjectLetter),
+	%get the list of objects
+	(StackPosition > 0 ->
+		length(ListObjLetters, StackPosition), append(ListObjLetters, RightStack, Stack)
+		;ListObjLetters = []
+	).
+	
+ontopOfObjectLetter(World,ObjectLetter,ListObjLetters) :-
+	whichListInTheWorld(World,ObjectLetter,Position),	
+	%get the whole stack
+	nth0(Position,World,Stack),
+	%get position of the object in the stack
+	nth0(StackPosition, Stack, ObjectLetter),
+	%get the list of objects
+	(StackPosition > 0 ->
+		ObjectTopPosition is StackPosition - 1,
+		nth0(ObjectTopPosition, Stack, ObjectTop),
+		ListObjLetters = [ObjectTop]
+		;ListObjLetters = []
+	).
+	
+underOfObjectLetter(World,ObjectLetter,ListObjLetters) :-
+	whichListInTheWorld(World,ObjectLetter,Position),	
+	%get the whole stack
+	nth0(Position,World,Stack),
+	%get position of the object in the stack
+	nth0(StackPosition, Stack, ObjectLetter),
+	%get index
+	length(Stack,LengthStack),
+	LeftStackLength is StackPosition + 1,
+	%get the list of objects
+	(LeftStackLength < LengthStack ->
+		length(LeftStack, LeftStackLength), append(LeftStack, ListObjLetters, Stack)
+		;ListObjLetters = []
+	).
+	
+insideOfObjectLetter(World,ObjectLetter,ListObjLetters) :-
+	whichListInTheWorld(World,ObjectLetter,Position),	
+	%get the whole stack
+	nth0(Position,World,Stack),
+	%get position of the object in the stack
+	nth0(StackPosition, Stack, ObjectLetter),
+	%get the list of objects
+	(StackPosition > 0 ->
+		ObjectTopPosition is StackPosition - 1,
+		nth0(ObjectTopPosition, Stack, ObjectTop),
+		ListObjLetters = [ObjectTop]
+		;ListObjLetters = []
+	).

@@ -43,47 +43,47 @@ Goal = movebesidestack([Parameter1],[Parameter2]),Action = movebesidestack.
 
 %%Count ---------------------------------------------------------------------------------------------------
 retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-Goal = countbeside([Parameter1],[Parameter2]),Action = countbeside.
+Goal = countbeside(Parameter1,[Parameter2]),Action = countbeside.
 
 retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-Goal = countleft([Parameter1],[Parameter2]),Action = countleft.
+Goal = countleft(Parameter1,Parameter2),Action = countleft.
 
 retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-Goal = countright([Parameter1],[Parameter2]),Action = countright.
+Goal = countright(Parameter1,Parameter2),Action = countright.
 
 retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-Goal = countabove([Parameter1],[Parameter2]),Action = countabove.
+Goal = countabove(Parameter1,Parameter2),Action = countabove.
 
 retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-Goal = countontop([Parameter1],[Parameter2]),Action = countontop.
+Goal = countontop(Parameter1,Parameter2),Action = countontop.
 
 retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-Goal = countunder([Parameter1],[Parameter2]),Action = countunder.
+Goal = countunder(Parameter1,Parameter2),Action = countunder.
 
 retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-Goal = countinside([Parameter1],[Parameter2]),Action = countinside.
+Goal = countinside(Parameter1,Parameter2),Action = countinside.
 
 retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-Goal = countleftstack([Parameter1],[Parameter2]),Action = countleftstack.
+Goal = countleftstack(Parameter1,[Parameter2]),Action = countleftstack.
 
 retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-Goal = countrightstack([Parameter1],[Parameter2]),Action = countrightstack.
+Goal = countrightstack(Parameter1,[Parameter2]),Action = countrightstack.
 
 retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-Goal = countabovestack([Parameter1],[Parameter2]),Action = countabovestack.
+Goal = countabovestack(Parameter1,[Parameter2]),Action = countabovestack.
 
 retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-Goal = countontopstack([Parameter1],[Parameter2]),Action = countontopstack.
+Goal = countontopstack(Parameter1,[Parameter2]),Action = countontopstack.
 
 retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-Goal = countbesidestack([Parameter1],[Parameter2]),Action = countbesidestack.
+Goal = countbesidestack(Parameter1,[Parameter2]),Action = countbesidestack.
 
 %% /!\ Parameter is a list of stack numbers !
 retrieveGoalElements(Goal, Action, Parameter) :-
 Goal = countinsidestacks(Parameter),Action = countinsidestacks.
 
-retrieveGoalElements(Goal, Action, Parameter1) :-
-Goal = countontop([Parameter1],floor),Action = countontopfloor.
+retrieveGoalElements(Goal, Action, Parameter) :-
+Goal = countontop(Parameter,floor),Action = countontopfloor.
 
 %%here to get rid of warnings
 retrieveGoalElements(Goal, Action, Parameter1) :-
@@ -94,31 +94,31 @@ retrieveGoalElements(Goal, Action, Parameter) :-
         Goal = take([Parameter]),Action = take.
 
 %%Where ---------------------------------------------------------------------------------------------------
-%done
+
 retrieveGoalElements(Goal, Action, Parameter) :-
-        Goal = where([Parameter]),Action = where.
+        Goal = where(Parameter),Action = where.
 
 %%What ---------------------------------------------------------------------------------------------------	
 retrieveGoalElements(Goal, Action, Parameter) :-
 Goal = whatbeside([Parameter]),Action = whatbeside.
 
 retrieveGoalElements(Goal, Action, Parameter) :-
-Goal = whatleft([Parameter]),Action = whatleft.
+Goal = whatleft(Parameter),Action = whatleft.
 
 retrieveGoalElements(Goal, Action, Parameter) :-
-Goal = whatright([Parameter]),Action = whatright.
+Goal = whatright(Parameter),Action = whatright.
 
 retrieveGoalElements(Goal, Action, Parameter) :-
-Goal = whatabove([Parameter]),Action = whatabove.
+Goal = whatabove(Parameter),Action = whatabove.
 
 retrieveGoalElements(Goal, Action, Parameter) :-
-Goal = whatontop([Parameter]),Action = whatontop.
+Goal = whatontop(Parameter),Action = whatontop.
 
 retrieveGoalElements(Goal, Action, Parameter) :-
-Goal = whatunder([Parameter]),Action = whatunder.
+Goal = whatunder(Parameter),Action = whatunder.
 
 retrieveGoalElements(Goal, Action, Parameter) :-
-Goal = whatinside([Parameter]),Action = whatinside.
+Goal = whatinside(Parameter),Action = whatinside.
 
 retrieveGoalElements(Goal, Action) :-
 Goal = whatontop(floor),Action = whatontopfloor.
@@ -129,8 +129,7 @@ Goal = whatinsidestacks(Parameter),Action = whatinsidestacks.
 
 retrieveGoalElements(Goal, Action, Parameter) :-
 Goal = whatleftstack([Parameter]),Action = whatleftstack.
-
-%done	
+	
 retrieveGoalElements(Goal, Action, Parameter) :-
 Goal = whatrightstack([Parameter]),Action = whatrightstack.
 
