@@ -80,7 +80,7 @@ Goal = countbesidestack(Parameter1,[Parameter2]),Action = countbesidestack.
 
 %% /!\ Parameter is a list of stack numbers !
 retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-Goal = countinsidestacks(Parameter, Parameter2),Action = countinsidestacks.
+Goal = countinsidestacks(Parameter1, Parameter2),Action = countinsidestacks.
 
 retrieveGoalElements(Goal, Action, Parameter) :-
 Goal = countontop(Parameter,floor),Action = countontopfloor.
