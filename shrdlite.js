@@ -84,12 +84,8 @@ $(function() {
         userInput();
         return false;
     });
-    $('#preciseform').submit(function(){
-        userInputPrecision();
-        return false;
-    });
     $('#userinputprecision').on('webkitspeechchange',function(){
-        userInputPrecision();
+        userInput();
         return false;
     })
     $('#userinput').on('webkitspeechchange', function() {
@@ -437,8 +433,34 @@ function getAction(item) {
 function splitAction(action) {
 }
 
+function checkUserInput(){
+
+    var userinput = "No input"
+    var inputexamples = $("#inputexamples");
+    var inputquery = $("#userinput");
+    var inputprecision = $("#userinputprecision");
+    if(inputquery.val() != '' ){
+      userinput=inputquery.val().trim();
+      console.log(userinput);
+    }
+
+    if(inputprecision.val() != ''){
+      userinput=inputprecision.val();
+      console.log(userinput);
+    }
+
+    if(inputexamples.val() != ''){
+      userinput=inputexamples.val()
+      console.log(userinput);
+    }
+
+    return userinput;
+
+
+}
+
 function userInput() {
-    var userinput = $("#inputexamples").val();
+    /*var userinput = $("#inputexamples").val();
     if (userinput) {
         $("#userinput").val(userinput.trim());
         enableInput();
@@ -449,10 +471,21 @@ function userInput() {
         enableInput();
         return;
     }
+    userinput = $("#userinputprecision").val().trim();
+    if (!userinput) {
+        enableInput();
+        return;
+    }*/
+
+   var userinput = checkUserInput();
+    if(!userinput){
+      enableInput();
+      return;
+    }
+    sayUtterance("user", userinput);
+
     var program = $('#program').val();
     disableInput();
-
-    sayUtterance("user", userinput);
 
     var ajaxdata = {'world': currentWorld.world,
                     'objects': currentWorld.objects,
@@ -513,51 +546,6 @@ function sayUtterance(participant, utterance, silent) {
         }
     }
 }
-
-function userInputPrecision() {
-    var userinput = $("#userinputprecision").val().trim();
-    if (!userinput) {
-        enableInputPrecision();
-        return;
-    }
-    var program = $('#program').val();
-    disableInput();
-
-    sayUtterance("user", userinput);
-
-    var ajaxdata = {'world': currentWorld.world,
-                    'objects': currentWorld.objects,
-                    'holding': currentWorld.holding,
-                    'state': currentWorld.state,
-                    'utterance': userinput.split(/\s+/)
-                   };
-
-    $.ajax({
-        url: AjaxScript,
-        type: 'POST',
-        dataType: "text",
-        cache: false,
-        timeout: 1000 * AjaxTimeout,
-        data: {'data': JSON.stringify(ajaxdata), 'program': program }
-    }).fail(function(jqxhr, status, error) {
-        alertError("Internal error: " + status, error);
-        systemPrompt();
-    }).done(function(result) {
-        try {
-            result = JSON.parse(result);
-        } catch(err) {
-            alertError("JSON error:" + err, result);
-        }
-        debugResult(result);
-        sayUtterance("system", result.output);
-        if (result.state) {
-            currentWorld.state = result.state;
-        }
-        currentPlan = result.plan;
-        performPlan();
-    });
-}
-
 
 function debugWorld() {
     $("#debugworld").html("<table><tr><td>&nbsp;" + currentWorld.world.join("&nbsp;<td>&nbsp;") + "&nbsp;</tr></table>");
