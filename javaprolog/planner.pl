@@ -485,11 +485,11 @@ plan(_Goal, World, _, _Objects, Plan) :-
 plan(_Goal, World, _, _Objects, Plan) :-
     retrieveGoalElements(_Goal, whatleft, Parameter),
 	whichListInTheWorld(World,Parameter,Position),
-	length(World, LengthWorld),LengthLeft is Position - 1,
+	length(World, LengthWorld),
 	%stack picked is within bounds
-	((LengthLeft >= 0,LengthLeft < LengthWorld )->
+	((Position >= 0,Position < LengthWorld )->
 		%World is split into 2 parts : Left with the left until the stack, RightStacks with everything we want to examine.
-		length(Left, LengthLeft), append(Left, RightStacks, World),
+		length(Left, Position), append(Left, RightStacks, World),
 		flatten(Left,ListObjLetters),
 		maplist(getFormSizeColorText(_Objects),ListObjLetters,ObjectFormSizeColorList),
 		Plan = [[ObjectFormSizeColorList,what]]
@@ -504,7 +504,7 @@ plan(_Goal, World, _, _Objects, Plan) :-
 	%stack picked is within bounds
 	%World is split into 2 parts : Rest with the left until the stack, RightStacks with everything we want to examine.
 	(LeftPos >= 0 ->
-		nth0(LeftPos,World,LeftStack),write(LeftStack),
+		nth0(LeftPos,World,LeftStack),
 		((LeftStack = [],ObjectFormSizeColorListLeft = [])
 			;flatten(LeftStack,ListObjLettersLeft),
 			maplist(getFormSizeColorText(_Objects),ListObjLettersLeft,ObjectFormSizeColorListLeft)
@@ -529,6 +529,22 @@ plan(_Goal, World, _, _Objects, Plan) :-
 	),
 	Plan = [[ObjectFormSizeColorList,what]].
 
+%What above (everything above)
+plan(_Goal, World, _, _Objects, Plan) :-
+    retrieveGoalElements(_Goal, whatabove, Parameter),
+	whichListInTheWorld(World,Parameter,Position),
+	%get the whole stack
+	nth0(Position,World,Stack),
+	%get position of the object in the stack
+	nth0(StackPosition, Stack, Parameter),
+	%get the list of objects
+	(StackPosition >= 0 ->
+		length(LeftStack, StackPosition), append(LeftStack, RightStack, Stack),
+		maplist(getFormSizeColorText(_Objects),LeftStack,ObjectFormSizeColorList),
+		Plan = [[ObjectFormSizeColorList,what]]
+		;Plan = [[[],what]]
+	).
+	
 %% Whatrightstack : the list of characteristics (form, size, color) of the objects
 plan(_Goal, World, _, _Objects, Plan) :-
       retrieveGoalElements(_Goal, whatrightstack, Parameter),

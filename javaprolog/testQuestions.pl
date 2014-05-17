@@ -1454,11 +1454,11 @@ plan(_Goal, World, _, _Objects, Plan) :-
 plan(_Goal, World, _, _Objects, Plan) :-
     retrieveGoalElements(_Goal, whatleft, Parameter),
 	whichListInTheWorld(World,Parameter,Position),
-	length(World, LengthWorld),LengthLeft is Position - 1,
+	length(World, LengthWorld),
 	%stack picked is within bounds
-	((LengthLeft >= 0,LengthLeft < LengthWorld )->
+	((Position >= 0,Position < LengthWorld )->
 		%World is split into 2 parts : Left with the left until the stack, RightStacks with everything we want to examine.
-		length(Left, LengthLeft), append(Left, RightStacks, World),
+		length(Left, Position), append(Left, RightStacks, World),
 		flatten(Left,ListObjLetters),
 		maplist(getFormSizeColorText(_Objects),ListObjLetters,ObjectFormSizeColorList),
 		Plan = [[ObjectFormSizeColorList,what]]
@@ -1518,6 +1518,76 @@ Objects = json([
 	m=json([form=box,size=small,color=blue])
 	]),
 Utterance = [what, is, beside, the, red, box],
+parse_all(command, Utterance, Trees),write(Trees),nl,
+findall(Goal, (member(Tree, Trees),
+                     interpret(Tree, World, Holding, Objects, Goal)
+                    ), Goals),write(Goals),nl,
+Goals = [Goal],
+plan(Goal, World, Holding, Objects, PlanList),nl,write(PlanList),nl,
+solve(PlanList, Plan),write(Plan),nb_getval(output,OutputStr),nl,write(OutputStr).
+
+%What above (everything above)
+plan(_Goal, World, _, _Objects, Plan) :-
+    retrieveGoalElements(_Goal, whatabove, Parameter),
+	whichListInTheWorld(World,Parameter,Position),
+	%get the whole stack
+	nth0(Position,World,Stack),
+	%get position of the object in the stack
+	nth0(StackPosition, Stack, Parameter),
+	%get the list of objects
+	(StackPosition >= 0 ->
+		length(LeftStack, StackPosition), append(LeftStack, RightStack, Stack),
+		maplist(getFormSizeColorText(_Objects),LeftStack,ObjectFormSizeColorList),
+		Plan = [[ObjectFormSizeColorList,what]]
+		;Plan = [[[],what]]
+	).
+
+test37 :-
+World = [[a],[l,g],[e],[f,m,k],[]],
+Holding = @(null),
+Objects = json([
+	a=json([form=brick,size=large,color=green]),
+	b=json([form=brick,size=small,color=white]),
+	c=json([form=plank,size=large,color=red]),
+	d=json([form=plank,size=small,color=green]),
+	e=json([form=ball,size=large,color=white]),
+	f=json([form=ball,size=small,color=black]),
+	g=json([form=table,size=large,color=blue]),
+	h=json([form=table,size=small,color=red]),
+	i=json([form=pyramid,size=large,color=yellow]),
+	j=json([form=pyramid,size=small,color=red]),
+	k=json([form=box,size=large,color=yellow]),
+	l=json([form=box,size=large,color=red]),
+	m=json([form=box,size=small,color=blue])
+	]),
+Utterance = [what, is, above, the, red, box],
+parse_all(command, Utterance, Trees),write(Trees),nl,
+findall(Goal, (member(Tree, Trees),
+                     interpret(Tree, World, Holding, Objects, Goal)
+                    ), Goals),write(Goals),nl,
+Goals = [Goal],
+plan(Goal, World, Holding, Objects, PlanList),nl,write(PlanList),nl,
+solve(PlanList, Plan),write(Plan),nb_getval(output,OutputStr),nl,write(OutputStr).
+
+test38 :-
+World = [[a],[l,g],[e],[f,m,k],[]],
+Holding = @(null),
+Objects = json([
+	a=json([form=brick,size=large,color=green]),
+	b=json([form=brick,size=small,color=white]),
+	c=json([form=plank,size=large,color=red]),
+	d=json([form=plank,size=small,color=green]),
+	e=json([form=ball,size=large,color=white]),
+	f=json([form=ball,size=small,color=black]),
+	g=json([form=table,size=large,color=blue]),
+	h=json([form=table,size=small,color=red]),
+	i=json([form=pyramid,size=large,color=yellow]),
+	j=json([form=pyramid,size=small,color=red]),
+	k=json([form=box,size=large,color=yellow]),
+	l=json([form=box,size=large,color=red]),
+	m=json([form=box,size=small,color=blue])
+	]),
+Utterance = [what, is, left, of, the, red, box],
 parse_all(command, Utterance, Trees),write(Trees),nl,
 findall(Goal, (member(Tree, Trees),
                      interpret(Tree, World, Holding, Objects, Goal)
