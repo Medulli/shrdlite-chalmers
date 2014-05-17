@@ -519,9 +519,10 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
 */
 %% Where : the list of positions (indexes) of the objects
 plan(_Goal, World, _, _, Plan) :-
-      retrieveGoalElements(_Goal, where, Parameter),
-      maplist(whichListInTheWorld(World),Parameter,IdxList),
-      Plan = [[IdxList,where]].	
+	retrieveGoalElements(_Goal, where, Parameter),
+	maplist(whichListInTheWorld(World),Parameter,IdxList),
+	Plan = [[IdxList,where]].
+	
 %% What ----------------------------------------------------------------------
 
 %What right (every stacks on the right)
@@ -678,6 +679,77 @@ plan(_Goal, World, _, _Objects, Plan) :-
 		%or not
 		; Plan = [[[],what]]
 	).
+	
+%% whatleftstack : the list of characteristics (form, size, color) of the objects
+plan(_Goal, World, _, _Objects, Plan) :-
+    retrieveGoalElements(_Goal, whatleftstack, Position),
+	length(World, LengthWorld),
+	%stack picked is within bounds
+	((Position >= 0,Position < LengthWorld )->
+		%World is split into 2 parts : Left with the left until the stack, RightStacks with everything we want to examine.
+		length(Left, Position), append(Left, RightStacks, World),
+		flatten(Left,ListObjLetters),
+		maplist(getFormSizeColorText(_Objects),ListObjLetters,ObjectFormSizeColorList),
+		Plan = [[ObjectFormSizeColorList,what]]
+		%or not
+		; Plan = [[[],what]]
+	).
+	
+plan(_Goal, World, _, _Objects, Plan) :-
+	retrieveGoalElements(_Goal, whatbesidestack, Position),
+	length(World, LengthWorld),LeftPos is Position - 1,RightPos is Position + 1,
+	%stack picked is within bounds
+	%World is split into 2 parts : Rest with the left until the stack, RightStacks with everything we want to examine.
+	(LeftPos >= 0 ->
+		nth0(LeftPos,World,LeftStack),
+		((LeftStack = [],ObjectFormSizeColorListLeft = [])
+			;flatten(LeftStack,ListObjLettersLeft),
+			maplist(getFormSizeColorText(_Objects),ListObjLettersLeft,ObjectFormSizeColorListLeft)
+		)
+		;ObjectFormSizeColorListLeft = []
+	),
+	(RightPos < LengthWorld ->
+		nth0(RightPos,World,RightStack),
+		((RightStack = [],ObjectFormSizeColorListRight = [])
+			;flatten(RightStack,ListObjLettersRight),
+			maplist(getFormSizeColorText(_Objects),ListObjLettersRight,ObjectFormSizeColorListRight)
+		)
+		;ObjectFormSizeColorListRight = []
+	),
+	(ObjectFormSizeColorListLeft =[] ->
+		Str1 = ['nothing on the left']
+		;append(ObjectFormSizeColorListLeft,[' on the left'],Str1)
+	),
+	(ObjectFormSizeColorListRight =[] ->
+		append(Str1,[' nothing on the right.'],ObjectFormSizeColorList)
+		;append(Str1,ObjectFormSizeColorListRight,Str2),append(Str2,[' on the right.'],ObjectFormSizeColorList)
+	),
+	Plan = [[ObjectFormSizeColorList,what]].
+
+%What above (everything above)
+plan(_Goal, World, _, _Objects, Plan) :-
+    retrieveGoalElements(_Goal, whatabovestack, Position),
+	%get the whole stack
+	nth0(Position,World,Stack),
+	maplist(getFormSizeColorText(_Objects),Stack,ObjectFormSizeColorList),
+	Plan = [[ObjectFormSizeColorList,what]].
+	
+%What on top (one object)
+plan(_Goal, World, _, _Objects, Plan) :-
+    retrieveGoalElements(_Goal, whatontopstack, Position),
+	%get the whole stack
+	nth0(Position,World,Stack),
+	nth0(0, Stack, ObjectTop),
+	getFormSizeColorText(_Objects,ObjectTop,ObjectFormSizeColor),
+	Plan = [[[ObjectFormSizeColor],what]].
+	
+%What inside
+plan(_Goal, World, _, _Objects, Plan) :-
+    retrieveGoalElements(_Goal, whatabovestack, Position),
+	%get the whole stack
+	nth0(Position,World,Stack),
+	maplist(getFormSizeColorText(_Objects),Stack,ObjectFormSizeColorList),
+	Plan = [[ObjectFormSizeColorList,what]].
 
 %----------------------------------------------------------------- Strings management
 

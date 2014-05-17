@@ -1746,3 +1746,147 @@ Goals = [Goal],
 plan(Goal, World, Holding, Objects, PlanList),nl,write(PlanList),nl,
 solve(PlanList, Plan),write(Plan),nb_getval(output,OutputStr),nl,write(OutputStr).
 					
+%% /!\ Parameter is a list of stack numbers !
+retrieveGoalElements(Goal, Action, Parameter) :-
+Goal = whatinsidestacks(Parameter),Action = whatinsidestacks.
+
+retrieveGoalElements(Goal, Action, Parameter) :-
+Goal = whatleftstack([Parameter]),Action = whatleftstack.
+
+%done	
+retrieveGoalElements(Goal, Action, Parameter) :-
+Goal = whatrightstack([Parameter]),Action = whatrightstack.
+
+retrieveGoalElements(Goal, Action, Parameter) :-
+Goal = whatabovestack([Parameter]),Action = whatabovestack.
+
+retrieveGoalElements(Goal, Action, Parameter) :-
+Goal = whatontopstack([Parameter]),Action = whatontopstack.
+
+retrieveGoalElements(Goal, Action, Parameter) :-
+Goal = whatbesidestack([Parameter]),Action = whatbesidestack.
+
+%% whatleftstack : the list of characteristics (form, size, color) of the objects
+plan(_Goal, World, _, _Objects, Plan) :-
+    retrieveGoalElements(_Goal, whatleftstack, Position),
+	length(World, LengthWorld),
+	%stack picked is within bounds
+	((Position >= 0,Position < LengthWorld )->
+		%World is split into 2 parts : Left with the left until the stack, RightStacks with everything we want to examine.
+		length(Left, Position), append(Left, RightStacks, World),
+		flatten(Left,ListObjLetters),
+		maplist(getFormSizeColorText(_Objects),ListObjLetters,ObjectFormSizeColorList),
+		Plan = [[ObjectFormSizeColorList,what]]
+		%or not
+		; Plan = [[[],what]]
+	).
+	
+test42 :-
+World = [[a],[l,g],[e],[f,m,k],[]],
+Holding = @(null),
+Objects = json([
+	a=json([form=brick,size=large,color=green]),
+	b=json([form=brick,size=small,color=white]),
+	c=json([form=plank,size=large,color=red]),
+	d=json([form=plank,size=small,color=green]),
+	e=json([form=ball,size=large,color=white]),
+	f=json([form=ball,size=small,color=black]),
+	g=json([form=table,size=large,color=blue]),
+	h=json([form=table,size=small,color=red]),
+	i=json([form=pyramid,size=large,color=yellow]),
+	j=json([form=pyramid,size=small,color=red]),
+	k=json([form=box,size=large,color=yellow]),
+	l=json([form=box,size=large,color=red]),
+	m=json([form=box,size=small,color=blue])
+	]),
+Utterance = [what, is, left, of, stack, 1],
+parse_all(command, Utterance, Trees),write(Trees),nl,
+findall(Goal, (member(Tree, Trees),
+                     interpret(Tree, World, Holding, Objects, Goal)
+                    ), Goals),write(Goals),nl,
+Goals = [Goal],
+plan(Goal, World, Holding, Objects, PlanList),nl,write(PlanList),nl,
+solve(PlanList, Plan),write(Plan),nb_getval(output,OutputStr),nl,write(OutputStr).
+
+plan(_Goal, World, _, _Objects, Plan) :-
+	retrieveGoalElements(_Goal, whatbesidestack, Position),
+	length(World, LengthWorld),LeftPos is Position - 1,RightPos is Position + 1,
+	%stack picked is within bounds
+	%World is split into 2 parts : Rest with the left until the stack, RightStacks with everything we want to examine.
+	(LeftPos >= 0 ->
+		nth0(LeftPos,World,LeftStack),
+		((LeftStack = [],ObjectFormSizeColorListLeft = [])
+			;flatten(LeftStack,ListObjLettersLeft),
+			maplist(getFormSizeColorText(_Objects),ListObjLettersLeft,ObjectFormSizeColorListLeft)
+		)
+		;ObjectFormSizeColorListLeft = []
+	),
+	(RightPos < LengthWorld ->
+		nth0(RightPos,World,RightStack),
+		((RightStack = [],ObjectFormSizeColorListRight = [])
+			;flatten(RightStack,ListObjLettersRight),
+			maplist(getFormSizeColorText(_Objects),ListObjLettersRight,ObjectFormSizeColorListRight)
+		)
+		;ObjectFormSizeColorListRight = []
+	),
+	(ObjectFormSizeColorListLeft =[] ->
+		Str1 = ['nothing on the left']
+		;append(ObjectFormSizeColorListLeft,[' on the left'],Str1)
+	),
+	(ObjectFormSizeColorListRight =[] ->
+		append(Str1,[' nothing on the right.'],ObjectFormSizeColorList)
+		;append(Str1,ObjectFormSizeColorListRight,Str2),append(Str2,[' on the right.'],ObjectFormSizeColorList)
+	),
+	Plan = [[ObjectFormSizeColorList,what]].
+
+%What above (everything above)
+plan(_Goal, World, _, _Objects, Plan) :-
+    retrieveGoalElements(_Goal, whatabovestack, Position),
+	%get the whole stack
+	nth0(Position,World,Stack),
+	maplist(getFormSizeColorText(_Objects),Stack,ObjectFormSizeColorList),
+	Plan = [[ObjectFormSizeColorList,what]].
+
+test43 :-
+World = [[a],[l,g],[e],[f,m,k],[]],
+Holding = @(null),
+Objects = json([
+	a=json([form=brick,size=large,color=green]),
+	b=json([form=brick,size=small,color=white]),
+	c=json([form=plank,size=large,color=red]),
+	d=json([form=plank,size=small,color=green]),
+	e=json([form=ball,size=large,color=white]),
+	f=json([form=ball,size=small,color=black]),
+	g=json([form=table,size=large,color=blue]),
+	h=json([form=table,size=small,color=red]),
+	i=json([form=pyramid,size=large,color=yellow]),
+	j=json([form=pyramid,size=small,color=red]),
+	k=json([form=box,size=large,color=yellow]),
+	l=json([form=box,size=large,color=red]),
+	m=json([form=box,size=small,color=blue])
+	]),
+Utterance = [what, is, above, stack, 1],
+parse_all(command, Utterance, Trees),write(Trees),nl,
+findall(Goal, (member(Tree, Trees),
+                     interpret(Tree, World, Holding, Objects, Goal)
+                    ), Goals),write(Goals),nl,
+Goals = [Goal],
+plan(Goal, World, Holding, Objects, PlanList),nl,write(PlanList),nl,
+solve(PlanList, Plan),write(Plan),nb_getval(output,OutputStr),nl,write(OutputStr).
+	
+%What on top (one object)
+plan(_Goal, World, _, _Objects, Plan) :-
+    retrieveGoalElements(_Goal, whatontopstack, Position),
+	%get the whole stack
+	nth0(Position,World,Stack),
+	nth0(0, Stack, ObjectTop),
+	getFormSizeColorText(_Objects,ObjectTop,ObjectFormSizeColor),
+	Plan = [[[ObjectFormSizeColor],what]].
+	
+%What inside
+plan(_Goal, World, _, _Objects, Plan) :-
+    retrieveGoalElements(_Goal, whatabovestack, Position),
+	%get the whole stack
+	nth0(Position,World,Stack),
+	maplist(getFormSizeColorText(_Objects),Stack,ObjectFormSizeColorList),
+	Plan = [[ObjectFormSizeColorList,what]].
