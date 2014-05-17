@@ -120,8 +120,8 @@ Goal = whatunder([Parameter]),Action = whatunder.
 retrieveGoalElements(Goal, Action, Parameter) :-
 Goal = whatinside([Parameter]),Action = whatinside.
 
-retrieveGoalElements(Goal, Action, Parameter) :-
-Goal = whatontop([Parameter],floor),Action = whatontopfloor.	
+retrieveGoalElements(Goal, Action) :-
+Goal = whatontop(floor),Action = whatontopfloor.
 
 %% /!\ Parameter is a list of stack numbers !
 retrieveGoalElements(Goal, Action, Parameter) :-

@@ -1431,8 +1431,8 @@ Goal = whatunder([Parameter]),Action = whatunder.
 retrieveGoalElements(Goal, Action, Parameter) :-
 Goal = whatinside([Parameter]),Action = whatinside.
 
-retrieveGoalElements(Goal, Action, Parameter) :-
-Goal = whatontop([Parameter],floor),Action = whatontopfloor.
+retrieveGoalElements(Goal, Action) :-
+Goal = whatontop(floor),Action = whatontopfloor.
 
 %What right (every stacks on the right)
 plan(_Goal, World, _, _Objects, Plan) :-
@@ -1535,7 +1535,7 @@ plan(_Goal, World, _, _Objects, Plan) :-
 	%get position of the object in the stack
 	nth0(StackPosition, Stack, Parameter),
 	%get the list of objects
-	(StackPosition >= 0 ->
+	(StackPosition > 0 ->
 		length(LeftStack, StackPosition), append(LeftStack, RightStack, Stack),
 		maplist(getFormSizeColorText(_Objects),LeftStack,ObjectFormSizeColorList),
 		Plan = [[ObjectFormSizeColorList,what]]
@@ -1596,4 +1596,153 @@ Goals = [Goal],
 plan(Goal, World, Holding, Objects, PlanList),nl,write(PlanList),nl,
 solve(PlanList, Plan),write(Plan),nb_getval(output,OutputStr),nl,write(OutputStr).
 
+%What on top (one object)
+plan(_Goal, World, _, _Objects, Plan) :-
+    retrieveGoalElements(_Goal, whatontop, Parameter),
+	whichListInTheWorld(World,Parameter,Position),
+	%get the whole stack
+	nth0(Position,World,Stack),
+	%get position of the object in the stack
+	nth0(StackPosition, Stack, Parameter),
+	%get the list of objects
+	(StackPosition > 0 ->
+		ObjectTopPosition is StackPosition - 1,
+		nth0(ObjectTopPosition, Stack, ObjectTop),
+		getFormSizeColorText(_Objects,ObjectTop,ObjectFormSizeColor),
+		Plan = [[[ObjectFormSizeColor],what]]
+		;Plan = [[[],what]]
+	).
 	
+test39 :-
+World = [[a],[l,g],[e],[f,m,k],[]],
+Holding = @(null),
+Objects = json([
+	a=json([form=brick,size=large,color=green]),
+	b=json([form=brick,size=small,color=white]),
+	c=json([form=plank,size=large,color=red]),
+	d=json([form=plank,size=small,color=green]),
+	e=json([form=ball,size=large,color=white]),
+	f=json([form=ball,size=small,color=black]),
+	g=json([form=table,size=large,color=blue]),
+	h=json([form=table,size=small,color=red]),
+	i=json([form=pyramid,size=large,color=yellow]),
+	j=json([form=pyramid,size=small,color=red]),
+	k=json([form=box,size=large,color=yellow]),
+	l=json([form=box,size=large,color=red]),
+	m=json([form=box,size=small,color=blue])
+	]),
+Utterance = [what, is, on, top, of, the, yellow, box],
+parse_all(command, Utterance, Trees),write(Trees),nl,
+findall(Goal, (member(Tree, Trees),
+                     interpret(Tree, World, Holding, Objects, Goal)
+                    ), Goals),write(Goals),nl,
+Goals = [Goal],
+plan(Goal, World, Holding, Objects, PlanList),nl,write(PlanList),nl,
+solve(PlanList, Plan),write(Plan),nb_getval(output,OutputStr),nl,write(OutputStr).
+
+%What under (all objects)
+plan(_Goal, World, _, _Objects, Plan) :-
+    retrieveGoalElements(_Goal, whatunder, Parameter),
+	whichListInTheWorld(World,Parameter,Position),
+	%get the whole stack
+	nth0(Position,World,Stack),
+	%get position of the object in the stack
+	nth0(StackPosition, Stack, Parameter),
+	%get index
+	length(Stack,LengthStack),
+	LeftStackLength is StackPosition + 1,
+	%get the list of objects
+	(LeftStackLength < LengthStack ->
+		length(LeftStack, LeftStackLength), append(LeftStack, RightStack, Stack),
+		maplist(getFormSizeColorText(_Objects),RightStack,ObjectFormSizeColorList),
+		Plan = [[ObjectFormSizeColorList,what]]
+		;Plan = [[[],what]]
+	).
+	
+test40 :-
+World = [[a],[l,g],[e],[f,m,k],[]],
+Holding = @(null),
+Objects = json([
+	a=json([form=brick,size=large,color=green]),
+	b=json([form=brick,size=small,color=white]),
+	c=json([form=plank,size=large,color=red]),
+	d=json([form=plank,size=small,color=green]),
+	e=json([form=ball,size=large,color=white]),
+	f=json([form=ball,size=small,color=black]),
+	g=json([form=table,size=large,color=blue]),
+	h=json([form=table,size=small,color=red]),
+	i=json([form=pyramid,size=large,color=yellow]),
+	j=json([form=pyramid,size=small,color=red]),
+	k=json([form=box,size=large,color=yellow]),
+	l=json([form=box,size=large,color=red]),
+	m=json([form=box,size=small,color=blue])
+	]),
+%Utterance = [what, is, under, the, black, ball],
+Utterance = [what, is, under, the, yellow, box],
+parse_all(command, Utterance, Trees),write(Trees),nl,
+findall(Goal, (member(Tree, Trees),
+                     interpret(Tree, World, Holding, Objects, Goal)
+                    ), Goals),write(Goals),nl,
+Goals = [Goal],
+plan(Goal, World, Holding, Objects, PlanList),nl,write(PlanList),nl,
+solve(PlanList, Plan),write(Plan),nb_getval(output,OutputStr),nl,write(OutputStr).
+
+%What inside (one object)
+plan(_Goal, World, _, _Objects, Plan) :-
+    retrieveGoalElements(_Goal, whatinside, Parameter),
+	whichListInTheWorld(World,Parameter,Position),
+	%get the whole stack
+	nth0(Position,World,Stack),
+	%get position of the object in the stack
+	nth0(StackPosition, Stack, Parameter),
+	%get the list of objects
+	(StackPosition > 0 ->
+		ObjectTopPosition is StackPosition - 1,
+		nth0(ObjectTopPosition, Stack, ObjectTop),
+		getFormSizeColorText(_Objects,ObjectTop,ObjectFormSizeColor),
+		Plan = [[[ObjectFormSizeColor],what]]
+		;Plan = [[[],what]]
+	).
+
+%What on the floor (all objects)
+plan(_Goal, World, _, _Objects, Plan) :-
+    retrieveGoalElements(_Goal, whatontopfloor),
+	getObjectsOnFloor(World,ObjectsList),
+	maplist(getFormSizeColorText(_Objects),ObjectsList,ObjectFormSizeColorList),
+	Plan = [[ObjectFormSizeColorList,what]].
+
+getObjectsOnFloorAux(L,Object) :- is_list(L),(L = [] ->
+	Objects = []
+	;length(L,Length),
+	Pos is Length - 1,
+	nth0(Pos,L,Object)
+).
+getObjectsOnFloor(World,ObjectsList) :- maplist(getObjectsOnFloorAux,World,MatchingObjectsList),flatten(MatchingObjectsList,ObjectsList).
+	
+test41 :-
+World = [[a],[l,g],[e],[f,m,k],[]],
+Holding = @(null),
+Objects = json([
+	a=json([form=brick,size=large,color=green]),
+	b=json([form=brick,size=small,color=white]),
+	c=json([form=plank,size=large,color=red]),
+	d=json([form=plank,size=small,color=green]),
+	e=json([form=ball,size=large,color=white]),
+	f=json([form=ball,size=small,color=black]),
+	g=json([form=table,size=large,color=blue]),
+	h=json([form=table,size=small,color=red]),
+	i=json([form=pyramid,size=large,color=yellow]),
+	j=json([form=pyramid,size=small,color=red]),
+	k=json([form=box,size=large,color=yellow]),
+	l=json([form=box,size=large,color=red]),
+	m=json([form=box,size=small,color=blue])
+	]),
+Utterance = [what, is, on, the, floor],
+parse_all(command, Utterance, Trees),write(Trees),nl,
+findall(Goal, (member(Tree, Trees),
+                     interpret(Tree, World, Holding, Objects, Goal)
+                    ), Goals),write(Goals),nl,
+Goals = [Goal],
+plan(Goal, World, Holding, Objects, PlanList),nl,write(PlanList),nl,
+solve(PlanList, Plan),write(Plan),nb_getval(output,OutputStr),nl,write(OutputStr).
+					

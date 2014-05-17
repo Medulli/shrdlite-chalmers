@@ -597,10 +597,70 @@ plan(_Goal, World, _, _Objects, Plan) :-
 	%get position of the object in the stack
 	nth0(StackPosition, Stack, Parameter),
 	%get the list of objects
-	(StackPosition >= 0 ->
+	(StackPosition > 0 ->
 		length(LeftStack, StackPosition), append(LeftStack, RightStack, Stack),
 		maplist(getFormSizeColorText(_Objects),LeftStack,ObjectFormSizeColorList),
 		Plan = [[ObjectFormSizeColorList,what]]
+		;Plan = [[[],what]]
+	).
+
+%What on top (one object)
+plan(_Goal, World, _, _Objects, Plan) :-
+    retrieveGoalElements(_Goal, whatontop, Parameter),
+	whichListInTheWorld(World,Parameter,Position),
+	%get the whole stack
+	nth0(Position,World,Stack),
+	%get position of the object in the stack
+	nth0(StackPosition, Stack, Parameter),
+	%get the list of objects
+	(StackPosition > 0 ->
+		ObjectTopPosition is StackPosition - 1,
+		nth0(ObjectTopPosition, Stack, ObjectTop),
+		getFormSizeColorText(_Objects,ObjectTop,ObjectFormSizeColor),
+		Plan = [[[ObjectFormSizeColor],what]]
+		;Plan = [[[],what]]
+	).
+	
+%What under (all objects)
+plan(_Goal, World, _, _Objects, Plan) :-
+    retrieveGoalElements(_Goal, whatunder, Parameter),
+	whichListInTheWorld(World,Parameter,Position),
+	%get the whole stack
+	nth0(Position,World,Stack),
+	%get position of the object in the stack
+	nth0(StackPosition, Stack, Parameter),
+	%get index
+	length(Stack,LengthStack),
+	LeftStackLength is StackPosition + 1,
+	%get the list of objects
+	(LeftStackLength < LengthStack ->
+		length(LeftStack, LeftStackLength), append(LeftStack, RightStack, Stack),
+		maplist(getFormSizeColorText(_Objects),RightStack,ObjectFormSizeColorList),
+		Plan = [[ObjectFormSizeColorList,what]]
+		;Plan = [[[],what]]
+	).
+	
+%What on the floor (all objects)
+plan(_Goal, World, _, _Objects, Plan) :-
+    retrieveGoalElements(_Goal, whatontopfloor),
+	getObjectsOnFloor(World,ObjectsList),
+	maplist(getFormSizeColorText(_Objects),ObjectsList,ObjectFormSizeColorList),
+	Plan = [[ObjectFormSizeColorList,what]].
+	
+%What inside (one object)
+plan(_Goal, World, _, _Objects, Plan) :-
+    retrieveGoalElements(_Goal, whatinside, Parameter),
+	whichListInTheWorld(World,Parameter,Position),
+	%get the whole stack
+	nth0(Position,World,Stack),
+	%get position of the object in the stack
+	nth0(StackPosition, Stack, Parameter),
+	%get the list of objects
+	(StackPosition > 0 ->
+		ObjectTopPosition is StackPosition - 1,
+		nth0(ObjectTopPosition, Stack, ObjectTop),
+		getFormSizeColorText(_Objects,ObjectTop,ObjectFormSizeColor),
+		Plan = [[[ObjectFormSizeColor],what]]
 		;Plan = [[[],what]]
 	).
 	
@@ -630,4 +690,13 @@ getFormSizeColorText(PossibleObjects,ObjectLetter,ObjectFormSizeColor) :-
 	string_concat(FinalStr2,ColorObjStr,FinalStr3),
 	string_concat(FinalStr3,' ',FinalStr4),
 	string_concat(FinalStr4,FormObjStr,ObjectFormSizeColor).
+	
+%-------------------------------------------------------------------- Aux
+getObjectsOnFloorAux(L,Object) :- is_list(L),(L = [] ->
+	Objects = []
+	;length(L,Length),
+	Pos is Length - 1,
+	nth0(Pos,L,Object)
+).
+getObjectsOnFloor(World,ObjectsList) :- maplist(getObjectsOnFloorAux,World,MatchingObjectsList),flatten(MatchingObjectsList,ObjectsList).
 	
