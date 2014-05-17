@@ -516,6 +516,12 @@ function userInput() {
         timeout: 1000 * AjaxTimeout,
         data: {'data': JSON.stringify(ajaxdata), 'program': program }
     }).fail(function(jqxhr, status, error) {
+        $.ajax({
+          url: "cgi-bin/killer.py",
+          type:'POST'
+        }).success(function(){
+            console.log("Ok");
+        });
         alertError("Internal error: " + status, error);
         systemPrompt();
     }).done(function(result) {
