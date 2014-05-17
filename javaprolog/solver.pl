@@ -19,7 +19,7 @@ list_codes([], "").
 list_codes([Atom], Codes) :- atom_codes(Atom, Codes).
 
 list_codes([Atom|ListTail], Codes) :-
-        atom_codes(Atom, AtomCodes),
+    atom_codes(Atom, AtomCodes),
     append(AtomCodes, ",", AtomCodesWithComma),
     append(AtomCodesWithComma, ListTailCodes, Codes),
     list_codes(ListTail, ListTailCodes).
@@ -33,15 +33,3 @@ list_string(List, String) :-
     ground(String),
     atom_codes(String, Codes),
     list_codes(List, Codes).
-
-%The same than getFormSizeColor in text form	
-getFormSizeColorText(PossibleObjects,ObjectLetter,ObjectFormSizeColor) :-
-	PossibleObjects = json(PossibleObjectsJson),member(ObjectLetter = ObjectJson,PossibleObjectsJson),ObjectJson=json([form=FormObj,size=SizeObj,color=ColorObj]),
-	atom_string(SizeObj,SizeObjStr),atom_string(ColorObj,ColorObjStr),atom_string(FormObj,FormObjStr),
-	string_concat('a ',SizeObjStr,FinalStr1),
-	string_concat(FinalStr1,' ',FinalStr2),
-	string_concat(FinalStr2,ColorObjStr,FinalStr3),
-	string_concat(FinalStr3,' ',FinalStr4),
-	string_concat(FinalStr4,FormObjStr,FinalStr5),
-	string_concat(FinalStr5,'.',FinalStr6),
-	ObjectFormSizeColor=FinalStr6.

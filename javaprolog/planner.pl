@@ -559,3 +559,17 @@ plan(_Goal, World, _, _Objects, Plan) :-
 		%or not
 		; Plan = [[[],what]]
 	).
+
+	
+%----------------------------------------------------------------- Strings management
+
+%The same than getFormSizeColor in text form
+getFormSizeColorText(PossibleObjects,ObjectLetter,ObjectFormSizeColor) :-
+	PossibleObjects = json(PossibleObjectsJson),member(ObjectLetter = ObjectJson,PossibleObjectsJson),ObjectJson=json([form=FormObj,size=SizeObj,color=ColorObj]),
+	atom_string(SizeObj,SizeObjStr),atom_string(ColorObj,ColorObjStr),atom_string(FormObj,FormObjStr),
+	string_concat('a ',SizeObjStr,FinalStr1),
+	string_concat(FinalStr1,' ',FinalStr2),
+	string_concat(FinalStr2,ColorObjStr,FinalStr3),
+	string_concat(FinalStr3,' ',FinalStr4),
+	string_concat(FinalStr4,FormObjStr,ObjectFormSizeColor).
+	
