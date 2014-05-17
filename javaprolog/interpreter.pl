@@ -249,19 +249,19 @@ interpret(count(X,absolute(inside, world)), World, Holding, Objects, countinside
 	
 %%Interpret What
 interpret(what(relative(beside, Y)), World, Holding, Objects, whatbeside(RelativeObject)) :-
-	interpret(X, World, Holding, Objects, RelativeObjectTAA),((any(RelativeObjectAux) = RelativeObjectTAA, member(RelativeObjectAuxAux,RelativeObjectAux),RelativeObject = [RelativeObjectAuxAux],!);RelativeObject = RelativeObjectTAA).
+	interpret(Y, World, Holding, Objects, RelativeObjectTAA),((any(RelativeObjectAux) = RelativeObjectTAA, member(RelativeObjectAuxAux,RelativeObjectAux),RelativeObject = [RelativeObjectAuxAux],!);RelativeObject = RelativeObjectTAA).
 interpret(what(relative(leftof, Y)), World, Holding, Objects, whatleft(RelativeObject)) :-
-	interpret(X, World, Holding, Objects, RelativeObjectTAA),((any(RelativeObjectAux) = RelativeObjectTAA, member(RelativeObjectAuxAux,RelativeObjectAux),RelativeObject = [RelativeObjectAuxAux],!);RelativeObject = RelativeObjectTAA).
+	interpret(Y, World, Holding, Objects, RelativeObjectTAA),((any(RelativeObjectAux) = RelativeObjectTAA, member(RelativeObjectAuxAux,RelativeObjectAux),RelativeObject = [RelativeObjectAuxAux],!);RelativeObject = RelativeObjectTAA).
 interpret(what(relative(rightof,Y)), World, Holding, Objects, whatright(RelativeObject)) :-
-	interpret(X, World, Holding, Objects, RelativeObjectTAA),((any(RelativeObjectAux) = RelativeObjectTAA, member(RelativeObjectAuxAux,RelativeObjectAux),RelativeObject = [RelativeObjectAuxAux],!);RelativeObject = RelativeObjectTAA).
+	interpret(Y, World, Holding, Objects, RelativeObjectTAA),((any(RelativeObjectAux) = RelativeObjectTAA, member(RelativeObjectAuxAux,RelativeObjectAux),RelativeObject = [RelativeObjectAuxAux],!);RelativeObject = RelativeObjectTAA).
 interpret(what(relative(above,Y)), World, Holding, Objects, whatabove(RelativeObject)) :-
-	interpret(X, World, Holding, Objects, RelativeObjectTAA),((any(RelativeObjectAux) = RelativeObjectTAA, member(RelativeObjectAuxAux,RelativeObjectAux),RelativeObject = [RelativeObjectAuxAux],!);RelativeObject = RelativeObjectTAA).
+	interpret(Y, World, Holding, Objects, RelativeObjectTAA),((any(RelativeObjectAux) = RelativeObjectTAA, member(RelativeObjectAuxAux,RelativeObjectAux),RelativeObject = [RelativeObjectAuxAux],!);RelativeObject = RelativeObjectTAA).
 interpret(what(relative(ontop,  Y)), World, Holding, Objects, whatontop(RelativeObject)) :-
-	interpret(X, World, Holding, Objects, RelativeObjectTAA),((any(RelativeObjectAux) = RelativeObjectTAA, member(RelativeObjectAuxAux,RelativeObjectAux),RelativeObject = [RelativeObjectAuxAux],!);RelativeObject = RelativeObjectTAA).
+	interpret(Y, World, Holding, Objects, RelativeObjectTAA),((any(RelativeObjectAux) = RelativeObjectTAA, member(RelativeObjectAuxAux,RelativeObjectAux),RelativeObject = [RelativeObjectAuxAux],!);RelativeObject = RelativeObjectTAA).
 interpret(what(relative(under,  Y)), World, Holding, Objects, whatunder(RelativeObject)) :-
-	interpret(X, World, Holding, Objects, RelativeObjectTAA),((any(RelativeObjectAux) = RelativeObjectTAA, member(RelativeObjectAuxAux,RelativeObjectAux),RelativeObject = [RelativeObjectAuxAux],!);RelativeObject = RelativeObjectTAA).
+	interpret(Y, World, Holding, Objects, RelativeObjectTAA),((any(RelativeObjectAux) = RelativeObjectTAA, member(RelativeObjectAuxAux,RelativeObjectAux),RelativeObject = [RelativeObjectAuxAux],!);RelativeObject = RelativeObjectTAA).
 interpret(what(relative(inside, Y)), World, Holding, Objects, whatinside(RelativeObject)) :-
-	interpret(X, World, Holding, Objects, RelativeObjectTAA),((any(RelativeObjectAux) = RelativeObjectTAA, member(RelativeObjectAuxAux,RelativeObjectAux),RelativeObject = [RelativeObjectAuxAux],!);RelativeObject = RelativeObjectTAA).
+	interpret(Y, World, Holding, Objects, RelativeObjectTAA),((any(RelativeObjectAux) = RelativeObjectTAA, member(RelativeObjectAuxAux,RelativeObjectAux),RelativeObject = [RelativeObjectAuxAux],!);RelativeObject = RelativeObjectTAA).
 
 interpret(what(absolute(beside, basic_stack(N))), World, Holding, Objects, whatbesidestack([N])).
 interpret(what(absolute(leftof, basic_stack(N))), World, Holding, Objects, whatleftstack([N])).
