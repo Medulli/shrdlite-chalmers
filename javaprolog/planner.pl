@@ -2,7 +2,7 @@
 :- [retrievegoal].
 :- [planner_tools].
 :- style_check(-singleton).
-/*
+
 %Take the selected object if the arm does not hold something
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, take, Element),
@@ -343,7 +343,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       b_setval(holding, @(null)),
       plan(_Goal, NewWorld, @(null), _Objects, PlanAux),
       Plan = [[-1,K,move]|PlanAux].
-*/
+
 %Does nothing when asked to move the selected object inside the relative object in one step if it is already the case
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, moveinside, Element1, Element2),
@@ -465,7 +465,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       b_setval(holding, @(null)),
       plan(_Goal, NewWorld, @(null), _Objects, PlanAux),
       Plan = [[-1,K,move]|PlanAux].
-
+*/
 %Move the selected object inside the relative object in several steps if the arm does not hold something and the selected object can be on the relative object
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, take, Element),
@@ -499,7 +499,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       b_setval(world, NewWorld),
       plan(_Goal, NewWorld, Holding, _Objects, PlanAux),
       Plan = [[K2,K3,move]|PlanAux].
-
+/*
 %Move the selected object inside the relative object in several steps if the arm does not hold something and the selected object can be on the relative object
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, AnyMove, Element1, Element2),
@@ -516,7 +516,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       nb_setval(listOfVisitedWorlds,[NewWorld|Tail]),
       plan(_Goal, NewWorld, Holding, _Objects, PlanAux),
       Plan = [[KPick,KDrop,move]|PlanAux].
-
+*/
 %% Where : the list of positions (indexes) of the objects
 plan(_Goal, World, _, _, Plan) :-
       retrieveGoalElements(_Goal, where, Parameter),
@@ -618,7 +618,7 @@ plan(_Goal, World, _, _Objects, Plan) :-
 		%or not
 		; Plan = [[[],what]]
 	).
-*/	
+
 %----------------------------------------------------------------- Strings management
 
 %The same than getFormSizeColor in text form
