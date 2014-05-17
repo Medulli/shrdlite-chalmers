@@ -1,3 +1,5 @@
+:- [canbeon].
+:- [retrievegoal].
 :- style_check(-singleton).
 
 %Take the selected object if the arm does not hold something
@@ -28,6 +30,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       dropAt(ElementHold,K,World,NewWorld),
       b_setval(world, NewWorld),
       plan(_Goal, NewWorld, @(null), _Objects, PlanAux),
+      b_setval(holding, [ElementPick]),
       Plan = [[-1,K,move]|PlanAux].
 
 %Does nothing when asked to move the selected object beside the relative object in one step if it is already the case
@@ -78,6 +81,19 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       b_setval(world, NewWorld),
       Plan = [[-1,K2,move]].
 
+%Move the selected object beside the relative object in one step if the arm holds something and the selected object can be on the relative object
+plan(_Goal, World, Holding, _Objects, Plan) :-
+      retrieveGoalElements(_Goal, movebeside, Element1, Element2),
+      Holding \== @(null),
+      Holding = ElementHold,
+      ElementHold \== Element1,
+      canbeAt(ElementHold,World,_Objects,K),
+      dropAt(ElementHold,K,World,NewWorld),
+      b_setval(world, NewWorld),
+      b_setval(holding, @(null)),
+      plan(_Goal, NewWorld, @(null), _Objects, PlanAux),
+      Plan = [[-1,K,move]|PlanAux].
+
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, movebeside, Element1, Element2),
       Holding == @(null),
@@ -105,6 +121,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       canbeon(Element1,LK2,_Objects),
       dropAt(Element1,K2,World,NewWorld),
       b_setval(world, NewWorld),
+      b_setval(holding, @(null)),
       Plan = [[-1,K2,move]].
 
 %Does nothing when asked to move the selected object to the left of the relative object in one step if it is already the case
@@ -144,7 +161,21 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       canbeon(Element1,LK2,_Objects),
       dropAt(Element1,K2,World,NewWorld),
       b_setval(world, NewWorld),
+      b_setval(holding, @(null)),
       Plan = [[-1,K2,move]].
+
+%Move the selected object to the left the relative object in one step if the arm holds something and the selected object can be on the relative object
+plan(_Goal, World, Holding, _Objects, Plan) :-
+      retrieveGoalElements(_Goal, moveleft, Element1, Element2),
+      Holding \== @(null),
+      Holding = ElementHold,
+      ElementHold \== Element1,
+      canbeAt(ElementHold,World,_Objects,K),
+      dropAt(ElementHold,K,World,NewWorld),
+      b_setval(world, NewWorld),
+      b_setval(holding, @(null)),
+      plan(_Goal, NewWorld, @(null), _Objects, PlanAux),
+      Plan = [[-1,K,move]|PlanAux].
 
 %Does nothing when asked to move the selected object to the right of the relative object in one step if it is already the case
 plan(_Goal, World, Holding, _Objects, Plan) :-
@@ -183,7 +214,21 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       canbeon(Element1,LK2,_Objects),
       dropAt(Element1,K2,World,NewWorld),
       b_setval(world, NewWorld),
+      b_setval(holding, @(null)),
       Plan = [[-1,K2,move]].
+
+%Move the selected object to the right the relative object in one step if the arm holds something and the selected object can be on the relative object
+plan(_Goal, World, Holding, _Objects, Plan) :-
+      retrieveGoalElements(_Goal, moveright, Element1, Element2),
+      Holding \== @(null),
+      Holding = ElementHold,
+      ElementHold \== Element1,
+      canbeAt(ElementHold,World,_Objects,K),
+      dropAt(ElementHold,K,World,NewWorld),
+      b_setval(world, NewWorld),
+      b_setval(holding, @(null)),
+      plan(_Goal, NewWorld, @(null), _Objects, PlanAux),
+      Plan = [[-1,K,move]|PlanAux].
 
 %Does nothing when asked to move the selected object above the relative object in one step if it is already the case
 plan(_Goal, World, Holding, _Objects, Plan) :-
@@ -219,7 +264,21 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       canbeon(Element1,LK2,_Objects),
       dropAt(Element1,K2,World,NewWorld),
       b_setval(world, NewWorld),
+      b_setval(holding, @(null)),
       Plan = [[-1,K2,move]].
+
+%Move the selected object above the relative object in one step if the arm holds something and the selected object can be on the relative object
+plan(_Goal, World, Holding, _Objects, Plan) :-
+      retrieveGoalElements(_Goal, moveabove, Element1, Element2),
+      Holding \== @(null),
+      Holding = ElementHold,
+      ElementHold \== Element1,
+      canbeAt(ElementHold,World,_Objects,K),
+      dropAt(ElementHold,K,World,NewWorld),
+      b_setval(world, NewWorld),
+      b_setval(holding, @(null)),
+      plan(_Goal, NewWorld, @(null), _Objects, PlanAux),
+      Plan = [[-1,K,move]|PlanAux].
 
 %Does nothing when asked to move the selected object on top of the relative object in one step if it is already the case
 plan(_Goal, World, Holding, _Objects, Plan) :-
@@ -268,7 +327,21 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       canbeon(Element1,LK2,_Objects),
       dropAt(Element1,K2,World,NewWorld),
       b_setval(world, NewWorld),
+      b_setval(holding, @(null)),
       Plan = [[-1,K2,move]].
+
+%Move the selected object on top of the relative object in one step if the arm holds something and the selected object can be on the relative object
+plan(_Goal, World, Holding, _Objects, Plan) :-
+      retrieveGoalElements(_Goal, moveontop, Element1, Element2),
+      Holding \== @(null),
+      Holding = ElementHold,
+      ElementHold \== Element1,
+      canbeAt(ElementHold,World,_Objects,K),
+      dropAt(ElementHold,K,World,NewWorld),
+      b_setval(world, NewWorld),
+      b_setval(holding, @(null)),
+      plan(_Goal, NewWorld, @(null), _Objects, PlanAux),
+      Plan = [[-1,K,move]|PlanAux].
 
 %Does nothing when asked to move the selected object inside the relative object in one step if it is already the case
 plan(_Goal, World, Holding, _Objects, Plan) :-
@@ -317,7 +390,21 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       canbeon(Element1,LK2,_Objects),
       dropAt(Element1,K2,World,NewWorld),
       b_setval(world, NewWorld),
+      b_setval(holding, @(null)),
       Plan = [[-1,K2,move]].
+
+%Move the selected object inside the relative object in one step if the arm holds something and the selected object can be on the relative object
+plan(_Goal, World, Holding, _Objects, Plan) :-
+      retrieveGoalElements(_Goal, moveinside, Element1, Element2),
+      Holding \== @(null),
+      Holding = ElementHold,
+      ElementHold \== Element1,
+      canbeAt(ElementHold,World,_Objects,K),
+      dropAt(ElementHold,K,World,NewWorld),
+      b_setval(world, NewWorld),
+      b_setval(holding, @(null)),
+      plan(_Goal, NewWorld, @(null), _Objects, PlanAux),
+      Plan = [[-1,K,move]|PlanAux].
 
 %Move the selected object inside the relative object in several steps if the arm does not hold something and the selected object can be on the relative object
 plan(_Goal, World, Holding, _Objects, Plan) :-
