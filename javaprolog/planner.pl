@@ -174,6 +174,8 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       pickAt(KPick,World,WorldAux),
       dropAt(ElementPick,KDropM,WorldAux,NewWorld),
       nb_setval(world, NewWorld),
+      nl , write('Bande de bâtards'),
+      nl, write(NewWorld), nl,
       Plan = [[KPick,KDropM,move]].
 
 plan(_Goal, World, Holding, _Objects, Plan) :-
@@ -196,11 +198,14 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       not(member(NewWorld,Tail)),
       b_setval(world, NewWorld),
       nb_setval(listOfVisitedWorlds,[NewWorld|Tail]),
+      nl , write('Pute'),
+      nl, write(NewWorld), nl,
       plan(_Goal, NewWorld, Holding, _Objects, PlanAux),
       Plan = [[KDropM,KDropAux,move]|PlanAux].
 
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, moveleft, ElementPick, ElementDrop),
+      nl , write('Une grosse bifle'),
       Holding == @(null),
       whichListInTheWorld(World,ElementPick,KPick),
       whichListInTheWorld(World,ElementDrop,KDrop),
@@ -225,6 +230,9 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
         b_setval(world, NewWorld),
         nb_setval(listOfVisitedWorlds,[NewWorld|Tail]),
         plan(_Goal, NewWorld, Holding, _Objects, PlanAux),
+        nl , write('Salope'),
+        nl , write(ElementPickAux),
+        nl, write(NewWorld), nl,
         Plan = [[KPickAux,KDropM,move]|PlanAux]
 
       ; canbeMoved(ElementPickAux,KPickAux,WorldAux,_Objects,KDropAux),
@@ -233,6 +241,8 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
         not(member(NewWorld,Tail)),
         b_setval(world, NewWorld),
         nb_setval(listOfVisitedWorlds,[NewWorld|Tail]),
+        nl , write('Connard'),
+        nl, write(NewWorld), nl,
         plan(_Goal, NewWorld, Holding, _Objects, PlanAux),
         Plan = [[KPickAux,KDropAux,move]|PlanAux]
       ).
@@ -255,6 +265,8 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       b_setval(world, NewWorld),
       nb_setval(listOfVisitedWorlds,[NewWorld|Tail]),
       plan(_Goal, NewWorld, Holding, _Objects, PlanAux),
+      nl , write('Tocard'),
+      nl, write(NewWorld), nl,
       Plan = [[KPick,KDropAux,move]|PlanAux].
 
 plan(_Goal, World, Holding, _Objects, Plan) :-
@@ -279,6 +291,8 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       not(member(NewWorld,Tail)),
       b_setval(world, NewWorld),
       nb_setval(listOfVisitedWorlds,[NewWorld|Tail]),
+      nl , write('Débiles'),
+      nl, write(NewWorld), nl,
       plan(_Goal, NewWorld, Holding, _Objects, PlanAux),
       Plan = [[KPickAux,KDropAux,move]|PlanAux].
 
