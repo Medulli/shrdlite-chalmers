@@ -46,7 +46,7 @@ main :-
         %Goal is a list of goals i.e. "I can do this and this and this... Please specify what you want"
         Goals = [_,_|_] ->
         PrecisionMode = 'Activated',
-      handleAmbiguity(Goals,World,Holding,Objects,PrecisionGoal),
+		handleAmbiguity(Goals,World,Holding,Objects,PrecisionGoal),
 		%we could not get a goal
 		(FinalGoal = [] ->
 			Plan = @(null),
