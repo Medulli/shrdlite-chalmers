@@ -135,8 +135,8 @@ findall(Goal, (member(Tree, TreesPrecision),
 ).
 
 getPrecisionInput(InputName, InputPrecision) :- 
-	sleep(1),
+	sleep(10),
 	json_read(InputName, JSONInputPrecision),
-	(JSONInputPrecision = @(end_of_file) -> getPrecisionInput(InputName, InputPrecision)
+	(JSONInputPrecision = '' -> getPrecisionInput(InputName, InputPrecision)
 	;JSONInputPrecision = json(InputPrecision)
 	).
