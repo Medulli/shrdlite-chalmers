@@ -10,6 +10,13 @@ You can compile the pl file with
 
     ./shrdlite.pl       // for LINUX
 
+
+In ./cgi-bin
+
+    chmod 777 killer.py
+
+This file handles timeout and killing all swipl process that are pending.
+
 Then in ./
 
     python -m CGIHTTPServer 8000
