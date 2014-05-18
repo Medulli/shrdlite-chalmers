@@ -606,7 +606,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       pickAt(KPick,World,WorldAux),
       dropAt(ElementPick,KDropP,WorldAux,NewWorld),
       nb_setval(world, NewWorld),
-      Plan = [[KPick,KDropM,move]].
+      Plan = [[KPick,KDropP,move]].
 
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, movebeside, ElementPick, ElementDrop),
