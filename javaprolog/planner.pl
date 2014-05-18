@@ -952,58 +952,6 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       plan(_Goal, NewWorld, Holding, _Objects, PlanAux),
       Plan = [[KPickAux,KDropAux,move]|PlanAux].
 
-%-------------------------------------------------------------------------------------------------------------
-
-%Does nothing when asked to move the selected object above the relative object in one step if it is already the case
-plan(_Goal, World, Holding, _Objects, Plan) :-
-      retrieveGoalElements(_Goal, moveabove, Element1, Element2),
-      whichListInTheWorld(World,Element1,K1),
-      whichListInTheWorld(World,Element2,K2),
-      K1 == K2,
-      Plan = [-1].
-
-%Move the selected object above the relative object in one step if the arm does not hold something and the selected object can be on the relative object
-plan(_Goal, World, Holding, _Objects, Plan) :-
-      retrieveGoalElements(_Goal, moveabove, Element1, Element2),
-      Holding == @(null),
-      whichListInTheWorld(World,Element1,K1),
-      nth0(K1,World,LK1),
-      checkHead(LK1,Element1),
-      whichListInTheWorld(World,Element2,K2),
-      nth0(K2,World,LK2),
-      canbeon(Element1,LK2,_Objects),
-      pickAt(K1,World,WorldAux),
-      dropAt(Element1,K2,WorldAux,NewWorld),
-      b_setval(world, NewWorld),
-      Plan = [[K1,K2,move]].
-
-%Move the selected object above the relative object in one step if the arm holds it and the selected object can be on the relative object
-plan(_Goal, World, Holding, _Objects, Plan) :-
-      retrieveGoalElements(_Goal, moveabove, Element1, Element2),
-      Holding \== @(null),
-      Holding = ElementHold,
-      ElementHold = Element1,
-      whichListInTheWorld(World,Element2,K2),
-      nth0(K2,World,LK2),
-      canbeon(Element1,LK2,_Objects),
-      dropAt(Element1,K2,World,NewWorld),
-      b_setval(world, NewWorld),
-      b_setval(holding, @(null)),
-      Plan = [[-1,K2,move]].
-
-%Move the selected object above the relative object in one step if the arm holds something and the selected object can be on the relative object
-plan(_Goal, World, Holding, _Objects, Plan) :-
-      retrieveGoalElements(_Goal, moveabove, Element1, Element2),
-      Holding \== @(null),
-      Holding = ElementHold,
-      ElementHold \== Element1,
-      canbeAt(ElementHold,World,_Objects,K),
-      dropAt(ElementHold,K,World,NewWorld),
-      b_setval(world, NewWorld),
-      b_setval(holding, @(null)),
-      plan(_Goal, NewWorld, @(null), _Objects, PlanAux),
-      Plan = [[-1,K,move]|PlanAux].
-
 %Does nothing when asked to move the selected object on top of the relative object in one step if it is already the case
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, moveontop, Element1, Element2),
