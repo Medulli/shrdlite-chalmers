@@ -1513,7 +1513,8 @@ Objects = json([
 	l=json([form=box,size=large,color=red]),
 	m=json([form=box,size=small,color=blue])
 	]),
-Utterance = [what, is, left, of, the, yellow, box],
+%Utterance = [what, is, left, of, the, yellow, box],
+Utterance = [put, the, white, ball, on, stack, 4],
 parse_all(command, Utterance, Trees),write(Trees),nl,
 findall(Goal, (member(Tree, Trees),
                      interpret(Tree, World, Holding, Objects, Goal)
@@ -2275,7 +2276,8 @@ Objects = json([
 	m=json([form=box,size=small,color=blue]),
 	n=json([form=ball,size=small,color=blue])
 	]),
-Utterance = [count, all, balls, in, the, world],
+%Utterance = [count, all, balls, in, the, world],
+Utterance = [move,the,black,ball,left,of,the,red,box],
 parse_all(command, Utterance, Trees),write(Trees),nl,
 findall(Goal, (member(Tree, Trees),
                      interpret(Tree, World, Holding, Objects, Goal)
@@ -2304,3 +2306,11 @@ plan(_Goal, World, _, _Objects, Plan) :-
 	Plan = [[Count,count]].
 	
 
+json_read(user_input, json(InputPrecision)),
+member(utterance=UtterancePrecision, InputPrecision),	
+
+getPrecisionInput (InputName, InputPrecision) :- 
+	json_read(InputName, JSONInputPrecision),
+	(JSONInputPrecision = '' -> getPrecisionInput (InputName, InputPrecision)
+	;JSONInputPrecision = json(InputPrecision)
+	).
