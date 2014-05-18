@@ -1513,7 +1513,8 @@ Objects = json([
 	l=json([form=box,size=large,color=red]),
 	m=json([form=box,size=small,color=blue])
 	]),
-Utterance = [what, is, left, of, the, yellow, box],
+%Utterance = [what, is, left, of, the, yellow, box],
+Utterance = [put, the, white, ball, on, stack, 4],
 parse_all(command, Utterance, Trees),write(Trees),nl,
 findall(Goal, (member(Tree, Trees),
                      interpret(Tree, World, Holding, Objects, Goal)
