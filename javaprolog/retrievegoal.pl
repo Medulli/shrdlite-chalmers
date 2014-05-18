@@ -3,6 +3,18 @@
 %% For stacks, Parameter is always the index of the stack
 
 %%Move ---------------------------------------------------------------------------------------------------
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2, _World) :-
+Goal = moveabove([Parameter1],[Parameter2]),Action = moveabove.
+
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2, World) :-
+Goal = moveabove([Parameter1],floor),Action = moveabovestack, findall(Aux, nth0(Aux,World,[]), Parameter2).
+
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2, _World) :-
+Goal = moveontop([Parameter1],[Parameter2]),Action = moveontop.
+
+retrieveGoalElements(Goal, Action, Parameter1,Parameter2, World) :-
+Goal = moveontop([Parameter1],floor),Action = moveontopstack, findall(Aux, nth0(Aux,World,[]), Parameter2).
+
 retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
 Goal = movebeside([Parameter1],[Parameter2]),Action = movebeside.
 
@@ -11,12 +23,6 @@ Goal = moveleft([Parameter1],[Parameter2]),Action = moveleft.
 
 retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
 Goal = moveright([Parameter1],[Parameter2]),Action = moveright.
-
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-Goal = moveabove([Parameter1],[Parameter2]),Action = moveabove.
-
-retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
-Goal = moveontop([Parameter1],[Parameter2]),Action = moveontop.
 
 retrieveGoalElements(Goal, Action, Parameter1,Parameter2) :-
 Goal = moveunder([Parameter1],[Parameter2]),Action = moveunder.

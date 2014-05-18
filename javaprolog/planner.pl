@@ -769,7 +769,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
 
 %% Moveabove ----------------------------------------------------------------------
 plan(_Goal, World, Holding, _Objects, Plan) :-
-      retrieveGoalElements(_Goal, moveabove, ElementPick, ElementDrop),
+      retrieveGoalElements(_Goal, moveabove, ElementPick, ElementDrop, World),
       Holding \== @(null),
       Holding = ElementHold,
       ElementHold == ElementPick,
@@ -782,7 +782,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       Plan = [[-1,K2,move]].
 
 plan(_Goal, World, Holding, _Objects, Plan) :-
-      retrieveGoalElements(_Goal, moveabove, ElementPick, ElementDrop),
+      retrieveGoalElements(_Goal, moveabove, ElementPick, ElementDrop, World),
       Holding \== @(null),
       Holding = ElementHold,
       ElementHold == ElementPick,
@@ -800,7 +800,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       Plan = [[-1,K,move]|PlanAux].
 
 plan(_Goal, World, Holding, _Objects, Plan) :-
-      retrieveGoalElements(_Goal, moveabove, ElementPick, ElementDrop),
+      retrieveGoalElements(_Goal, moveabove, ElementPick, ElementDrop, World),
       Holding \== @(null),
       Holding = ElementHold,
       ElementHold \== ElementPick,
@@ -828,7 +828,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       ).
 
 plan(_Goal, World, Holding, _Objects, Plan) :-
-      retrieveGoalElements(_Goal, moveabove, ElementPick, ElementDrop),
+      retrieveGoalElements(_Goal, moveabove, ElementPick, ElementDrop, World),
       Holding == @(null),
       whichListInTheWorld(World,ElementPick,KPick),
       whichListInTheWorld(World,ElementDrop,KDrop),
@@ -836,7 +836,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       Plan = [-1].
 
 plan(_Goal, World, Holding, _Objects, Plan) :-
-      retrieveGoalElements(_Goal, moveabove, ElementPick, ElementDrop),
+      retrieveGoalElements(_Goal, moveabove, ElementPick, ElementDrop, World),
       Holding == @(null),
       whichListInTheWorld(World,ElementPick,KPick),
       whichListInTheWorld(World,ElementDrop,KDrop),
@@ -851,7 +851,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       Plan = [[KPick,KDrop,move]].
 
 plan(_Goal, World, Holding, _Objects, Plan) :-
-      retrieveGoalElements(_Goal, moveabove, ElementPick, ElementDrop),
+      retrieveGoalElements(_Goal, moveabove, ElementPick, ElementDrop, World),
       Holding == @(null),
       whichListInTheWorld(World,ElementPick,KPick),
       whichListInTheWorld(World,ElementDrop,KDrop),
@@ -873,7 +873,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       Plan = [[KDrop,KDropAux,move]|PlanAux].
 
 plan(_Goal, World, Holding, _Objects, Plan) :-
-      retrieveGoalElements(_Goal, moveabove, ElementPick, ElementDrop),
+      retrieveGoalElements(_Goal, moveabove, ElementPick, ElementDrop, World),
       Holding == @(null),
       whichListInTheWorld(World,ElementPick,KPick),
       whichListInTheWorld(World,ElementDrop,KDrop),
@@ -910,7 +910,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       ).
 
 plan(_Goal, World, Holding, _Objects, Plan) :-
-      retrieveGoalElements(_Goal, moveabove, ElementPick, ElementDrop),
+      retrieveGoalElements(_Goal, moveabove, ElementPick, ElementDrop, World),
       Holding == @(null),
       whichListInTheWorld(World,ElementPick,KPick),
       whichListInTheWorld(World,ElementDrop,KDrop),
@@ -929,7 +929,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       Plan = [[KPick,KDropAux,move]|PlanAux].
 
 plan(_Goal, World, Holding, _Objects, Plan) :-
-      retrieveGoalElements(_Goal, moveabove, ElementPick, ElementDrop),
+      retrieveGoalElements(_Goal, moveabove, ElementPick, ElementDrop, World),
       Holding == @(null),
       whichListInTheWorld(World,ElementPick,KPick),
       whichListInTheWorld(World,ElementDrop,KDrop),
@@ -954,7 +954,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
 
 %Does nothing when asked to move the selected object on top of the relative object in one step if it is already the case
 plan(_Goal, World, Holding, _Objects, Plan) :-
-      retrieveGoalElements(_Goal, moveontop, Element1, Element2),
+      retrieveGoalElements(_Goal, moveontop, Element1, Element2, World),
       getForm(Element2,_Objects,ObjectForm),
       ObjectForm \== box,
       whichListInTheWorld(World,Element1,K1),
@@ -969,7 +969,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
 
 %Move the selected object on top of the relative object in one step if the arm does not hold something and the selected object can be on the relative object
 plan(_Goal, World, Holding, _Objects, Plan) :-
-      retrieveGoalElements(_Goal, moveontop, Element1, Element2),
+      retrieveGoalElements(_Goal, moveontop, Element1, Element2, World),
       Holding == @(null),
       getForm(Element2,_Objects,ObjectForm),
       ObjectForm \== box,
@@ -987,7 +987,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
 
 %Move the selected object on top of the relative object in one step if the arm holds it and the selected object can be on the relative object
 plan(_Goal, World, Holding, _Objects, Plan) :-
-      retrieveGoalElements(_Goal, moveontop, Element1, Element2),
+      retrieveGoalElements(_Goal, moveontop, Element1, Element2, World),
       Holding \== @(null),
       Holding = ElementHold,
       ElementHold = Element1,
@@ -1004,7 +1004,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
 
 %Move the selected object on top of the relative object in one step if the arm holds something and the selected object can be on the relative object
 plan(_Goal, World, Holding, _Objects, Plan) :-
-      retrieveGoalElements(_Goal, moveontop, Element1, Element2),
+      retrieveGoalElements(_Goal, moveontop, Element1, Element2, World),
       Holding \== @(null),
       Holding = ElementHold,
       ElementHold \== Element1,
