@@ -19,17 +19,13 @@
     "utterance": 
         ["move","the","blue","box","beside","the","yellow","box"],
     "examples": [
-        ["put","the","white","ball","in","a","box","on","the","floor"],
-        ["put","the","black","ball","in","a","box","on","the","floor"],
+        ["put","the","white","ball","in","a","box","in","the","box"],
+        ["put","the","black","ball","in","the","yellow", "box"],
         ["take","a","blue","object"],
         ["take","the","white","ball"],
-        ["put","all","boxes","on","the","floor"],
-        ["move","all","balls","inside","a","large","box"],
-	["move","the","black","ball","inside","the","red","box"],
+		["move","the","black","ball","inside","the","red","box"],
         ["what","is","right","of","stack","1"],
         ["where","is","the","white","ball"],
-        ["what","is","beside","the","white","ball"],
-        ["move","the","blue","box","above","the","red","box"],
-	["count","all","balls","in","the","world"]
+        ["what","is","beside","the","white","ball"]
     ]
 }
