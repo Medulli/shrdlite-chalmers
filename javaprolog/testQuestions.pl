@@ -1075,6 +1075,17 @@ findall(Goal, (member(Tree, Trees),
 Goals = [Goal],
 plan(_Goal, World, Holding, _Objects, Plan),write(Plan).
 
+readUnpreciseGoal(UnpreciseGoal) :-
+    open('unpreciseGoal.txt',read,In),
+    read_line_to_codes(In,X),
+    close(In),
+	atom_codes(UnpreciseGoal,X).
+
+writeUnpreciseGoal(UnpreciseGoal) :-
+    open('unpreciseGoal.txt',write,Out),
+    write(Out,UnpreciseGoal),
+    close(Out).   
+
 test26 :-
 World = [[e],[l,g],[],[f,m,k],[]],
 Holding = @(null),
@@ -1097,7 +1108,8 @@ Utterance = [take, the, ball],
 parse_all(command, Utterance, Trees),write(Trees),
 findall(Goal, (member(Tree, Trees),
                      interpret(Tree, World, Holding, Objects, Goal)
-                    ), Goals),write(Goals).
+                    ), Goals),write(Goals),
+writeUnpreciseGoal(Goals),readUnpreciseGoal(UnpreciseGoal),write(UnpreciseGoal).
 
 %Get the form, the size and the color of an object knowing its name (one letter) and the possible objects. Output : ObjectFormSizeColor=[form,size,color]
 getFormSizeColor(PossibleObjects,ObjectLetter,ObjectFormSizeColor) :-
