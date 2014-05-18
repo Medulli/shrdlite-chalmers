@@ -2304,10 +2304,6 @@ plan(_Goal, World, _, _Objects, Plan) :-
 	intersection(ListObjInside,Parameter1,Intersection),
 	length(Intersection,Count),
 	Plan = [[Count,count]].
-	
-
-json_read(user_input, json(InputPrecision)),
-member(utterance=UtterancePrecision, InputPrecision),	
 
 getPrecisionInput(InputName, InputPrecision) :- 
 	json_read(InputName, JSONInputPrecision),
