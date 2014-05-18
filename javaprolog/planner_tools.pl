@@ -1,7 +1,11 @@
 :- style_check(-singleton).
 
-%tests if element is the head of the list
+%test if element is the head of the list
 checkHead([H|T],Element) :- H = Element.
+
+%test if Element1 is just above Element2
+checkOn([Element1,Element2|_],Element1,Element2).
+checkOn([H|T],Element1,Element2) :- checkOn(T,Element1,Element2).
 
 %return the number K if X is in the Kth list of lists LL
 %findall(X,whichListInTheWorld(a,[[d,e,f],[a,b,c]],X),R).
