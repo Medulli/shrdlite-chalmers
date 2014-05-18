@@ -1371,108 +1371,6 @@ plan(_Goal, World, _, _, Plan) :-
 	Plan = [[IdxList,where]].
 	
 %% What ----------------------------------------------------------------------
-/* can delete if it works
-%What right (every stacks on the right)
-plan(_Goal, World, _, _Objects, Plan) :-
-    retrieveGoalElements(_Goal, whatright, Parameter),
-	whichListInTheWorld(World,Parameter,Position),
-	length(World, LengthWorld),LengthRest is Position + 1,
-	%stack picked is within bounds
-	(LengthRest < LengthWorld ->
-		%World is split into 2 parts : Rest with the left until the stack, RightStacks with everything we want to examine.
-		length(Rest, LengthRest), append(Rest, RightStacks, World),
-		flatten(RightStacks,ListObjLetters),
-		maplist(getFormSizeColorText(_Objects),ListObjLetters,ObjectFormSizeColorList),
-		Plan = [[ObjectFormSizeColorList,what]]
-		%or not
-		; Plan = [[[],what]]
-	).
-
-%What left (every stacks on the left)
-plan(_Goal, World, _, _Objects, Plan) :-
-    retrieveGoalElements(_Goal, whatleft, Parameter),
-	whichListInTheWorld(World,Parameter,Position),
-	length(World, LengthWorld),
-	%stack picked is within bounds
-	((Position >= 0,Position < LengthWorld )->
-		%World is split into 2 parts : Left with the left until the stack, RightStacks with everything we want to examine.
-		length(Left, Position), append(Left, RightStacks, World),
-		flatten(Left,ListObjLetters),
-		maplist(getFormSizeColorText(_Objects),ListObjLetters,ObjectFormSizeColorList),
-		Plan = [[ObjectFormSizeColorList,what]]
-		%or not
-		; Plan = [[[],what]]
-	).
-	
-%What above (everything above)
-plan(_Goal, World, _, _Objects, Plan) :-
-    retrieveGoalElements(_Goal, whatabove, Parameter),
-	whichListInTheWorld(World,Parameter,Position),
-	%get the whole stack
-	nth0(Position,World,Stack),
-	%get position of the object in the stack
-	nth0(StackPosition, Stack, Parameter),
-	%get the list of objects
-	(StackPosition > 0 ->
-		length(LeftStack, StackPosition), append(LeftStack, RightStack, Stack),
-		maplist(getFormSizeColorText(_Objects),LeftStack,ObjectFormSizeColorList),
-		Plan = [[ObjectFormSizeColorList,what]]
-		;Plan = [[[],what]]
-	).
-
-%What on top (one object)
-plan(_Goal, World, _, _Objects, Plan) :-
-    retrieveGoalElements(_Goal, whatontop, Parameter),
-	whichListInTheWorld(World,Parameter,Position),
-	%get the whole stack
-	nth0(Position,World,Stack),
-	%get position of the object in the stack
-	nth0(StackPosition, Stack, Parameter),
-	%get the list of objects
-	(StackPosition > 0 ->
-		ObjectTopPosition is StackPosition - 1,
-		nth0(ObjectTopPosition, Stack, ObjectTop),
-		getFormSizeColorText(_Objects,ObjectTop,ObjectFormSizeColor),
-		Plan = [[[ObjectFormSizeColor],what]]
-		;Plan = [[[],what]]
-	).
-	
-%What under (all objects)
-plan(_Goal, World, _, _Objects, Plan) :-
-    retrieveGoalElements(_Goal, whatunder, Parameter),
-	whichListInTheWorld(World,Parameter,Position),
-	%get the whole stack
-	nth0(Position,World,Stack),
-	%get position of the object in the stack
-	nth0(StackPosition, Stack, Parameter),
-	%get index
-	length(Stack,LengthStack),
-	LeftStackLength is StackPosition + 1,
-	%get the list of objects
-	(LeftStackLength < LengthStack ->
-		length(LeftStack, LeftStackLength), append(LeftStack, RightStack, Stack),
-		maplist(getFormSizeColorText(_Objects),RightStack,ObjectFormSizeColorList),
-		Plan = [[ObjectFormSizeColorList,what]]
-		;Plan = [[[],what]]
-	).
-	
-%What inside (one object)
-plan(_Goal, World, _, _Objects, Plan) :-
-    retrieveGoalElements(_Goal, whatinside, Parameter),
-	whichListInTheWorld(World,Parameter,Position),
-	%get the whole stack
-	nth0(Position,World,Stack),
-	%get position of the object in the stack
-	nth0(StackPosition, Stack, Parameter),
-	%get the list of objects
-	(StackPosition > 0 ->
-		ObjectTopPosition is StackPosition - 1,
-		nth0(ObjectTopPosition, Stack, ObjectTop),
-		getFormSizeColorText(_Objects,ObjectTop,ObjectFormSizeColor),
-		Plan = [[[ObjectFormSizeColor],what]]
-		;Plan = [[[],what]]
-	).
-*/
 %What right (every stacks on the right)
 plan(_Goal, World, _, _Objects, Plan) :-
     retrieveGoalElements(_Goal, whatright, Parameter),
@@ -1850,18 +1748,6 @@ plan(_Goal, World, _, _Objects, Plan) :-
 
 %%%%%%%%--------------------------------- FOR TIME OUT
 %%%% PUT THIS VERSION THAT WORKS WHEN TESTING IS DONE
-/*
-%count inside
-plan(_Goal, World, _, _Objects, Plan) :-
-    retrieveGoalElements(_Goal, countinsidestacks, Parameter1,IdxList),
-	% list everything inside all IdxList
-	makeStackList(World,IdxList,StackList),
-	flatten(StackList,ListObjInside),
-	%match with param1
-	intersection(ListObjInside,Parameter1,Intersection),
-	length(Intersection,Count),
-	Plan = [[Count,count]].
-*/
 
 %count inside
 plan(_Goal, World, _, _Objects, Plan) :-
