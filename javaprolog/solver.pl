@@ -1,5 +1,4 @@
 %Solver
-list_string([], SuccesStr),nb_setval(output,SuccesStr).
 getPlan([K,-1,move], Plan) :- Plan=[[pick,K]],list_string([K],LStr),string_concat('I pick up the element at place . . . ',LStr,SuccesStr1),string_concat(SuccesStr1,'.',SuccesStr2),
 	nb_getval(output,SuccesStr3),string_concat(SuccesStr2,SuccesStr3,SuccesStr4),nb_setval(output,SuccesStr4).
 getPlan([-1,K,move], Plan) :- Plan=[[drop,K]],list_string([K],LStr),string_concat('I drop it down at place . . . ',LStr,SuccesStr1),string_concat(SuccesStr1,'.',SuccesStr2),
@@ -13,7 +12,7 @@ getPlan([L,what], Plan) :- Plan=[],(L = [] ->
 ),nb_setval(output,SuccesStr).
 getPlan([N,count], Plan) :- Plan=[],list_string([N],LStr),string_concat('There is/are . . . ',LStr,SuccesStr1),string_concat(SuccesStr1,' Object(s).',SuccesStr2),nb_setval(output,SuccesStr2).
 getPlan([N,countbeside], Plan) :- Plan=[],list_string(N,LStr),string_concat('There is/are . . . ',LStr,SuccesStr1),nb_setval(output,SuccesStr1).
-solve(PlanList, Plan) :- maplist(getPlan, PlanList, PlanAux),append(PlanAux, PlanAppend),
+solve(PlanList, Plan) :- list_string([], SuccesStr),nb_setval(output,SuccesStr),maplist(getPlan, PlanList, PlanAux),append(PlanAux, PlanAppend),
 (PlanAppend ==[] ->
 	%no plan sent, just infos display
 	Plan = @(null)
