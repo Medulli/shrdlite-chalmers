@@ -19,15 +19,10 @@
     "utterance":
         ["put","the","black","ball","in","the","red","box"],
     "examples": [
-        ["put","the","brick","that","is","to","the","left","of","a","pyramid","in","a","box"],
-        ["put","the","white","ball","in","a","box","on","the","floor"],
-        ["move","the","large", "ball","inside","a","yellow","box","on","the","floor"],
-        ["move","the","large", "ball","inside","a","red","box","on","the","floor"],
         ["take","a","red","object"],
         ["take","the","white","ball"],
-        ["put","all","boxes","on","the","floor"],
-        ["put","the","large","plank","under","the","blue","brick"],
-        ["move","all","bricks","on","a","table"],
-        ["move","all","balls","inside","a","large","box"]
+        ["put","the","large","plank","under","the","red","box"],
+		["put", "any", "red", "table", "inside", "the", "small", "box"],
+		["take", "the", "large", "yellow", "object", "to", "the", "right", "of", "any", "small", "table"]
     ]
 }
