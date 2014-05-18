@@ -57,7 +57,7 @@ main :-
                           Plan = @(null),
                           Output = 'Nothing to do!'
                         ; solve(PlanList, Plan),
-			  nb_getval(output,Output)
+						nb_getval(output,Output)
                         )
 		)
       ; Goals = [Goal],
@@ -109,7 +109,7 @@ handleAmbiguity(Goals,World,Holding,Objects,FinalGoal) :-
 %%TO BE CHECKED. Add a prompt message ?
 getPrecisionInput(user_input, InputPrecision),
 %json_read(user_input, json(InputPrecision)),
-member(utterance=UtterancePrecision, InputPrecision),
+%member(utterance=UtterancePrecision, InputPrecision),
 %Parse it and find the corresponding object
 parse_all(precision, UtterancePrecision, TreesPrecision),
 findall(Goal, (member(Tree, TreesPrecision),
