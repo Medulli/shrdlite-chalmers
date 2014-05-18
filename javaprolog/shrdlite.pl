@@ -46,6 +46,12 @@ main :-
         %Goal is a list of goals i.e. "I can do this and this and this... Please specify what you want"
         Goals = [_,_|_] ->
         PrecisionMode = 'Activated',
+		
+		getPrecisionInput (user_input_precision, InputPrecision),
+		Output = InputPrecision,
+		Plan= @(null)
+		
+		/*
 		handleAmbiguity(Goals,World,Holding,Objects,PrecisionGoal),
 		%we could not get a goal
 		(FinalGoal = [] ->
@@ -60,6 +66,7 @@ main :-
 			  nb_getval(output,Output)
                         )
 		)
+		*/
       ; Goals = [Goal],
         nb_setval(listOfVisitedWorlds,[World]),
         plan(Goal, World, Holding, Objects, PlanList),

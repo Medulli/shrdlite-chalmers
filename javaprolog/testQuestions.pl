@@ -2311,6 +2311,13 @@ member(utterance=UtterancePrecision, InputPrecision),
 
 getPrecisionInput (InputName, InputPrecision) :- 
 	json_read(InputName, JSONInputPrecision),
-	(JSONInputPrecision = '' -> getPrecisionInput (InputName, InputPrecision)
+	(JSONInputPrecision = @(end_of_file) -> getPrecisionInput (InputName, InputPrecision)
 	;JSONInputPrecision = json(InputPrecision)
 	).
+
+	Maxime Heckel
+
+handleAmbiguity(Goals,World,Holding,Objects,FinalGoal) :-
+%ask for a new input
+%%TO BE CHECKED. Add a prompt message ?
+getPrecisionInput (InputName, InputPrecision).
