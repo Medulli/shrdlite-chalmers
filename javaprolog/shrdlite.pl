@@ -46,14 +46,9 @@ main :-
         %Goal is a list of goals i.e. "I can do this and this and this... Please specify what you want"
         Goals = [_,_|_] ->
         PrecisionMode = 'Activated',		
-		getPrecisionInput(user_input, InputPrecision),
-		Output = InputPrecision,
-		Plan= @(null)
-		
-		/*
 		handleAmbiguity(Goals,World,Holding,Objects,PrecisionGoal),
 		%we could not get a goal
-		(FinalGoal = [] ->
+		(PrecisionGoal = [] ->
 			Plan = @(null),
 			Output = 'Ambiguity error, this object does not exist!'
 			%we have a goal !
@@ -65,7 +60,6 @@ main :-
 			  nb_getval(output,Output)
                         )
 		)
-		*/
       ; Goals = [Goal],
         nb_setval(listOfVisitedWorlds,[World]),
         plan(Goal, World, Holding, Objects, PlanList),
@@ -113,7 +107,8 @@ getCorrectGoalList([X|R],PossibleGoalsList,FinalGoal) :- getCorrectGoalList([X],
 handleAmbiguity(Goals,World,Holding,Objects,FinalGoal) :-
 %ask for a new input
 %%TO BE CHECKED. Add a prompt message ?
-json_read(user_input, json(InputPrecision)),
+getPrecisionInput(user_input, InputPrecision),
+%json_read(user_input, json(InputPrecision)),
 member(utterance=UtterancePrecision, InputPrecision),
 %Parse it and find the corresponding object
 parse_all(precision, UtterancePrecision, TreesPrecision),
