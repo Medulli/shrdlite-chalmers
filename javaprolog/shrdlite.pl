@@ -72,8 +72,12 @@ main :-
         ( PlanList == [-1] ->
           Plan = @(null),
           Output = 'Nothing to do!'
-        ; solve(PlanList, Plan),
-          nb_getval(output,Output)
+        ; ( PlanList == [-2] ->
+            Plan = @(null),
+            Output = 'This move is impossible!'
+          ; solve(PlanList, Plan),
+            nb_getval(output,Output)
+          )
         )
       )
     ),

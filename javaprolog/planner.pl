@@ -959,6 +959,14 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       plan(moveabove([ElementDrop],[ElementPick]), World, Holding, _Objects, Plan).
 
 %% Moveontop ----------------------------------------------------------------------
+
+plan(_Goal, World, Holding, _Objects, Plan) :-
+      retrieveGoalElements(_Goal, moveontop, ElementPick, ElementDrop),
+      getForm(ElementDrop,_Objects,ObjectForm),
+      ObjectForm \== box,
+      not(canbeon(ElementPick,[ElementDrop],_Objects)),
+      Plan = [-2].
+
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, moveontop, ElementPick, ElementDrop),
       getForm(ElementDrop,_Objects,ObjectForm),
@@ -1159,6 +1167,13 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, moveinside, ElementPick, ElementDrop),
       getForm(ElementDrop,_Objects,ObjectForm),
       ObjectForm == box,
+      not(canbeon(ElementPick,[ElementDrop],_Objects)),
+      Plan = [-2].
+
+plan(_Goal, World, Holding, _Objects, Plan) :-
+      retrieveGoalElements(_Goal, moveinside, ElementPick, ElementDrop),
+      getForm(ElementDrop,_Objects,ObjectForm),
+      ObjectForm == box,
       Holding \== @(null),
       Holding = ElementHold,
       ElementHold == ElementPick,
@@ -1348,7 +1363,6 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       nb_setval(listOfVisitedWorlds,[NewWorld|Tail]),
       plan(_Goal, NewWorld, Holding, _Objects, PlanAux),
       Plan = [[KPickAux,KDropAux,move]|PlanAux].
-
 
 %% Where : the list of positions (indexes) of the objects
 plan(_Goal, World, _, _, Plan) :-
