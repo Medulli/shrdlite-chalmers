@@ -961,7 +961,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
 %% Moveontop ----------------------------------------------------------------------
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, moveontop, ElementPick, ElementDrop),
-      getForm(Element2,_Objects,ObjectForm),
+      getForm(ElementDrop,_Objects,ObjectForm),
       ObjectForm \== box,
       Holding \== @(null),
       Holding = ElementHold,
@@ -977,7 +977,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
 
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, moveontop, ElementPick, ElementDrop),
-      getForm(Element2,_Objects,ObjectForm),
+      getForm(ElementDrop,_Objects,ObjectForm),
       ObjectForm \== box,
       Holding \== @(null),
       Holding = ElementHold,
@@ -997,7 +997,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
 
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, moveontop, ElementPick, ElementDrop),
-      getForm(Element2,_Objects,ObjectForm),
+      getForm(ElementDrop,_Objects,ObjectForm),
       ObjectForm \== box,
       Holding \== @(null),
       Holding = ElementHold,
@@ -1027,7 +1027,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
 
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, moveontop, ElementPick, ElementDrop),
-      getForm(Element2,_Objects,ObjectForm),
+      getForm(ElementDrop,_Objects,ObjectForm),
       ObjectForm \== box,
       Holding == @(null),
       whichListInTheWorld(World,ElementPick,KPick),
@@ -1039,7 +1039,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
 
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, moveontop, ElementPick, ElementDrop),
-      getForm(Element2,_Objects,ObjectForm),
+      getForm(ElementDrop,_Objects,ObjectForm),
       ObjectForm \== box,
       Holding == @(null),
       whichListInTheWorld(World,ElementPick,KPick),
@@ -1058,7 +1058,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
 
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, moveontop, ElementPick, ElementDrop),
-      getForm(Element2,_Objects,ObjectForm),
+      getForm(ElementDrop,_Objects,ObjectForm),
       ObjectForm \== box,
       Holding == @(null),
       whichListInTheWorld(World,ElementPick,KPick),
@@ -1082,7 +1082,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
 
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, moveontop, ElementPick, ElementDrop),
-      getForm(Element2,_Objects,ObjectForm),
+      getForm(ElementDrop,_Objects,ObjectForm),
       ObjectForm \== box,
       Holding == @(null),
       whichListInTheWorld(World,ElementPick,KPick),
@@ -1110,7 +1110,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
 
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, moveontop, ElementPick, ElementDrop),
-      getForm(Element2,_Objects,ObjectForm),
+      getForm(ElementDrop,_Objects,ObjectForm),
       ObjectForm \== box,
       Holding == @(null),
       whichListInTheWorld(World,ElementPick,KPick),
@@ -1131,7 +1131,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
 
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, moveontop, ElementPick, ElementDrop),
-      getForm(Element2,_Objects,ObjectForm),
+      getForm(ElementDrop,_Objects,ObjectForm),
       ObjectForm \== box,
       Holding == @(null),
       whichListInTheWorld(World,ElementPick,KPick),
@@ -1156,9 +1156,10 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       Plan = [[KPickAux,KDropAux,move]|PlanAux].
 
 %% Moveinside ----------------------------------------------------------------------
+
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, moveinside, ElementPick, ElementDrop),
-      getForm(Element2,_Objects,ObjectForm),
+      getForm(ElementDrop,_Objects,ObjectForm),
       ObjectForm == box,
       Holding \== @(null),
       Holding = ElementHold,
@@ -1174,7 +1175,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
 
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, moveinside, ElementPick, ElementDrop),
-      getForm(Element2,_Objects,ObjectForm),
+      getForm(ElementDrop,_Objects,ObjectForm),
       ObjectForm == box,
       Holding \== @(null),
       Holding = ElementHold,
@@ -1194,7 +1195,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
 
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, moveinside, ElementPick, ElementDrop),
-      getForm(Element2,_Objects,ObjectForm),
+      getForm(ElementDrop,_Objects,ObjectForm),
       ObjectForm == box,
       Holding \== @(null),
       Holding = ElementHold,
@@ -1224,7 +1225,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
 
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, moveinside, ElementPick, ElementDrop),
-      getForm(Element2,_Objects,ObjectForm),
+      getForm(ElementDrop,_Objects,ObjectForm),
       ObjectForm == box,
       Holding == @(null),
       whichListInTheWorld(World,ElementPick,KPick),
@@ -1236,7 +1237,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
 
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, moveinside, ElementPick, ElementDrop),
-      getForm(Element2,_Objects,ObjectForm),
+      getForm(ElementDrop,_Objects,ObjectForm),
       ObjectForm == box,
       Holding == @(null),
       whichListInTheWorld(World,ElementPick,KPick),
@@ -1255,7 +1256,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
 
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, moveinside, ElementPick, ElementDrop),
-      getForm(Element2,_Objects,ObjectForm),
+      getForm(ElementDrop,_Objects,ObjectForm),
       ObjectForm == box,
       Holding == @(null),
       whichListInTheWorld(World,ElementPick,KPick),
@@ -1279,7 +1280,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
 
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, moveinside, ElementPick, ElementDrop),
-      getForm(Element2,_Objects,ObjectForm),
+      getForm(ElementDrop,_Objects,ObjectForm),
       ObjectForm == box,
       Holding == @(null),
       whichListInTheWorld(World,ElementPick,KPick),
@@ -1307,7 +1308,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
 
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, moveinside, ElementPick, ElementDrop),
-      getForm(Element2,_Objects,ObjectForm),
+      getForm(ElementDrop,_Objects,ObjectForm),
       ObjectForm == box,
       Holding == @(null),
       whichListInTheWorld(World,ElementPick,KPick),
@@ -1328,7 +1329,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
 
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, moveinside, ElementPick, ElementDrop),
-      getForm(Element2,_Objects,ObjectForm),
+      getForm(ElementDrop,_Objects,ObjectForm),
       ObjectForm == box,
       Holding == @(null),
       whichListInTheWorld(World,ElementPick,KPick),
