@@ -513,7 +513,7 @@ function userInput() {
         type: 'POST',
         dataType: "text",
         cache: false,
-        timeout: 1000 * AjaxTimeout,
+        timeout: 15000 * AjaxTimeout,
         data: {'data': JSON.stringify(ajaxdata), 'program': program }
     }).fail(function(jqxhr, status, error) {
       alertError("Internal error: " + status, error);
