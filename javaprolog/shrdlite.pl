@@ -45,8 +45,7 @@ main :-
       ;
         %Goal is a list of goals i.e. "I can do this and this and this... Please specify what you want"
         Goals = [_,_|_] ->
-        PrecisionMode = 'Activated',
-		
+        PrecisionMode = 'Activated',		
 		getPrecisionInput (user_input_precision, InputPrecision),
 		Output = InputPrecision,
 		Plan= @(null)
@@ -129,3 +128,9 @@ findall(Goal, (member(Tree, TreesPrecision),
 		;FinalGoalList = [FinalGoal]
 	)
 ).
+
+getPrecisionInput (InputName, InputPrecision) :- 
+	json_read(InputName, JSONInputPrecision),
+	(JSONInputPrecision = @(end_of_file) -> getPrecisionInput (InputName, InputPrecision)
+	;JSONInputPrecision = json(InputPrecision)
+	).
