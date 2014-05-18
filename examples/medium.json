@@ -17,12 +17,12 @@
         "m": { "form":"box",     "size":"small",  "color":"blue"  }
     },
     "utterance":
-        ["put","the","black","ball","in","the","red","box"],
+        ["move","the","blue","box","inside","the","yellow","box"],
     "examples": [
         ["take","a","red","object"],
         ["take","the","white","ball"],
         ["put","the","large","plank","under","the","red","box"],
-		["put", "any", "red", "table", "inside", "the", "small", "box"],
-		["take", "the", "large", "yellow", "object", "to", "the", "right", "of", "any", "small", "table"]
+	["put", "any", "red", "table", "inside", "the", "small", "box"],
+	["take", "the", "large", "yellow", "object", "to", "the", "right", "of", "any", "small", "table"]
     ]
 }

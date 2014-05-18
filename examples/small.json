@@ -17,13 +17,13 @@
         "m": { "form":"box",     "size":"small",  "color":"blue"  }
     },
     "utterance": 
-        ["move","the","blue","box","beside","the","yellow","box"],
+        ["take","the","white","ball"],
     "examples": [
         ["put","the","white","ball","in","a","box","in","the","box"],
         ["put","the","black","ball","in","the","yellow", "box"],
         ["take","a","blue","object"],
         ["take","the","white","ball"],
-		["move","the","black","ball","inside","the","red","box"],
+        ["move","the","black","ball","inside","the","red","box"],
         ["what","is","right","of","stack","1"],
         ["where","is","the","white","ball"],
         ["what","is","beside","the","white","ball"]

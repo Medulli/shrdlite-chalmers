@@ -17,7 +17,7 @@
         "m": { "form":"box",     "size":"small",  "color":"blue"  }
     },
     "utterance": 
-        ["move","the","blue","box","to","the","left","of","the","green","plank"],
+        ["move","the","blue","box","above","the","yellow","pyramid"],
     "examples": [
         ["move","the","blue","box","to","the","left","of","the","green","plank"],
         ["put","a","box","in","a","box"],
