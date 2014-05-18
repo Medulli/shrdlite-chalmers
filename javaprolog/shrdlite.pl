@@ -46,7 +46,7 @@ main :-
         %Goal is a list of goals i.e. "I can do this and this and this... Please specify what you want"
         Goals = [_,_|_] ->
         PrecisionMode = 'Activated',		
-		getPrecisionInput(user_input_precision, InputPrecision),
+		getPrecisionInput(user_input, InputPrecision),
 		Output = InputPrecision,
 		Plan= @(null)
 		
