@@ -9,6 +9,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
 
         Holding = ElementHold,
         ( ElementHold == ElementPick ->
+
           Plan = [-1]
 
         ; canbeAt(ElementHold,World,_Objects,K),
@@ -47,6 +48,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
             checkHead(Stack,ElementPickAux),
             whichListInTheWorld(World,ElementPickAux,KPickAux),
             canbeAt(ElementPickAux,World,_Objects,KDropAux),
+            KPickAux \== KDropAux,
             pickAt(KPickAux,World,WorldAux),
             dropAt(ElementPickAux,KDropAux,WorldAux,NewWorld),
             nb_getval(listOfVisitedWorlds,Tail),
@@ -58,55 +60,312 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
           )
         )
       ).
-/*
-%Take the selected object if the arm does not hold something
-plan(_Goal, World, Holding, _Objects, Plan) :-
-      retrieveGoalElements(_Goal, take, Element),
-      Holding == @(null),
-      whichListInTheWorld(World,Element,K),
-      nth0(K,World,LK),
-      checkHead(LK,Element),
-      pickAt(K,World,NewWorld),
-      nb_setval(world, NewWorld),
-      b_setval(holding, [Element]),
-      Plan = [[K,-1,move]].
 
-%Does nothing when asked to take the selected object if the arm already holds it
+%% Moveleft ----------------------------------------------------------------------
 plan(_Goal, World, Holding, _Objects, Plan) :-
-      retrieveGoalElements(_Goal, take, ElementPick),
+      retrieveGoalElements(_Goal, moveleft, ElementPick, ElementDrop),
       Holding \== @(null),
-      Holding = ElementPick,
-      Plan = [-1].
+      Holding = ElementHold,
+      ElementHold == ElementPick,
+      whichListInTheWorld(World,ElementDrop,K2Aux),
+      K2M is K2Aux - 1,
+      nth0(K2M,World,LK2M),
+      ( canbeon(ElementHold,LK2M,_Objects) ->
+        dropAt(ElementHold,K2M,World,NewWorld),
+        b_setval(world, NewWorld),
+        b_setval(holding, @(null)),
+        Plan = [[-1,K2M,move]]
 
-%Take the selected object if the arm holds something
+      ; canbeAt(ElementHold,World,_Objects,K),
+        dropAt(ElementHold,K,World,NewWorld),
+        nb_getval(listOfVisitedWorlds,Tail),
+        not(member(NewWorld,Tail)),
+        nb_setval(listOfVisitedWorlds,[NewWorld|Tail]),
+        b_setval(world, NewWorld),
+        b_setval(holding, @(null)),
+        plan(_Goal, NewWorld, @(null), _Objects, PlanAux),
+        Plan = [[-1,K,move]|PlanAux]
+      ).
+
 plan(_Goal, World, Holding, _Objects, Plan) :-
-      retrieveGoalElements(_Goal, take, ElementPick),
+      retrieveGoalElements(_Goal, moveleft, ElementPick, ElementDrop),
       Holding \== @(null),
       Holding = ElementHold,
       ElementHold \== ElementPick,
       canbeAt(ElementHold,World,_Objects,K),
       dropAt(ElementHold,K,World,NewWorld),
+      nb_getval(listOfVisitedWorlds,Tail),
+      not(member(NewWorld,Tail)),
       b_setval(world, NewWorld),
+      nb_setval(listOfVisitedWorlds,[NewWorld|Tail]),
+      b_setval(world, NewWorld),
+      b_setval(holding, @(null)),
       plan(_Goal, NewWorld, @(null), _Objects, PlanAux),
-      b_setval(holding, [ElementPick]),
       Plan = [[-1,K,move]|PlanAux].
 
-%Move the selected object inside the relative object in several steps if the arm does not hold something and the selected object can be on the relative object
 plan(_Goal, World, Holding, _Objects, Plan) :-
-      retrieveGoalElements(_Goal, take, Element),
+      retrieveGoalElements(_Goal, moveleft, ElementPick, ElementDrop),
       Holding == @(null),
-      member(World,Stack),
-      checkHead(Stack,ElementPick),
       whichListInTheWorld(World,ElementPick,KPick),
-      canbeAt(ElementPick,World,_Objects,KDrop),
+      whichListInTheWorld(World,ElementDrop,KDrop),
+      KDropM is KDrop - 1,
+      KPick == KDropM,
+      Plan = [-1].
+
+plan(_Goal, World, Holding, _Objects, Plan) :-
+      retrieveGoalElements(_Goal, moveleft, ElementPick, ElementDrop),
+      Holding == @(null),
+      whichListInTheWorld(World,ElementPick,KPick),
+      whichListInTheWorld(World,ElementDrop,KDrop),
+      KDropM is KDrop - 1,
+      KPick \== KDropM,
+      nth0(KPick,World,LKPick),
+      checkHead(LKPick,ElementTop),
+      ElementTop == ElementPick,
+      canbeAt(ElementPick,World,_Objects,KDropM),
       pickAt(KPick,World,WorldAux),
-      dropAt(ElementPick,KDrop,WorldAux,NewWorld),
+      dropAt(ElementPick,KDropM,WorldAux,NewWorld),
+      nb_setval(world, NewWorld),
+      Plan = [[KPick,KDropM,move]].
+
+plan(_Goal, World, Holding, _Objects, Plan) :-
+      retrieveGoalElements(_Goal, moveleft, ElementPick, ElementDrop),
+      Holding == @(null),
+      whichListInTheWorld(World,ElementPick,KPick),
+      whichListInTheWorld(World,ElementDrop,KDrop),
+      KDropM is KDrop - 1,
+      KPick \== KDropM,
+      nth0(KPick,World,LKPick),
+      checkHead(LKPick,ElementTop),
+      ElementTop == ElementPick,
+      not(canbeAt(ElementPick,World,_Objects,KDropM)),
+      nth0(KDropM,World,LKDropM),
+      checkHead(LKDropM,ElementTopAux),
+      pickAt(KDropM,World,WorldAux),
+      canbeAt(ElementTopAux,WorldAux,_Objects,KDropAux),
+      KDropM \== KDropAux,
+      dropAt(ElementTopAux,KDropAux,WorldAux,NewWorld),
       nb_getval(listOfVisitedWorlds,Tail),
       not(member(NewWorld,Tail)),
       b_setval(world, NewWorld),
       nb_setval(listOfVisitedWorlds,[NewWorld|Tail]),
       plan(_Goal, NewWorld, Holding, _Objects, PlanAux),
-      Plan = [[KPick,KDrop,move]|PlanAux].
+      Plan = [[KDropM,KDropAux,move]|PlanAux].
+
+plan(_Goal, World, Holding, _Objects, Plan) :-
+      retrieveGoalElements(_Goal, moveleft, ElementPick, ElementDrop),
+      Holding == @(null),
+      whichListInTheWorld(World,ElementPick,KPick),
+      whichListInTheWorld(World,ElementDrop,KDrop),
+      KDropM is KDrop - 1,
+      KPick \== KDropM,
+      nth0(KPick,World,LKPick),
+      checkHead(LKPick,ElementTop),
+      ElementTop == ElementPick,
+      not(canbeAt(ElementPick,World,_Objects,KDropM)),
+      nth0(KDropM,World,LKDropM),
+      checkHead(LKDropM,ElementTopAux),
+      not(canbeMoved(ElementTopAux,KDropM,World,_Objects,K)),
+      member(World,Stack),
+      checkHead(Stack,ElementPickAux),
+      whichListInTheWorld(World,ElementPickAux,KPickAux),
+      pickAt(KPickAux,World,WorldAux),
+      ( canbeMoved(ElementPickAux,KPickAux,WorldAux,_Objects,KDropM) ->
+
+        dropAt(ElementPickAux,KDropM,WorldAux,NewWorld),
+        nb_getval(listOfVisitedWorlds,Tail),
+        not(member(NewWorld,Tail)),
+        b_setval(world, NewWorld),
+        nb_setval(listOfVisitedWorlds,[NewWorld|Tail]),
+        plan(_Goal, NewWorld, Holding, _Objects, PlanAux),
+        Plan = [[KPickAux,KDropM,move]|PlanAux]
+
+      ; canbeMoved(ElementPickAux,KPickAux,WorldAux,_Objects,KDropAux),
+        dropAt(ElementPickAux,KDropAux,WorldAux,NewWorld),
+        nb_getval(listOfVisitedWorlds,Tail),
+        not(member(NewWorld,Tail)),
+        b_setval(world, NewWorld),
+        nb_setval(listOfVisitedWorlds,[NewWorld|Tail]),
+        plan(_Goal, NewWorld, Holding, _Objects, PlanAux),
+        Plan = [[KPickAux,KDropAux,move]|PlanAux]
+      ).
+
+plan(_Goal, World, Holding, _Objects, Plan) :-
+      retrieveGoalElements(_Goal, moveleft, ElementPick, ElementDrop),
+      Holding == @(null),
+      whichListInTheWorld(World,ElementPick,KPick),
+      whichListInTheWorld(World,ElementDrop,KDrop),
+      KDropM is KDrop - 1,
+      KPick \== KDropM,
+      nth0(KPick,World,LKPick),
+      checkHead(LKPick,ElementTop),
+      ElementTop \== ElementPick,
+      pickAt(KPick,World,WorldAux),
+      canbeMoved(ElementTop,KPick,WorldAux,_Objects,KDropAux),
+      dropAt(ElementTop,KDropAux,WorldAux,NewWorld),
+      nb_getval(listOfVisitedWorlds,Tail),
+      not(member(NewWorld,Tail)),
+      b_setval(world, NewWorld),
+      nb_setval(listOfVisitedWorlds,[NewWorld|Tail]),
+      plan(_Goal, NewWorld, Holding, _Objects, PlanAux),
+      Plan = [[KPick,KDropAux,move]|PlanAux].
+
+plan(_Goal, World, Holding, _Objects, Plan) :-
+      retrieveGoalElements(_Goal, moveleft, ElementPick, ElementDrop),
+      Holding == @(null),
+      whichListInTheWorld(World,ElementPick,KPick),
+      whichListInTheWorld(World,ElementDrop,KDrop),
+      KDropM is KDrop - 1,
+      KPick \== KDropM,
+      nth0(KPick,World,LKPick),
+      checkHead(LKPick,ElementTop),
+      ElementTop \== ElementPick,
+      not(canbeMoved(ElementTop,KPick,World,_Objects,KDropAux)),
+      member(World,Stack),
+      checkHead(Stack,ElementPickAux),
+      whichListInTheWorld(World,ElementPickAux,KPickAux),
+      pickAt(KPickAux,World,WorldAux),
+      canbeAt(ElementPickAux,WorldAux,_Objects,KDropAux),
+      KPickAux \== KDropAux,
+      dropAt(ElementPickAux,KDropAux,WorldAux,NewWorld),
+      nb_getval(listOfVisitedWorlds,Tail),
+      not(member(NewWorld,Tail)),
+      b_setval(world, NewWorld),
+      nb_setval(listOfVisitedWorlds,[NewWorld|Tail]),
+      plan(_Goal, NewWorld, Holding, _Objects, PlanAux),
+      Plan = [[KPickAux,KDropAux,move]|PlanAux].
+/*
+plan(_Goal, World, Holding, _Objects, Plan) :-
+      retrieveGoalElements(_Goal, moveleft, ElementPick, ElementDrop),
+      ( Holding \== @(null) ->
+
+        Holding = ElementHold,
+        ( ElementHold == ElementPick ->
+
+          whichListInTheWorld(World,ElementDrop,K2Aux),
+          K2M is K2Aux - 1,
+          nth0(K2M,World,LK2M),
+
+          ( canbeon(ElementHold,LK2M,_Objects) ->
+
+            dropAt(ElementHold,K2M,World,NewWorld),
+            b_setval(world, NewWorld),
+            b_setval(holding, @(null)),
+            Plan = [[-1,K2M,move]]
+
+          ; canbeAt(ElementHold,World,_Objects,K),
+            dropAt(ElementHold,K,World,NewWorld),
+            b_setval(world, NewWorld),
+            b_setval(holding, @(null)),
+            plan(_Goal, NewWorld, @(null), _Objects, PlanAux),
+            Plan = [[-1,K,move]|PlanAux]
+          )
+
+        ; canbeAt(ElementHold,World,_Objects,K),
+          dropAt(ElementHold,K,World,NewWorld),
+          nb_getval(listOfVisitedWorlds,Tail),
+          not(member(NewWorld,Tail)),
+          b_setval(world, NewWorld),
+          nb_setval(listOfVisitedWorlds,[NewWorld|Tail]),
+          b_setval(world, NewWorld),
+          b_setval(holding, @(null)),
+          plan(_Goal, NewWorld, @(null), _Objects, PlanAux),
+          Plan = [[-1,K,move]|PlanAux]
+        )
+
+      ; whichListInTheWorld(World,ElementPick,KPick),
+        whichListInTheWorld(World,ElementDrop,KDrop),
+        KDropM is KDrop - 1,
+
+        ( KPick == KDropM ->
+
+          Plan = [-1]
+
+        ; nth0(KPick,World,LKPick),
+          checkHead(LKPick,ElementTop),
+
+          ( ElementTop == ElementPick ->
+
+            ( canbeAt(ElementPick,World,_Objects,KDropM) ->
+
+              pickAt(KPick,World,WorldAux1),
+              dropAt(ElementPick,KDropM,WorldAux1,NewWorld),
+              nb_setval(world, NewWorld),
+              Plan = [[KPick,KDropM,move]]
+
+            ; nth0(KDropM,World,LKDropM),
+              checkHead(LKDropM,ElementTopAux),
+              pickAt(KDropM,World,WorldAux1),
+              ( canbeAt(ElementTopAux,WorldAux1,_Objects,KDropAux) ->
+
+              nl, write(KDropAux), nl,
+                KDropM \== KDropAux,
+                dropAt(ElementTopAux,KDropAux,WorldAux1,NewWorld),
+                nb_getval(listOfVisitedWorlds,Tail),
+                not(member(NewWorld,Tail)),
+                b_setval(world, NewWorld),
+                nb_setval(listOfVisitedWorlds,[NewWorld|Tail]),
+                plan(_Goal, NewWorld, Holding, _Objects, PlanAux),
+                Plan = [[KDropM,KDropAux,move]|PlanAux]
+
+              ; member(World,Stack),
+                checkHead(Stack,ElementPickAux),
+                whichListInTheWorld(World,ElementPickAux,KPickAux),
+                pickAt(KPickAux,World,WorldAux2),
+ 
+                ( canbeAt(ElementPickAux,WorldAux2,_Objects,KDropM) ->
+
+                  KPickAux \== KDropM,
+                  dropAt(ElementPickAux,KDropM,WorldAux2,NewWorld),
+                  nb_getval(listOfVisitedWorlds,Tail),
+                  not(member(NewWorld,Tail)),
+                  b_setval(world, NewWorld),
+                  nb_setval(listOfVisitedWorlds,[NewWorld|Tail]),
+                  plan(_Goal, NewWorld, Holding, _Objects, PlanAux),
+                  Plan = [[KPickAux,KDropM,move]|PlanAux]
+
+                ; canbeAt(ElementPickAux,WorldAux2,_Objects,KDropAux),
+                  KPickAux \== KDropAux,
+                  dropAt(ElementPickAux,KDropAux,WorldAux2,NewWorld),
+                  nb_getval(listOfVisitedWorlds,Tail),
+                  not(member(NewWorld,Tail)),
+                  b_setval(world, NewWorld),
+                  nb_setval(listOfVisitedWorlds,[NewWorld|Tail]),
+                  plan(_Goal, NewWorld, Holding, _Objects, PlanAux),
+                  Plan = [[KPickAux,KDropAux,move]|PlanAux]
+                )
+              )
+            )
+
+          ; pickAt(KPick,World,WorldAux1),
+            ( canbeAt(ElementTop,WorldAux1,_Objects,KDropAux) ->
+
+              KPick \== KDropAux,
+              dropAt(ElementTop,KDropAux,WorldAux1,NewWorld),
+              nb_getval(listOfVisitedWorlds,Tail),
+              not(member(NewWorld,Tail)),
+              b_setval(world, NewWorld),
+              nb_setval(listOfVisitedWorlds,[NewWorld|Tail]),
+              plan(_Goal, NewWorld, Holding, _Objects, PlanAux),
+              Plan = [[KPick,KDropAux,move]|PlanAux]
+
+            ; member(World,Stack),
+              checkHead(Stack,ElementPickAux),
+              whichListInTheWorld(World,ElementPickAux,KPickAux),
+              pickAt(KPickAux,World,WorldAux2),
+              canbeAt(ElementPickAux,WorldAux2,_Objects,KDropAux),
+              KPickAux \== KDropAux,
+              dropAt(ElementPickAux,KDropAux2,WorldAux,NewWorld),
+              nb_getval(listOfVisitedWorlds,Tail),
+              not(member(NewWorld,Tail)),
+              b_setval(world, NewWorld),
+              nb_setval(listOfVisitedWorlds,[NewWorld|Tail]),
+              plan(_Goal, NewWorld, Holding, _Objects, PlanAux),
+              Plan = [[KPickAux,KDropAux,move]|PlanAux]
+            )
+          )
+        )
+      ).
 */
 %Does nothing when asked to move the selected object beside the relative object in one step if it is already the case
 plan(_Goal, World, Holding, _Objects, Plan) :-
@@ -198,7 +457,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       b_setval(world, NewWorld),
       b_setval(holding, @(null)),
       Plan = [[-1,K2,move]].
-
+/*
 %Does nothing when asked to move the selected object to the left of the relative object in one step if it is already the case
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, moveleft, Element1, Element2),
@@ -251,7 +510,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       b_setval(holding, @(null)),
       plan(_Goal, NewWorld, @(null), _Objects, PlanAux),
       Plan = [[-1,K,move]|PlanAux].
-
+*/
 %Does nothing when asked to move the selected object to the right of the relative object in one step if it is already the case
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, moveright, Element1, Element2),
@@ -540,10 +799,10 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       plan(_Goal, NewWorld, @(null), _Objects, PlanAux),
       Plan = [[-1,K,move]|PlanAux].
 */
-
+/*
 %Move the selected object inside the relative object in several steps if the arm does not hold something and the selected object can be on the relative object
 plan(_Goal, World, Holding, _Objects, Plan) :-
-      retrieveGoalElements(_Goal, moveinside, Element1, Element2),
+      retrieveGoalElements(_Goal, AnyMove, Element1, Element2),
       Holding == @(null),
       getForm(Element2,_Objects,ObjectForm),
       ObjectForm == box,
@@ -557,7 +816,7 @@ plan(_Goal, World, Holding, _Objects, Plan) :-
       b_setval(world, NewWorld),
       plan(_Goal, NewWorld, Holding, _Objects, PlanAux),
       Plan = [[K2,K3,move]|PlanAux].
-/*
+
 %Move the selected object inside the relative object in several steps if the arm does not hold something and the selected object can be on the relative object
 plan(_Goal, World, Holding, _Objects, Plan) :-
       retrieveGoalElements(_Goal, AnyMove, Element1, Element2),

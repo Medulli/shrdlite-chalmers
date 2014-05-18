@@ -20,3 +20,6 @@ dropAt(Element,N,[H|T1],[H|T2]) :- dropAt(Element,M,T1,T2), N is M + 1.
 %find a list in which an element can be added given the object, the world, the objects
 canbeAt(X,[H|L],Objects,0) :- canbeon(X,H,Objects).
 canbeAt(X,[H|L],Objects,N) :- canbeAt(X,L,Objects,M), N is M + 1.
+
+%check if X can be moved from place N1
+canbeMoved(X,N1,World,Objects,N2) :- canbeAt(X,World,Objects,N2), N1 \== N2.
