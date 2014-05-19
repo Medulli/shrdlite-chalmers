@@ -26,6 +26,8 @@
         ["move","the","black","ball","inside","the","red","box"],
         ["what","is","right","of","stack","1"],
         ["where","is","the","white","ball"],
-        ["what","is","beside","the","white","ball"]
+        ["what","is","beside","the","white","ball"],
+        ["count","all","balls","on","stack","0"],
+        ["count","all","balls","on","stack","1"]
     ]
 }
