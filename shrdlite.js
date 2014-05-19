@@ -382,7 +382,9 @@ function systemPrompt(timeout) {
     if (timeout) {
         setTimeout(systemPrompt, 1000*timeout);
    } else {
+/*
         sayUtterance("system", SystemPromptText);
+*/
         enableInput();
     }
 }
