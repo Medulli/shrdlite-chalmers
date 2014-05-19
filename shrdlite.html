@@ -1,5 +1,5 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
-<html> 
+<html>
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <title>Shrdlite</title>
@@ -23,16 +23,15 @@
               <option value="shrdlite.pl">shrdlite.pl</option>
             </select>
             <br><input type="text" id="userinput" x-webkit-speech>
-            <br><input type="text" id="userinputprecision" x-webkit-speech>
-            <br><input type = "submit" name="querysubmit" value="Send query">
+            <br><input type="hidden" id="userinputprecision" disabled x-webkit-speech>
           </p>
         </form>
         <!--<form id = "preciseform" action="#">
-          <p>
-          <br><input type="text" id="userinputprecision2" disabled x-webkit-speech>
-          <br><input type="submit" name="precisionsubmit" value="Send precision">
-          </p>
-        </form>-->
+<p>
+<br><input type="text" id="userinputprecision2" disabled x-webkit-speech>
+<br><input type="submit" name="precisionsubmit" value="Send precision">
+</p>
+</form>-->
       </div>
     </td>
   </tr>
@@ -41,7 +40,7 @@
 <div id="footer">
   <hr>
   <div id="debugdiv">
-    <strong>debug</strong> <input type="checkbox" id="showdebug"> 
+    <strong>debug</strong> <input type="checkbox" id="showdebug">
     <table id="debug">
       <tr><td><b>World</b></td><td id="debugworld"></td></tr>
       <tr><td><b>Holding</b></td><td id="debugholding"></td></tr>
@@ -54,5 +53,5 @@
     </table>
   </div>
 </div>
-</body> 
+</body>
 </html>
