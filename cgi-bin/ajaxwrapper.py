@@ -7,7 +7,7 @@ import cgi
 from subprocess import Popen, PIPE, STDOUT
 
 # # SWI Prolog
-SCRIPTDIR = 'javaprolog'
+SCRIPTDIR = 'prolog'
 SCRIPT = ['swipl', '-q', '-g', 'main,halt', '-t', 'halt(1)', '-s']
 print('Content-type:text/plain')
 print()
