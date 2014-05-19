@@ -25,6 +25,8 @@ b_setval(holding, HoldingJson),
 %precision
 parse_all(precision, Utterance, TreesForPrecision),
 (TreesForPrecision \== [] ->	  
+        b_getval(world,World),
+        b_getval(holding,Holding),
 	readUnpreciseGoal(UnpreciseGoals),
 	handleAmbiguity(UnpreciseGoals,World,Holding,Objects,TreesForPrecision,PrecisionGoalList),
 	%we could not get a goal
@@ -134,7 +136,6 @@ handleAmbiguity(Goals,World,Holding,Objects,TreesPrecision,FinalGoal) :-
 	findall(Goal, (member(Tree, TreesPrecision),
 	interpret(Tree, World, Holding, Objects, Goal)
 	), GoalsPrecision),
-	Goals= [take([e]),take([f])],
 	%if nothing found then raise error
 	(GoalsPrecision = [] ->
 		FinalGoal=[]
